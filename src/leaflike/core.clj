@@ -1,4 +1,4 @@
-(ns bookmarks-clj.core)
+(ns leaflike.core)
 
 (defn foo
   "I don't do a whole lot."
