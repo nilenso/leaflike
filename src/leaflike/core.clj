@@ -1,10 +1,15 @@
 (ns leaflike.core
-  (require [org.httpkit.server :as httpkit]))
+  (require [org.httpkit.server :as httpkit]
+           [leaflike.migrations :refer [migrate-db rollback-db]]))
 
 (defn foo
   "I don't do a whole lot."
   [x]
   (println x "Hello, World!"))
+
+(defn setup []
+  (migrate-db)
+  (reset! server (httpkit/run-server #'app {:port 8080})))
 
 (defn app [req]
   {:status  200
@@ -21,4 +26,4 @@
     (reset! server nil)))
 
 (defn -main [& args]
-  (reset! server (httpkit/run-server #'app {:port 8080})))
+  (setup))
