@@ -1,5 +1,5 @@
 (ns leaflike.core
-  (require [org.httpkit.server :as httpkit]
+  (require [leaflike.server :refer [start-server stop-server]]
            [leaflike.migrations :refer [migrate-db rollback-db]]))
 
 (defn foo
@@ -9,21 +9,13 @@
 
 (defn setup []
   (migrate-db)
-  (reset! server (httpkit/run-server #'app {:port 8080})))
+  (start-server))
 
-(defn app [req]
-  {:status  200
-   :headers {"Content-Type" "application/json"}
-   :body    "Welcome to Leaflike"})
-
-(defonce server (atom nil))
-
-(defn stop-server []
-  (when-not (nil? @server)
-    ;; graceful shutdown: wait 100ms for existing requests to be finished
-    ;; :timeout is optional, when no timeout, stop immediately
-    (@server :timeout 100)
-    (reset! server nil)))
+(defn teardown []
+  (rollback-db)
+  (stop-server))
 
 (defn -main [& args]
-  (setup))
+  (condp = (first args)
+    "start" (setup)
+    "stop"  (teardown)))
