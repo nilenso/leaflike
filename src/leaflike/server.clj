@@ -1,5 +1,5 @@
-(ns leaklike.server
-  (require [org.httpkit.server as httpkit]))
+(ns leaflike.server
+  (require [org.httpkit.server :as httpkit]))
 
 (defn app [req]
   {:status  200

@@ -15,7 +15,10 @@
   (rollback-db)
   (stop-server))
 
-(defn -main [& args]
+(defn -main
+  [& args]
   (condp = (first args)
-    "start" (setup)
-    "stop"  (teardown)))
+    "stopapp"  (teardown)
+    "migrate"  (migrate-db)
+    "rollback" (rollback-db)
+    (setup)))
