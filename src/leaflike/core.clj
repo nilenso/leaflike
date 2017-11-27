@@ -1,6 +1,6 @@
 (ns leaflike.core
-  (require [leaflike.server :as server]
-           [leaflike.migrations :as migrations]))
+  (:require [leaflike.server :as server]
+            [leaflike.migrations :as migrations]))
 
 (defn foo
   "I don't do a whole lot."
@@ -17,7 +17,7 @@
 
 (defn -main
   [& args]
-  (condp = (first args)
+  (case (first args)
     "migrate"  (migrations/migrate)
     "rollback" (migrations/rollback)
     (setup)))
