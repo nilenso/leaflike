@@ -1,6 +1,6 @@
 (ns leaflike.core
-  (require [leaflike.server :refer [start-server stop-server]]
-           [leaflike.migrations :refer [migrate-db rollback-db]]))
+  (require [leaflike.server :as server]
+           [leaflike.migrations :as migrations]))
 
 (defn foo
   "I don't do a whole lot."
@@ -8,17 +8,16 @@
   (println x "Hello, World!"))
 
 (defn setup []
-  (migrate-db)
-  (start-server))
+  (migrations/migrate)
+  (server/start!))
 
 (defn teardown []
-  (rollback-db)
-  (stop-server))
+  (migrations/rollback)
+  (server/stop!))
 
 (defn -main
   [& args]
   (condp = (first args)
-    "stopapp"  (teardown)
-    "migrate"  (migrate-db)
-    "rollback" (rollback-db)
+    "migrate"  (migrations/migrate)
+    "rollback" (migrations/rollback)
     (setup)))

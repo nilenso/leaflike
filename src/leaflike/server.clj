@@ -8,10 +8,10 @@
 
 (defonce server (atom nil))
 
-(defn start-server []
+(defn start! []
   (reset! server (httpkit/run-server #'app {:port 8080})))
 
-(defn stop-server []
+(defn stop! []
   (when-not (nil? @server)
     ;; graceful shutdown: wait 100ms for existing requests to be finished
     ;; :timeout is optional, when no timeout, stop immediately

@@ -8,16 +8,14 @@
   {:datastore  (jdbc/sql-database (db-spec))
    :migrations (jdbc/load-resources "migrations")})
 
-(defn migrate-db []
+(defn migrate []
   (try
-    (let [out (with-out-str
-                (repl/migrate (migration-config)))])
+    (repl/migrate (migration-config))
     (catch Exception ex
       (println ex))))
 
-(defn rollback-db []
+(defn rollback []
   (try
-    (let [out (with-out-str
-                (repl/rollback (migration-config)))])
+    (repl/rollback (migration-config))
     (catch Exception ex
       (println ex))))
