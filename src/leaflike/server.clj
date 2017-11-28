@@ -1,15 +1,16 @@
 (ns leaflike.server
-  (:require [org.httpkit.server :as httpkit]))
+  (:require [org.httpkit.server :as httpkit]
+            [ring.middleware.json :refer [wrap-json-body]]
+            [leaflike.routes :as routes]))
 
-(defn app [req]
-  {:status  200
-   :headers {"Content-Type" "application/json"}
-   :body    "Welcome to Leaflike"})
+(defn app []
+  (wrap-json-body routes/handler {:keywords? true :bigdecimals? true}))
 
 (defonce server (atom nil))
 
 (defn start! []
-  (reset! server (httpkit/run-server #'app {:port 8080})))
+  (reset! server (httpkit/run-server
+                  (app) {:port 8080})))
 
 (defn stop! []
   (when-not (nil? @server)
