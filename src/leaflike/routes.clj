@@ -2,15 +2,18 @@
   (:require [bidi.ring :as bidi]
             [ring.util.response :as res]))
 
-(defn yay [request]
-  (res/response "Yay!"))
-
-(defn welcome [request]
+(defn welcome [_]
   (res/response "Welcome to leaflike"))
 
-(def urls
-  {{:get "" welcome
-         "yay" yay}})
+(defn yay [_]
+  (res/response "Yay!"))
+
+(defn ping [request]
+  (res/response {:ping (-> request :route-params :ping)}))
+
+(def routes  {""              {:get welcome}
+              "yay"           {:get yay}
+              ["ping/" :ping] {:get ping}})
 
 (def handler
-  (bidi/make-handler ["/" urls]))
+  (bidi/make-handler ["/" routes]))
