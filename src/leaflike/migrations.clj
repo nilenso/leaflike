@@ -1,8 +1,7 @@
 (ns leaflike.migrations
   (:require [ragtime.jdbc :as jdbc]
-            [ragtime.repl :as repl]))
-
-(defn db-spec [] {:connection-uri "jdbc:postgresql://localhost:5432/leaflike"})
+            [ragtime.repl :as repl]
+            [leaflike.db :refer [db-spec]]))
 
 (defn migration-config []
   {:datastore  (jdbc/sql-database (db-spec))
