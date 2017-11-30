@@ -10,6 +10,7 @@
                  [org.postgresql/postgresql "42.1.4"]
                  [org.clojure/java.jdbc "0.7.3"]
                  [bidi "2.1.2"]
-                 [ring/ring-json "0.4.0"]]
+                 [ring/ring-json "0.4.0"]
+                 [commons-validator "1.5.1"]]
   :main ^:skip-aot leaflike.core
   :target-path "target/%s")
