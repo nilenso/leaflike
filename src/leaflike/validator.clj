@@ -15,6 +15,6 @@
   (let [validator (UrlValidator.) url (:url body)]
     (and (some? url) (.isValid validator url))))
 
-(defn is-valid?
+(defn is-valid-bookmark?
   [body]
   (and (is-id? body) (is-title? body) (is-url? body)))

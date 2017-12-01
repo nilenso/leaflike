@@ -3,19 +3,20 @@
             [ring.util.response :as res]
             [leaflike.db :as db]))
 
-(defn response
-  [res]
-  (res/response res))
+(defn ring-response-middleware [handler]
+  (fn [request]
+    (let [response (handler request)]
+      (res/response response))))
 
 (defn welcome [_]
-  (response {:message "Welcome to Leaflike"}))
+  {:message "Welcome to Leaflike"})
 
 (defn ping [request]
-  (response {:ping (-> request :route-params :ping)}))
+  {:ping (-> request :route-params :ping)})
 
 (defn create-bookmark
   [request]
-  (response (db/create-bookmark request)))
+  (db/create-bookmark request))
 
 (def routes  {""                 {:get welcome}
               ["ping/" :ping]    {:get ping}

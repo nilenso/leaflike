@@ -9,7 +9,8 @@
 (def app
    (-> routes/handler
        (wrap-json-body {:keywords? true :bigdecimals? true})
-       (wrap-json-response)))
+       (wrap-json-response)
+       (routes/ring-response-middleware)))
 
 (defonce server (atom nil))
 
