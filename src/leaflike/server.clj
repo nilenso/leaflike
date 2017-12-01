@@ -1,10 +1,7 @@
 (ns leaflike.server
-     (:require [org.httpkit.server :as httpkit]
-               [ring.middleware.json :refer [wrap-json-body wrap-json-response]]
-               [leaflike.routes :as routes]))
-
-#_(defn app []
-  (wrap-json-body routes/handler {:keywords? true :bigdecimals? true}))
+   (:require [org.httpkit.server :as httpkit]
+             [ring.middleware.json :refer [wrap-json-body wrap-json-response]]
+             [leaflike.routes :as routes]))
 
 (def app
    (-> routes/handler
