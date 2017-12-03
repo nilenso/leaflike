@@ -1,19 +1,26 @@
 (ns leaflike.routes
   (:require [bidi.ring :as bidi]
-            [ring.util.response :as res]))
+            [ring.util.response :as res]
+            [leaflike.db :as db]))
+
+(defn ring-response-middleware [handler]
+  (fn [request]
+    (let [response (handler request)]
+      (res/response response))))
 
 (defn welcome [_]
-  (res/response "Welcome to leaflike"))
-
-(defn yay [_]
-  (res/response "Yay!"))
+  {:message "Welcome to Leaflike"})
 
 (defn ping [request]
-  (res/response {:ping (-> request :route-params :ping)}))
+  {:ping (-> request :route-params :ping)})
 
-(def routes  {""              {:get welcome}
-              "yay"           {:get yay}
-              ["ping/" :ping] {:get ping}})
+(defn create-bookmark
+  [request]
+  (db/create-bookmark request))
+
+(def routes  {""                 {:get welcome}
+              ["ping/" :ping]    {:get ping}
+              "create-bookmark"  {:post create-bookmark}})
 
 (def handler
   (bidi/make-handler ["/" routes]))

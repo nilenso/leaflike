@@ -1,0 +1,2 @@
+{:up ["ALTER TABLE bookmarks ADD COLUMN url VARCHAR(512)"]
+ :down ["ALTER TABLE bookmarks DROP COLUMN url"]}

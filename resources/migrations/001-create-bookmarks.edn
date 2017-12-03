@@ -1,2 +1,2 @@
-{:up ["CREATE TABLE IF NOT EXISTS bookmarks (id int, title text, tags text, created_at timestamp);"]
+{:up ["CREATE TABLE bookmarks (id integer, title TEXT, tags TEXT, created_at timestamp);"]
  :down ["DROP TABLE IF EXISTS bookmarks"]}
