@@ -26,3 +26,13 @@
       (jdbc/insert! (db-spec) :bookmarks bkm)
       ; else
       {:error "Invalid Data"})))
+
+(defn list-all
+  []
+  (jdbc/query (db-spec) ["select * from bookmarks"]))
+
+(defn list-bookmark
+  [params]
+  (if (empty? params)
+    (list-all)
+    "No data"))
