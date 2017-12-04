@@ -17,7 +17,8 @@
 
 (defn list-bookmark
   [request]
-  (db/list-bookmark (clojure.walk/keywordize-keys (-> request :params))))
+  #_(def *req request)
+  (db/list-bookmark request))
 
 (def routes  {""                        {:get welcome}
               ["ping/" :ping]           {:get ping}
