@@ -43,5 +43,5 @@
   (let [params (clojure.walk/keywordize-keys (-> request :query-params))]
     (if (empty? params)
       (list-all)
-      (if (= (is-valid-param? params))
+      (if (= (is-valid-param? params) true)
         (list-by-id)))))
