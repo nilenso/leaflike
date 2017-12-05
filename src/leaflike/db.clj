@@ -26,3 +26,26 @@
       (jdbc/insert! (db-spec) :bookmarks bkm)
       ; else
       {:error "Invalid Data"})))
+
+(defn list-all
+  []
+  (jdbc/query (db-spec) ["select * from bookmarks"]))
+
+
+(defn list-by-id
+  [params]
+  (jdbc/query (db-spec) ["select * from bookmarks
+                          where id = ?"
+                         (Integer/parseInt (:id params))]))
+
+(defn list-bookmark
+  [request]
+  (let [params (clojure.walk/keywordize-keys (-> request :query-params))]
+    (if (empty? params)
+      (list-all)
+      (list-by-id params))))
+
+(defn delete-bookmark
+  [request]
+  (let [id (-> request :route-params :id)]
+    (jdbc/delete! (db-spec) :bookmarks ["id = ?" (Integer/parseInt id)])))
