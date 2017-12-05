@@ -44,3 +44,8 @@
     (if (empty? params)
       (list-all)
       (list-by-id params))))
+
+(defn delete-bookmark
+  [request]
+  (let [id (-> request :route-params :id)]
+    (jdbc/delete! (db-spec) :bookmarks ["id = ?" (Integer/parseInt id)])))

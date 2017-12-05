@@ -20,10 +20,15 @@
   #_(def *req request)
   (db/list-bookmark request))
 
+(defn delete-bookmark
+  [request]
+  (db/delete-bookmark request))
+
 (def routes  {""                        {:get welcome}
               ["ping/" :ping]           {:get ping}
               "create-bookmark"         {:post create-bookmark}
-              "list-bookmark"           {:get list-bookmark}})
+              "list-bookmark"           {:get list-bookmark}
+              ["delete-bookmark/" :id]  {:post delete-bookmark}})
 
 (def handler
   (bidi/make-handler ["/" routes]))
