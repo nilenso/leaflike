@@ -37,15 +37,15 @@
 
 (defn list-by-params
   [params]
-  (jdbc/query (db-spec) (-> (select :*)
-                            (from :bookmarks)
-                            (merge-where (let [id (Integer/parseInt (:id params))]
-                                           (if (> id 0)
-                                               [:= :id id])))
-                            (merge-where (let [title (:title params)]
-                                           (if-not (nil? title)
-                                                   [:= :title title])))
-                            sql/format)))
+  (let [id (Integer/parseInt (:id params))
+        title (:title params)]
+    (jdbc/query (db-spec) (-> (select :*)
+                              (from :boomkarks)
+                              (merge-where (when (> id 0)
+                                             [:= :id id]))
+                              (merge-where (when-not (nil? title)
+                                             [:= :title title]))
+                              sql/format))))
 
 (defn list-bookmark
   [request]

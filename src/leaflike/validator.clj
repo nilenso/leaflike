@@ -3,9 +3,9 @@
 
 (defn is-id?
   [body]
-  (let [id (Integer/parseInt (:id body))]
+  (let [id (:id body)]
     (and (some? id)
-         (integer? id))))
+         (number? (bigdec id)))))
 
 (defn is-title?
   [body]
