@@ -1,6 +1,8 @@
 (ns leaflike.db
   (:require [clojure.java.jdbc :as jdbc]
-            [leaflike.validator :refer [is-valid-bookmark?]])
+            [leaflike.validator :refer [is-valid-bookmark? is-valid-params?]]
+            [honeysql.core :as sql]
+            [honeysql.helpers :as helpers])
   (:import [java.util Date TimeZone]
            [java.text SimpleDateFormat]
            [java.sql Timestamp]))
@@ -12,7 +14,9 @@
     (.format (SimpleDateFormat. "yyyy-mm-dd hh:mm:ss") date)
     (Timestamp. (.getTime date))))
 
-(defn db-spec [] {:connection-uri "jdbc:postgresql://localhost:5432/leaflike"})
+(defn db-spec
+  []
+  {:connection-uri "jdbc:postgresql://localhost:5432/leaflike"})
 
 (defn add-created-at
   [body]
@@ -23,31 +27,44 @@
   (let [body (-> request :body)
         bkm (add-created-at body)]
     (if (is-valid-bookmark? body)
-      (jdbc/insert! (db-spec) :bookmarks bkm)
+      (jdbc/insert! (db-spec) (-> (helpers/insert-into :bookmarks)
+                                  (helpers/values [body])
+                                  sql/format))
       ; else
       {:error "Invalid Data"})))
 
 (defn list-all
   []
-  (jdbc/query (db-spec) ["select * from bookmarks"]))
+  (jdbc/query (db-spec) (-> (helpers/select :*)
+                            (helpers/from :bookmarks)
+                            sql/format)))
 
-
-(defn list-by-id
+(defn list-by-params
   [params]
-  (jdbc/query (db-spec) ["select * from bookmarks
-                          where id = ?"
-                         (Integer/parseInt (:id params))]))
+  (let [id (Integer/parseInt (:id params))
+        title (:title params)]
+    (jdbc/query (db-spec) (-> (helpers/select :*)
+                              (helpers/from :bookmarks)
+                              (helpers/merge-where (when (> id 0)
+                                             [:= :id id]))
+                              (helpers/merge-where (when-not (nil? title)
+                                                     ["like" :title (str \% title \%)]))
+                              sql/format))))
 
 (defn list-bookmark
   [request]
   (let [params (clojure.walk/keywordize-keys (-> request :query-params))]
     (if (empty? params)
       (list-all)
-      (when (is-valid-param? params)
-        (list-by-id)))))
+      (if (is-valid-params? params)
+        (list-by-params params)
+        {:error "Invalid Params"}))))
 
 (defn delete-bookmark
   [request]
   (let [params (-> request :route-params)]
     (if  (is-valid-params? params)
-      (jdbc/delete! (db-spec) :bookmarks ["id = ?" (Integer/parseInt id)]))))
+      (jdbc/delete! (db-spec) (-> (helpers/delete-from :bookmarks)
+                                  (where [:= :id (Integer/parseInt (:id params))])
+                                  sql/format))
+      {:error "Invalid params"})))
