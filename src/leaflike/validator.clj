@@ -24,6 +24,8 @@
        (is-title? body)
        (is-url? body)))
 
-(defn is-valid-param?
+(defn is-valid-params?
   [params]
-  (is-id? params))
+  (or
+   (is-id? params)
+   (is-title? params)))
