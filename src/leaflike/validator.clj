@@ -23,3 +23,7 @@
   (and (is-id? body)
        (is-title? body)
        (is-url? body)))
+
+(defn is-valid-param?
+  [params]
+  (is-id? params))
