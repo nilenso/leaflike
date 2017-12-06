@@ -3,7 +3,7 @@
 
 (defn is-id?
   [body]
-  (let [id (:id body)]
+  (let [id (Integer/parseInt (:id body))]
     (and (some? id)
          (integer? id))))
 

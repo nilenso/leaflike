@@ -1,7 +1,8 @@
 (ns leaflike.db
   (:require [clojure.java.jdbc :as jdbc]
-            [leaflike.validator :refer [is-valid-bookmark?]]
-            [honeysql.core :as sql])
+            [leaflike.validator :refer [is-valid-bookmark? is-valid-params?]]
+            [honeysql.core :as sql]
+            [honeysql.helpers :refer :all])
   (:import [java.util Date TimeZone]
            [java.text SimpleDateFormat]
            [java.sql Timestamp]))
@@ -31,16 +32,19 @@
 (defn list-all
   []
   (jdbc/query (db-spec) (-> (select :*)
-                            (from [:bookmarks b])
-                            (order-by [:b.created_at :desc])
+                            (from :bookmarks)
                             sql/format)))
 
 (defn list-by-params
   [params]
   (jdbc/query (db-spec) (-> (select :*)
                             (from :bookmarks)
-                            (where [:= :id (Integer/parseInt (:id params))]
-                                   [:= :title (str \% (:title params) \%)])
+                            (merge-where (let [id (Integer/parseInt (:id params))]
+                                           (if (> id 0)
+                                               [:= :id id])))
+                            (merge-where (let [title (:title params)]
+                                           (if-not (nil? title)
+                                                   [:= :title title])))
                             sql/format)))
 
 (defn list-bookmark
@@ -49,11 +53,11 @@
     (if (empty? params)
       (list-all)
       (if (is-valid-params? params)
-        (list-by-params)
+        (list-by-params params)
         {:error "Invalid Params"}))))
 
 (defn delete-bookmark
   [request]
   (let [params (-> request :route-params)]
     (if  (is-valid-params? params)
-      (jdbc/delete! (db-spec) :bookmarks ["id = ?" (Integer/parseInt id)]))))
+      (jdbc/delete! (db-spec) :bookmarks ["id = ?" (Integer/parseInt (:id params))]))))
