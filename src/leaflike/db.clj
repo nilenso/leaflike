@@ -46,7 +46,7 @@
                               (helpers/merge-where (when (> id 0)
                                              [:= :id id]))
                               (helpers/merge-where (when-not (nil? title)
-                                             [:= :title title]))
+                                                     ["like" :title (str \% title \%)]))
                               sql/format))))
 
 (defn list-bookmark
