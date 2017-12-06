@@ -14,7 +14,9 @@
     (.format (SimpleDateFormat. "yyyy-mm-dd hh:mm:ss") date)
     (Timestamp. (.getTime date))))
 
-(defn db-spec [] {:connection-uri "jdbc:postgresql://localhost:5432/leaflike"})
+(defn db-spec
+  []
+  {:connection-uri "jdbc:postgresql://localhost:5432/leaflike"})
 
 (defn add-created-at
   [body]
