@@ -27,7 +27,9 @@
   (let [body (-> request :body)
         bkm (add-created-at body)]
     (if (is-valid-bookmark? body)
-      (jdbc/insert! (db-spec) :bookmarks bkm)
+      (jdbc/insert! (db-spec) (-> (helpers/insert-into :bookmarks)
+                                  (helpers/values [body])
+                                  sql/format))
       ; else
       {:error "Invalid Data"})))
 
@@ -62,4 +64,6 @@
   [request]
   (let [params (-> request :route-params)]
     (if  (is-valid-params? params)
-      (jdbc/delete! (db-spec) :bookmarks ["id = ?" (Integer/parseInt (:id params))]))))
+      (jdbc/delete! (db-spec) (-> (helpers/delete-from :bookmarks)
+                                  (where [:= :id (Integer/parseInt (:id params))])
+                                  sql/format)))))
