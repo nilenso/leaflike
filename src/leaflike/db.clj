@@ -66,4 +66,5 @@
     (if  (is-valid-params? params)
       (jdbc/delete! (db-spec) (-> (helpers/delete-from :bookmarks)
                                   (where [:= :id (Integer/parseInt (:id params))])
-                                  sql/format)))))
+                                  sql/format))
+      {:error "Invalid params"})))
