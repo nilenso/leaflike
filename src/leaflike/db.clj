@@ -22,7 +22,7 @@
   [request]
   (let [body (-> request :body)
         bkm (add-created-at body)]
-    (if (= (is-valid-bookmark? body) true)
+    (if (is-valid-bookmark? body)
       (jdbc/insert! (db-spec) :bookmarks bkm)
       ; else
       {:error "Invalid Data"})))
@@ -43,11 +43,11 @@
   (let [params (clojure.walk/keywordize-keys (-> request :query-params))]
     (if (empty? params)
       (list-all)
-      (if (= (is-valid-param? params) true)
+      (when (is-valid-param? params)
         (list-by-id)))))
 
 (defn delete-bookmark
   [request]
   (let [params (-> request :route-params)]
-    (if (= (is-valid-params params) true))
-    (jdbc/delete! (db-spec) :bookmarks ["id = ?" (Integer/parseInt id)])))
+    (if  (is-valid-params? params)
+      (jdbc/delete! (db-spec) :bookmarks ["id = ?" (Integer/parseInt id)]))))

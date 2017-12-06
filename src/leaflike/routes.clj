@@ -17,7 +17,6 @@
 
 (defn list-bookmark
   [request]
-  #_(def *req request)
   (db/list-bookmark request))
 
 (defn delete-bookmark
