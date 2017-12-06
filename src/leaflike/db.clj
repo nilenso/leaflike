@@ -2,7 +2,7 @@
   (:require [clojure.java.jdbc :as jdbc]
             [leaflike.validator :refer [is-valid-bookmark? is-valid-params?]]
             [honeysql.core :as sql]
-            [honeysql.helpers :refer :all])
+            [honeysql.helpers :as helpers])
   (:import [java.util Date TimeZone]
            [java.text SimpleDateFormat]
            [java.sql Timestamp]))
@@ -31,19 +31,19 @@
 
 (defn list-all
   []
-  (jdbc/query (db-spec) (-> (select :*)
-                            (from :bookmarks)
+  (jdbc/query (db-spec) (-> (helpers/select :*)
+                            (helpers/from :bookmarks)
                             sql/format)))
 
 (defn list-by-params
   [params]
   (let [id (Integer/parseInt (:id params))
         title (:title params)]
-    (jdbc/query (db-spec) (-> (select :*)
-                              (from :boomkarks)
-                              (merge-where (when (> id 0)
+    (jdbc/query (db-spec) (-> (helpers/select :*)
+                              (helpers/from :bookmarks)
+                              (helpers/merge-where (when (> id 0)
                                              [:= :id id]))
-                              (merge-where (when-not (nil? title)
+                              (helpers/merge-where (when-not (nil? title)
                                              [:= :title title]))
                               sql/format))))
 
