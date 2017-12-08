@@ -1,32 +1,19 @@
 (ns leaflike.bookmarks.db
   (:require [clojure.java.jdbc :as jdbc]
             [leaflike.bookmarks.validator :refer [is-valid-bookmark? is-valid-params?]]
+            [leaflike.bookmarks.utils :as utils]
             [leaflike.config :refer [db-spec]]
             [honeysql.core :as sql]
-            [honeysql.helpers :as helpers])
-  (:import [java.util Date TimeZone]
-           [java.text SimpleDateFormat]
-           [java.sql Timestamp]))
-
-(defn get-timestamp
-  []
-  (let [date (Date.)]
-    (TimeZone/setDefault (TimeZone/getTimeZone "UTC"))
-    (.format (SimpleDateFormat. "yyyy-mm-dd hh:mm:ss") date)
-    (Timestamp. (.getTime date))))
-
-(defn add-created-at
-  [body]
-  (assoc body :created_at (get-timestamp)))
+            [honeysql.helpers :as helpers]))
 
 (defn create-bookmark
   [request]
-  (let [body (-> request :body)
-        bkm (add-created-at body)]
+  (let [body (-> request :body)]
+    (utils/add-created-at body)
     (if (is-valid-bookmark? body)
-      (jdbc/insert! (db-spec) (-> (helpers/insert-into :bookmarks)
-                                  (helpers/values [body])
-                                  sql/format))
+      (jdbc/execute! (db-spec) (-> (helpers/insert-into :bookmarks)
+                                   (helpers/values [body])
+                                    sql/format))
       ; else
       {:error "Invalid Data"})))
 

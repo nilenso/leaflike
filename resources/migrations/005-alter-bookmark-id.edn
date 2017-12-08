@@ -1,0 +1,4 @@
+{:up   ["ALTER table bookmarks DROP COLUMN id;
+         ALTER table bookmarks ADD COLUMN id serial primary key"]
+ :down ["ALTER table bookmarks DROP COLUMN id
+         ALTER table bookmarks ADD COLUMN id integer"]}

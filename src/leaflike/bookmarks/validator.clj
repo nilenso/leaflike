@@ -20,7 +20,7 @@
 
 (defn is-valid-bookmark?
   [body]
-  (and (is-id? body)
+  (and ((complement is-id?) body)
        (is-title? body)
        (is-url? body)))
 

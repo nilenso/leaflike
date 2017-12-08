@@ -1,5 +1,2 @@
 {:up   ["ALTER table bookmarks ADD COLUMN member_id integer REFERENCES members"]
  :down ["ALTER table bookmarks DROP COLUMN member_id"]}
-
-{:up ["ALTER TABLE bookmarks ADD COLUMN url VARCHAR(512)"]
- :down ["ALTER TABLE bookmarks DROP COLUMN url"]}
