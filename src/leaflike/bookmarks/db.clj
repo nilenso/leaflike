@@ -1,6 +1,7 @@
-(ns leaflike.db
+(ns leaflike.bookmarks.db
   (:require [clojure.java.jdbc :as jdbc]
-            [leaflike.validator :refer [is-valid-bookmark? is-valid-params?]]
+            [leaflike.bookmarks.validator :refer [is-valid-bookmark? is-valid-params?]]
+            [leaflike.config :refer [db-spec]]
             [honeysql.core :as sql]
             [honeysql.helpers :as helpers])
   (:import [java.util Date TimeZone]
@@ -13,10 +14,6 @@
     (TimeZone/setDefault (TimeZone/getTimeZone "UTC"))
     (.format (SimpleDateFormat. "yyyy-mm-dd hh:mm:ss") date)
     (Timestamp. (.getTime date))))
-
-(defn db-spec
-  []
-  {:connection-uri "jdbc:postgresql://localhost:5432/leaflike"})
 
 (defn add-created-at
   [body]

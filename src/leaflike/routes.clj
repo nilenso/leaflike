@@ -1,7 +1,6 @@
 (ns leaflike.routes
   (:require [bidi.ring :as bidi]
-            [leaflike.db :as db]))
-
+            [leaflike.bookmarks.routes :refer [bookmarks-routes]]))
 
 (defn welcome
   [_]
@@ -11,23 +10,11 @@
   [request]
   {:ping (-> request :route-params :ping)})
 
-(defn create-bookmark
-  [request]
-  (db/create-bookmark request))
+(def home-routes  {""               {:get welcome}
+                   ["ping/" :ping]  {:get ping}})
 
-(defn list-bookmark
-  [request]
-  (db/list-bookmark request))
-
-(defn delete-bookmark
-  [request]
-  (db/delete-bookmark request))
-
-(def routes  {""                        {:get welcome}
-              ["ping/" :ping]           {:get ping}
-              "create-bookmark"         {:post create-bookmark}
-              "list-bookmark"           {:get list-bookmark}
-              ["delete-bookmark/" :id]  {:post delete-bookmark}})
+(def routes (merge home-routes
+                   bookmarks-routes))
 
 (def handler
   (bidi/make-handler ["/" routes]))

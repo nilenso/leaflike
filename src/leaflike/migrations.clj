@@ -1,7 +1,7 @@
 (ns leaflike.migrations
   (:require [ragtime.jdbc :as jdbc]
             [ragtime.repl :as repl]
-            [leaflike.db :refer [db-spec]]))
+            [leaflike.config :refer [db-spec]]))
 
 (defn migration-config []
   {:datastore  (jdbc/sql-database (db-spec))

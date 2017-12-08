@@ -1,4 +1,4 @@
-(ns leaflike.validator
+(ns leaflike.bookmarks.validator
   (:import org.apache.commons.validator.UrlValidator))
 
 (defn is-id?
