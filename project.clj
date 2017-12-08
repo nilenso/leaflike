@@ -12,6 +12,7 @@
                  [bidi "2.1.2"]
                  [ring/ring-json "0.4.0"]
                  [commons-validator "1.5.1"]
-                 [honeysql "0.9.1"]]
+                 [honeysql "0.9.1"]
+                 [buddy "2.0.0"]]
   :main ^:skip-aot leaflike.core
   :target-path "target/%s")

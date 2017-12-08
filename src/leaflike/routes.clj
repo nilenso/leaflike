@@ -1,6 +1,7 @@
 (ns leaflike.routes
   (:require [bidi.ring :as bidi]
-            [leaflike.bookmarks.routes :refer [bookmarks-routes]]))
+            [leaflike.bookmarks.routes :refer [bookmarks-routes]]
+            [leaflike.user.routes :refer [user-routes]]))
 
 (defn welcome
   [_]
@@ -14,7 +15,8 @@
                    ["ping/" :ping]  {:get ping}})
 
 (def routes (merge home-routes
-                   bookmarks-routes))
+                   bookmarks-routes
+                   user-routes))
 
 (def handler
   (bidi/make-handler ["/" routes]))

@@ -1,7 +1,7 @@
 (ns leaflike.bookmarks.db
   (:require [clojure.java.jdbc :as jdbc]
             [leaflike.bookmarks.validator :refer [is-valid-bookmark? is-valid-params?]]
-            [leaflike.bookmarks.utils :as utils]
+            [leaflike.utils :as utils]
             [leaflike.config :refer [db-spec]]
             [honeysql.core :as sql]
             [honeysql.helpers :as helpers]))
