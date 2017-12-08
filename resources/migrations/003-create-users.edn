@@ -1,0 +1,2 @@
+{:up   ["CREATE TABLE members (id serial primary key, username text, token text, created_at timestamp);"]
+ :down ["DROP TABLE members;"]}

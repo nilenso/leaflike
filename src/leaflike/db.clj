@@ -65,6 +65,6 @@
   (let [params (-> request :route-params)]
     (if  (is-valid-params? params)
       (jdbc/delete! (db-spec) (-> (helpers/delete-from :bookmarks)
-                                  (where [:= :id (Integer/parseInt (:id params))])
+                                  (helpers/merge-where [:= :id (Integer/parseInt (:id params))])
                                   sql/format))
       {:error "Invalid params"})))
