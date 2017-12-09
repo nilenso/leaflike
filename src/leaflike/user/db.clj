@@ -23,8 +23,7 @@
 
     (cond
       (true? valid) (create-user body)
-      :else         valid)))
-
+      :else         {:error valid})))
 
 (defn login
   [request])
