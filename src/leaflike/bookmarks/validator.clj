@@ -1,31 +1,31 @@
 (ns leaflike.bookmarks.validator
   (:import org.apache.commons.validator.UrlValidator))
 
-(defn is-id?
+(defn id?
   [body]
   (let [id (:id body)]
     (and (some? id)
          (number? (bigdec id)))))
 
-(defn is-title?
+(defn title?
   [body]
   (contains? body :title))
 
-(defn is-url?
+(defn url?
   [body]
   (let [validator (UrlValidator.)
         url (:url body)]
     (and (some? url)
          (.isValid validator url))))
 
-(defn is-valid-bookmark?
+(defn valid-bookmark?
   [body]
-  (and ((complement is-id?) body)
-       (is-title? body)
-       (is-url? body)))
+  (and ((complement id?) body)
+       (title? body)
+       (url? body)))
 
-(defn is-valid-params?
+(defn valid-params?
   [params]
   (or
-   (is-id? params)
-   (is-title? params)))
+   (id? params)
+   (title? params)))

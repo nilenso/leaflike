@@ -5,7 +5,7 @@
             [leaflike.utils :refer [get-timestamp]]
             [honeysql.core :as sql]
             [honeysql.helpers :as helpers]
-            [leaflike.user.validator :refer [is-valid-registration?]]))
+            [leaflike.user.validator :refer [valid-registration?]]))
 
 (defn- create-user
   [body]
@@ -19,7 +19,7 @@
 (defn signup
   [request]
   (let [body (-> request :body)
-        valid (is-valid-registration? body)]
+        valid (valid-registration? body)]
 
     (cond
       (true? valid) (create-user body)

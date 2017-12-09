@@ -1,6 +1,6 @@
 (ns leaflike.bookmarks.db
   (:require [clojure.java.jdbc :as jdbc]
-            [leaflike.bookmarks.validator :refer [is-valid-bookmark? is-valid-params?]]
+            [leaflike.bookmarks.validator :refer [valid-bookmark? valid-params?]]
             [leaflike.utils :as utils]
             [leaflike.config :refer [db-spec]]
             [honeysql.core :as sql]
@@ -10,10 +10,10 @@
   [request]
   (let [body (-> request :body)]
     (utils/add-created-at body)
-    (if (is-valid-bookmark? body)
+    (if (valid-bookmark? body)
       (jdbc/execute! (db-spec) (-> (helpers/insert-into :bookmarks)
                                    (helpers/values [body])
-                                    sql/format))
+                                   sql/format))
       ; else
       {:error "Invalid Data"})))
 
@@ -40,14 +40,14 @@
   (let [params (clojure.walk/keywordize-keys (-> request :query-params))]
     (if (empty? params)
       (list-all)
-      (if (is-valid-params? params)
+      (if (valid-params? params)
         (list-by-params params)
         {:error "Invalid Params"}))))
 
 (defn delete-bookmark
   [request]
   (let [params (-> request :route-params)]
-    (if  (is-valid-params? params)
+    (if  (valid-params? params)
       (jdbc/delete! (db-spec) (-> (helpers/delete-from :bookmarks)
                                   (helpers/merge-where [:= :id (Integer/parseInt (:id params))])
                                   sql/format))
