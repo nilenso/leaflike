@@ -1,19 +1,19 @@
 (ns leaflike.bookmarks.routes
-  (:require [leaflike.bookmarks.db :as bmdb]))
+  (:require [leaflike.bookmarks.core :as bm-core]))
 
-(defn create-bookmark
+(defn create
   [request]
-  (bmdb/create-bookmark request))
+  (bm-core/create request))
 
 (defn list-bookmark
   [request]
-  (bmdb/list-bookmark request))
+  (bm-core/list-bookmark request))
 
-(defn delete-bookmark
+(defn delete
   [request]
-  (bmdb/delete-bookmark request))
+  (bm-core/delete request))
 
 (def bookmarks-routes
-  {"create-bookmark"         {:post create-bookmark}
-   "list-bookmark"           {:get list-bookmark}
-   ["delete-bookmark/" :id]  {:post delete-bookmark}})
+  {"create-bookmark"         {:post create}
+   "list-bookmark"           {:get list}
+   ["delete-bookmark/" :id]  {:post delete}})

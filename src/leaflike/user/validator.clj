@@ -1,11 +1,8 @@
 (ns leaflike.user.validator
-  (:require [clojure.java.jdbc :as jdbc]
-            [honeysql.core :as sql]
-            [honeysql.helpers :as helpers]
-            [leaflike.config :refer [db-spec]]
-            [leaflike.utils :refer [email-pattern
+  (:require [leaflike.utils :refer [email-pattern
                                     alpha-num-pattern
-                                    required]]))
+                                    required]]
+            [leaflike.user.db :refer [get-member-if-exists]]))
 
 (defn- email?
   [value]
@@ -21,14 +18,6 @@
   [value]
   (required value))
 
-(defn- count-member-if-exists
-  [email username]
-  (jdbc/query (db-spec) (-> (helpers/select :*)
-                            (helpers/from :members)
-                            (helpers/where [:or [:= :username username]
-                                                [:= :email email]])
-                            sql/format)))
-
 (defn valid-registration?
   [body]
   (let [email (:email body)
@@ -38,5 +27,16 @@
       (not email?) "Email is invalid"
       (not username?) "Username is invalid"
       (not password?) "Password is invalid"
-      (not (count-member-if-exists email username)) "User already exists"
+      (not (get-member-if-exists email username)) "User already exists"
       :else true)))
+
+(defn valid-user?
+  [body]
+  (let [email (:email body)
+        username (:username body)
+        member (get-member-if-exists email username)]
+
+    (cond
+      (not email?) "Email is invalid"
+      (not username?) "Username is invalid"
+      (not (nil? member)) true)))
