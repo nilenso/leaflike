@@ -11,21 +11,11 @@
 
 (defn ping
   [request]
-  (prn request)
   (res/response {:ping (-> request :route-params :ping)}))
 
-;; Login page controller
-;; It returns a login page on get requests
-(defn login
-  [request]
-  (res/content-type (res/resource-response "login.html" {:root "public"}) "text/html"))
+(def home-routes
+  {""               (with-home-middlewares {:get welcome})
+   ["ping/" :ping]  (with-home-middlewares {:get ping})})
 
-(def routes  {""               (with-home-middlewares {:get welcome})
-              ["ping/" :ping]  (with-home-middlewares {:get ping})
-              "login"          (with-home-middlewares {:get login})})
-
-(def home-handler
-  (bidi/make-handler ["/" routes]))
-
-(def bookmark-handler
-  (bidi/make-handler ["/" bookmarks-routes]))
+(def handler
+  (bidi/make-handler ["/" (merge home-routes user-routes)]))

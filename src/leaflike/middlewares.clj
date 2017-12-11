@@ -13,8 +13,14 @@
 
 (def home-middleware
   (comp params/wrap-params
+        #(json/wrap-json-body % {:keywords? true :bigdecimals? true})
         json/wrap-json-response))
 
 (defn with-home-middlewares
   [routes-map]
   (fmap home-middleware routes-map))
+
+(defn with-auth-middleware
+  [route-map]
+  (comp (with-home-middleware route-map)
+        wrap-basic-auth))

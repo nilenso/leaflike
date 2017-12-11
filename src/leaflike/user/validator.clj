@@ -21,13 +21,14 @@
 (defn valid-registration?
   [body]
   (let [email (:email body)
-        username (:username body)]
+        username (:username body)
+        member (get-member-if-exists email username)]
 
     (cond
       (not email?) "Email is invalid"
       (not username?) "Username is invalid"
       (not password?) "Password is invalid"
-      (not (get-member-if-exists email username)) "User already exists"
+      (not (empty? member)) "User already exists"
       :else true)))
 
 (defn valid-user?

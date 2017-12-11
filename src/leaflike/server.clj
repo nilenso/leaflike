@@ -3,13 +3,7 @@
             [leaflike.routes :as routes]))
 
 (def app
-  (-> routes/home-handler))
-
-#_(routes/bookmark-handler
-(params/wrap-params)
-(json/wrap-json-body {:keywords? true :bigdecimals? true})
-(middlewares/wrap-ring-response)
-(json/wrap-json-response))
+  (-> routes/handler))
 
 (defonce server (atom nil))
 

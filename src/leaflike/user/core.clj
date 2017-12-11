@@ -5,9 +5,8 @@
 
 (defn signup
   [request]
-  (let [body (-> request :body)
+  (let [body (clojure.walk/keywordize-keys (-> request :params))
         valid (validator/valid-registration? body)]
-
     (cond
-      (true? valid) (user-db/create-user body)
+      (true? valid) {:count (user-db/create-user body)}
       :else         {:error valid})))
