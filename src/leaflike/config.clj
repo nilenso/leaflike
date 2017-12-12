@@ -7,3 +7,7 @@
 (defn db-spec
   []
   (:db-spec config))
+
+(defn server-spec
+  []
+  (:server-spec config))

@@ -1,15 +1,23 @@
 (ns leaflike.server
-  (:require [org.httpkit.server :as httpkit]
-            [leaflike.routes :as routes]))
+  (:require [bidi.ring :as bidi]
+            [org.httpkit.server :as httpkit]
+            [leaflike.config :refer [server-spec]]
+            [leaflike.routes :refer [home-routes]]
+            [leaflike.bookmarks.routes :refer [bookmarks-routes]]
+            [leaflike.user.routes :refer [user-routes]]))
+
+(def handler
+  (bidi/make-handler ["/" (merge home-routes
+                                 user-routes)]))
 
 (def app
-  (-> routes/handler))
+  (-> handler))
 
 (defonce server (atom nil))
 
 (defn start! []
   (reset! server (httpkit/run-server
-                  app {:port 8000})))
+                  app (server-spec))))
 
 (defn stop! []
   (when-not (nil? @server)

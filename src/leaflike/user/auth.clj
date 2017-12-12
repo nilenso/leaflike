@@ -1,11 +1,11 @@
 (ns leaflike.user.auth
   (:require [buddy.hashers :as hashers]
-            [buddy.auth.backends.httpbasic :refer [http-basic-backend]]
-            [leaflike.user.db :refer [get-member-auth-data]]))
+            [buddy.auth.backends.session :refer [session-backend]]
+            [leaflike.user.db :refer [get-member-auth-data]]
+            [buddy.auth :refer [authenticated?]]
+            [ring.util.response :as res]))
 
 (defn- user-auth-data
-  "Identifier could be username or email.
-   They are stored as CITEXT in postgres."
   [identifier]
   (let [auth-data (get-member-auth-data identifier)]
     (when-not (nil? auth-data)
@@ -16,21 +16,39 @@
                       (dissoc   :password))
        :password (:password auth-data)})))
 
-(defn- basic-auth
-  "Determines that if the username and password
-   required to authorise a user are valid.
-   Returns a value which is added to the request
-   with keyword :identity. Ref : https://goo.gl/1aiqZQ
-   Username could be a valid username or email id"
+(defn login-auth
   [request auth-data]
-  (let [identifier  (:username auth-data)
+  (let [username    (:username auth-data)
         password    (:password auth-data)
-        auth-data   (user-auth-data identifier)]
-    (if (and auth-data (hashers/check password (:password auth-data)))
-      (:user-data auth-data)
-      false)))
+        session     (:session request)
+        auth-data   (user-auth-data username)]
 
-(def basic-auth-backend
-  "Use as the authentication
-   function for the http-basic-backend"
-  (http-basic-backend {:authfn basic-auth}))
+    (if (and auth-data
+             (hashers/check password (:password auth-data)))
+      ;; success
+      (let [next-url (get-in request [:query-params :next] "/")
+            session-updated (assoc session :identity (keyword username))]
+        (-> (res/redirect next-url)
+            (assoc :session session-updated)))
+      ;; redirect to login
+      (let [login "login.html"]
+        (-> (res/resource-response login {:root "public"})
+            (assoc :headers {"Content-Type" "text/html"})
+            (assoc :status 401))))))
+
+(defn- unauthorized-handler
+  [request auth-data]
+  (cond
+    ;;authenticated -> 403
+    (authenticated? request)
+    (-> (res/resource-response "error.html" {:root "public"})
+        (assoc :headers {"Content-Type" "text/html"})
+        (assoc :status 403))
+    ;; redirect to login
+    :else
+    (let [cur-url (:uri request)]
+      (res/redirect (format "/login.html?next=%s" cur-url)))))
+
+(def session-auth-backend
+  (session-backend {:authfn login-auth
+                    :unauthorized-handler unauthorized-handler}))

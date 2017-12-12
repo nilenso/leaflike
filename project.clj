@@ -14,7 +14,6 @@
                  [commons-validator "1.5.1"]
                  [honeysql "0.9.1"]
                  [buddy "2.0.0"]
-                 [ring/ring-defaults "0.3.1"]
                  [org.clojure/algo.generic "0.1.2"]]
   :main ^:skip-aot leaflike.core
   :target-path "target/%s")

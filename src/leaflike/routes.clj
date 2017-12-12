@@ -1,21 +1,21 @@
 (ns leaflike.routes
-  (:require [bidi.ring :as bidi]
-            [leaflike.bookmarks.routes :refer [bookmarks-routes]]
-            [leaflike.user.routes :refer [user-routes]]
-            [leaflike.middlewares :refer [with-home-middlewares]]
-            [ring.util.response :as res]))
+  (:require [leaflike.middlewares :refer [with-home-middlewares
+                                          with-auth-middlewares]]
+            [ring.util.response :as res]
+            #_[buddy.auth :refer [authenticated?
+                                throw-unauthorized]]))
 
 (defn welcome
   [request]
   (res/response {:message "Welcome to Leaflike"}))
 
-(defn ping
+;; Home page controller (ring handler)
+(defn home
   [request]
-  (res/response {:ping (-> request :route-params :ping)}))
+  (-> (res/resource-response "index.html" {:root "public"})
+      (assoc :headers {"Content-Type" "text/html"})
+      (assoc :status 200)))
 
 (def home-routes
   {""               (with-home-middlewares {:get welcome})
-   ["ping/" :ping]  (with-home-middlewares {:get ping})})
-
-(def handler
-  (bidi/make-handler ["/" (merge home-routes user-routes)]))
+   "home"           (with-auth-middlewares {:get home})})
