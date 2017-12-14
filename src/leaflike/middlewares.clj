@@ -1,17 +1,25 @@
 (ns leaflike.middlewares
   (:require [buddy.auth.middleware :refer [wrap-authentication
                                            wrap-authorization]]
+            [buddy.auth :refer [authenticated?
+                                throw-unauthorized]]
             [clojure.algo.generic.functor :refer [fmap]]
             [ring.util.response :as res]
             [leaflike.user.auth :refer [session-auth-backend]]
             [ring.middleware.json :as json]
             [ring.middleware.params :as params]))
 
-(defn wrap-session-auth
-  "Middleware used on routes requiring basic authentication"
+(defn wrap-unauthorized
   [handler]
-  (wrap-authentication handler session-auth-backend)
-  (wrap-authorization handler session-auth-backend))
+  (fn [request]
+    (when (not (authenticated? request))
+      (throw-unauthorized))))
+
+(def auth-middleware
+  (comp #(wrap-authentication % session-auth-backend)
+        #(wrap-authorization % session-auth-backend)
+        wrap-unauthorized))
+
 
 (def home-middleware
   (comp params/wrap-params
@@ -24,5 +32,4 @@
 
 (defn with-auth-middlewares
   [route-map]
-  (comp (with-home-middlewares route-map)
-        wrap-session-auth))
+  (fmap auth-middleware route-map))

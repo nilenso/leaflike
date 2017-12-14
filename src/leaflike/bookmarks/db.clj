@@ -7,10 +7,10 @@
 
 (defn create-bookmark
   [body]
-  (utils/add-created-at body)
-  (jdbc/execute! (db-spec) (-> (helpers/insert-into :bookmarks)
-                               (helpers/values [body])
-                               sql/format)))
+  (let [bookmark (utils/add-created-at body)]
+    (jdbc/execute! (db-spec) (-> (helpers/insert-into :bookmarks)
+                                 (helpers/values [bookmark])
+                                 sql/format))))
 
 (defn list-all
   []

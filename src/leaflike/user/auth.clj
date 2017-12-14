@@ -22,7 +22,7 @@
         password    (:password auth-data)
         session     (:session request)
         auth-data   (user-auth-data username)]
-
+    (prn request)
     (if (and auth-data
              (hashers/check password (:password auth-data)))
       ;; success
@@ -41,8 +41,8 @@
   (cond
     ;;authenticated -> 403
     (authenticated? request)
-    (-> (res/resource-response "error.html" {:root "public"})
-        (assoc :headers {"Content-Type" "text/html"})
+    (-> (res/response {:msg "Unauthorized"})
+        (assoc :headers {"Content-Type" "application/json"})
         (assoc :status 403))
     ;; redirect to login
     :else
@@ -50,5 +50,4 @@
       (res/redirect (format "/login.html?next=%s" cur-url)))))
 
 (def session-auth-backend
-  (session-backend {:authfn login-auth
-                    :unauthorized-handler unauthorized-handler}))
+  (session-backend {:unauthorized-handler unauthorized-handler}))

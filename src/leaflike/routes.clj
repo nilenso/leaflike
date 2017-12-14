@@ -1,9 +1,7 @@
 (ns leaflike.routes
   (:require [leaflike.middlewares :refer [with-home-middlewares
                                           with-auth-middlewares]]
-            [ring.util.response :as res]
-            #_[buddy.auth :refer [authenticated?
-                                throw-unauthorized]]))
+            [ring.util.response :as res]))
 
 (defn welcome
   [request]
