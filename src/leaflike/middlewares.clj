@@ -4,7 +4,6 @@
             [buddy.auth :refer [authenticated?
                                 throw-unauthorized]]
             [clojure.algo.generic.functor :refer [fmap]]
-            [ring.util.response :as res]
             [leaflike.user.auth :refer [session-auth-backend]]
             [ring.middleware.json :as json]
             [ring.middleware.params :as params]))
@@ -18,8 +17,10 @@
 (def auth-middleware
   (comp #(wrap-authentication % session-auth-backend)
         #(wrap-authorization % session-auth-backend)
-        wrap-unauthorized))
-
+        wrap-unauthorized
+        param/wrap-params
+        #(json/wrap-json-body % {:keywords? true :bigdecimals? true})
+        json/wrap-json-response))
 
 (def home-middleware
   (comp params/wrap-params
