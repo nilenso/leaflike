@@ -12,4 +12,20 @@
       (true? valid) (do (user-db/create-user body)
                         (auth/signup-auth request (:username body)))
 
-      :else {:error valid})))
+      :else         {:error valid})))
+
+(defn login
+  [request]
+
+    (let [body   (clojure.walk/keywordize-keys (-> request :params))
+          member (validator/valid-user? body)]
+
+      (when-not (false? member)
+        (let [data {:auth-data        (-> member
+                                          (assoc-in [:username] (str (:username member)))
+                                          (dissoc   :email)
+                                          (dissoc   :created_on))
+
+                    :verify-password  (:password body)}]
+
+          (auth/login-auth request data)))))

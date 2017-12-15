@@ -16,7 +16,7 @@
 (defn login
   [request]
   ;; authenticate
-  )
+  (user-core/login request))
 
 (defn logout
   [request]
@@ -32,7 +32,7 @@
 (def api-routes
   {;; existing user
    ;;"logout"       (with-auth-middlewares  {:post logout})
-   ;;"login"        (with-home-middlewares  {:post login})
+   "login"        (with-home-middlewares  {:post login})
    ;;"edit-user"    (with-auth-middlewares  {:post edit})
    ;; new user
    "create-user"  (with-home-middlewares  {:post signup})})
