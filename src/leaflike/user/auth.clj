@@ -1,13 +1,12 @@
 (ns leaflike.user.auth
   (:require [buddy.hashers :as hashers]
             [buddy.auth.backends.session :refer [session-backend]]
-            [leaflike.user.db :refer [get-member-auth-data]]
-            [buddy.auth :refer [authenticated?]]
-            [ring.util.response :as res]))
+            [ring.util.response :as res]
+            [buddy.auth :refer [authenticated?]]))
 
-(defn- user-auth-data
+#_(defn- user-auth-data
   [identifier]
-  (let [auth-data (get-member-auth-data identifier)]
+  (let [auth-data (first (get-member-auth-data identifier))]
     (when-not (nil? auth-data)
       {:user-data (-> auth-data
                       (assoc-in [:username] (str (:username auth-data)))
@@ -16,25 +15,13 @@
                       (dissoc   :password))
        :password (:password auth-data)})))
 
-(defn login-auth
-  [request auth-data]
-  (let [username    (:username auth-data)
-        password    (:password auth-data)
-        session     (:session request)
-        auth-data   (user-auth-data username)]
-    (prn request)
-    (if (and auth-data
-             (hashers/check password (:password auth-data)))
-      ;; success
-      (let [next-url (get-in request [:query-params :next] "/")
-            session-updated (assoc session :identity (keyword username))]
-        (-> (res/redirect next-url)
-            (assoc :session session-updated)))
-      ;; redirect to login
-      (let [login "login.html"]
-        (-> (res/resource-response login {:root "public"})
-            (assoc :headers {"Content-Type" "text/html"})
-            (assoc :status 401))))))
+(defn signup-auth
+  [request username]
+  (let [session         (:session request)
+        next-url        (get-in request [:query-params :next] "/")
+        session-updated (assoc session :identity (keyword username))]
+    (-> (res/redirect next-url)
+        (assoc :session session-updated))))
 
 (defn- unauthorized-handler
   [request auth-data]

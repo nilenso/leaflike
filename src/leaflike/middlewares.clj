@@ -18,7 +18,7 @@
   (comp #(wrap-authentication % session-auth-backend)
         #(wrap-authorization % session-auth-backend)
         wrap-unauthorized
-        param/wrap-params
+        params/wrap-params
         #(json/wrap-json-body % {:keywords? true :bigdecimals? true})
         json/wrap-json-response))
 

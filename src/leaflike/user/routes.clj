@@ -6,11 +6,7 @@
 
 (defn signup
   [request]
-  (let [response (user-core/signup request)]
-
-    (cond
-      (contains? response :error) (res/response response)
-      :else (user-core/signup))))
+  (user-core/signup request))
 
 (defn edit
   [request]
@@ -35,9 +31,9 @@
 
 (def api-routes
   {;; existing user
-   "logout"       (with-auth-middlewares  {:post logout})
-   "login"        (with-home-middlewares  {:post login})
-   "edit-user"    (with-auth-middlewares  {:post edit})
+   ;;"logout"       (with-auth-middlewares  {:post logout})
+   ;;"login"        (with-home-middlewares  {:post login})
+   ;;"edit-user"    (with-auth-middlewares  {:post edit})
    ;; new user
    "create-user"  (with-home-middlewares  {:post signup})})
 

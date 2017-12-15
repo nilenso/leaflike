@@ -14,20 +14,20 @@
                                                 [:= :email email]])
                             sql/format)))
 
-(defn get-member-auth-data
+#_(defn get-member-auth-data
   [identifier]
   (jdbc/query (db-spec) (-> (helpers/select :*)
                             (helpers/from :members)
                             (helpers/where [:or [:= :username identifier]
-                                                [:= :email identifier]])
+                                            [:= :email identifier]])
                             sql/format)))
 
 
 (defn create-user
   [body]
   (jdbc/execute! (db-spec) (-> (helpers/insert-into :members)
-                               (helpers/values [{:email (:email body)
-                                                 :username (:username body)
-                                                 :password (hashers/encrypt (:password body))
+                               (helpers/values [{:email      (:email body)
+                                                 :username   (:username body)
+                                                 :password   (hashers/encrypt (:password body))
                                                  :created_at (utils/get-timestamp)}])
                                sql/format)))
