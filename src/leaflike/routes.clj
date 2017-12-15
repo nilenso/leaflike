@@ -1,33 +1,19 @@
 (ns leaflike.routes
-  (:require [bidi.ring :as bidi]
-            [leaflike.db :as db]))
-
+  (:require [leaflike.middlewares :refer [with-home-middlewares
+                                          with-auth-middlewares]]
+            [ring.util.response :as res]))
 
 (defn welcome
-  [_]
-  {:message "Welcome to Leaflike"})
-
-(defn ping
   [request]
-  {:ping (-> request :route-params :ping)})
+  (res/response {:message "Welcome to Leaflike"}))
 
-(defn create-bookmark
+;; Home page controller (ring handler)
+(defn home
   [request]
-  (db/create-bookmark request))
+  (-> (res/resource-response "index.html" {:root "public"})
+      (assoc :headers {"Content-Type" "text/html"})
+      (assoc :status 200)))
 
-(defn list-bookmark
-  [request]
-  (db/list-bookmark request))
-
-(defn delete-bookmark
-  [request]
-  (db/delete-bookmark request))
-
-(def routes  {""                        {:get welcome}
-              ["ping/" :ping]           {:get ping}
-              "create-bookmark"         {:post create-bookmark}
-              "list-bookmark"           {:get list-bookmark}
-              ["delete-bookmark/" :id]  {:post delete-bookmark}})
-
-(def handler
-  (bidi/make-handler ["/" routes]))
+(def home-routes
+  {""               (with-home-middlewares {:get welcome})
+   "home"           (with-auth-middlewares {:get home})})

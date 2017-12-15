@@ -1,28 +1,23 @@
 (ns leaflike.server
-  (:require [org.httpkit.server :as httpkit]
-            [ring.util.response :as res]
-            [ring.middleware.json :refer [wrap-json-body wrap-json-response]]
-            [ring.middleware.params :refer [wrap-params]]
-            [leaflike.routes :as routes]))
+  (:require [bidi.ring :as bidi]
+            [org.httpkit.server :as httpkit]
+            [leaflike.config :refer [server-spec]]
+            [leaflike.routes :refer [home-routes]]
+            [leaflike.bookmarks.routes :refer [bookmarks-routes]]
+            [leaflike.user.routes :refer [user-routes]]))
 
-(defn wrap-ring-response
-  [handler]
-  (fn [request]
-    (let [response (handler request)]
-      (res/response response))))
+(def handler
+  (bidi/make-handler ["/" (merge home-routes
+                                 user-routes)]))
 
 (def app
-  (-> routes/handler
-      (wrap-params)
-      (wrap-json-body {:keywords? true :bigdecimals? true})
-      (wrap-ring-response)
-      (wrap-json-response)))
+  (-> handler))
 
 (defonce server (atom nil))
 
 (defn start! []
   (reset! server (httpkit/run-server
-                  app {:port 8080})))
+                  app (server-spec))))
 
 (defn stop! []
   (when-not (nil? @server)
