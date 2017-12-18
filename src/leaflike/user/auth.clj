@@ -2,18 +2,32 @@
   (:require [buddy.hashers :as hashers]
             [buddy.auth.backends.session :refer [session-backend]]
             [ring.util.response :as res]
-            [buddy.auth :refer [authenticated?]]))
+            [buddy.auth :refer [authenticated?
+                                throw-unauthorized]]))
 
-#_(defn- user-auth-data
-  [identifier]
-  (let [auth-data (first (get-member-auth-data identifier))]
-    (when-not (nil? auth-data)
-      {:user-data (-> auth-data
-                      (assoc-in [:username] (str (:username auth-data)))
-                      (assoc-in [:email]    (str (:email auth-data)))
-                      (dissoc   :created_on)
-                      (dissoc   :password))
-       :password (:password auth-data)})))
+(defn logout-auth
+  [request]
+  (let [session (:session request)]
+    (if session
+      (-> (res/redirect "/login")
+          (assoc :session {}))
+      (throw-unauthorized))))
+
+(defn login-auth
+  [request member]
+  (let [session         (:session request)
+        verify-password (:verify-password member)
+        user-password   (get-in member [:auth-data :password])
+        username        (get-in member [:auth-data :username])]
+
+    (if (hashers/check verify-password user-password)
+      ;; login
+      (let [next-url        (get-in request [:query-params :next] "/")
+            session-updated (assoc session :identity (keyword username))]
+        (-> (res/redirect next-url)
+            (assoc :session session-updated)))
+      ;; 401
+      (throw-unauthorized))))
 
 (defn signup-auth
   [request username]

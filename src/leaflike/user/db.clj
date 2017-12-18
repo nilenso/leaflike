@@ -14,12 +14,12 @@
                                                 [:= :email email]])
                             sql/format)))
 
-#_(defn get-member-auth-data
+(defn get-member-auth-data
   [identifier]
   (jdbc/query (db-spec) (-> (helpers/select :*)
                             (helpers/from :members)
                             (helpers/where [:or [:= :username identifier]
-                                            [:= :email identifier]])
+                                                [:= :email identifier]])
                             sql/format)))
 
 
