@@ -5,6 +5,14 @@
             [buddy.auth :refer [authenticated?
                                 throw-unauthorized]]))
 
+(defn logout-auth
+  [request]
+  (let [session (:session request)]
+    (if session
+      (-> (res/redirect "/login")
+          (assoc :session {}))
+      (throw-unauthorized))))
+
 (defn login-auth
   [request member]
   (let [session         (:session request)
@@ -12,8 +20,7 @@
         user-password   (get-in member [:auth-data :password])
         username        (get-in member [:auth-data :username])]
 
-    (if (and member
-             (hashers/check verify-password user-password))
+    (if (hashers/check verify-password user-password)
       ;; login
       (let [next-url        (get-in request [:query-params :next] "/")
             session-updated (assoc session :identity (keyword username))]

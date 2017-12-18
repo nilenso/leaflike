@@ -29,3 +29,7 @@
                     :verify-password  (:password body)}]
 
           (auth/login-auth request data)))))
+
+(defn logout
+  [request]
+  (auth/logout-auth))

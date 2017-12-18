@@ -8,11 +8,6 @@
   [request]
   (user-core/signup request))
 
-(defn edit
-  [request]
-  ;;modify user
-  )
-
 (defn login
   [request]
   ;; authenticate
@@ -21,7 +16,7 @@
 (defn logout
   [request]
   ;; logout
-  )
+  (user-core/logout))
 
 (defn login-page
   [request]
@@ -29,16 +24,10 @@
       (assoc :headers {"Content-Type" "text/html"})
       (assoc :status 200)))
 
-(def api-routes
+(def user-routes
   {;; existing user
-   ;;"logout"       (with-auth-middlewares  {:post logout})
-   "login"        (with-home-middlewares  {:post login})
-   ;;"edit-user"    (with-auth-middlewares  {:post edit})
+   "login"        (with-home-middlewares  {:post login
+                                           :get  login-page})
+   "logout"       (with-auth-middlewares  {:post logout})
    ;; new user
    "create-user"  (with-home-middlewares  {:post signup})})
-
-(def html-routes
-  {"login.html"   (with-home-middlewares {:get login-page})})
-
-(def user-routes
-  (merge api-routes html-routes))
