@@ -14,10 +14,6 @@
     (.format (SimpleDateFormat. "yyyy-mm-dd hh:mm:ss") date)
     (Timestamp. (.getTime date))))
 
-(defn add-created-at
-  [body]
-  (assoc body :created_at (get-timestamp)))
-
 (defn required
   [value]
     (if (string? value)

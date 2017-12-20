@@ -1,26 +1,48 @@
 (ns leaflike.bookmarks.core
-  (:require [leaflike.bookmarks.validator :refer [valid-bookmark? valid-params?]]
-            [leaflike.bookmarks.db :as bm-db]))
+  (:require [leaflike.bookmarks.validator :refer [valid-bookmark?
+                                                  id?]]
+            [leaflike.bookmarks.db :as bm-db]
+            [leaflike.user.db :as user-db]
+            [leaflike.utils :as utils]))
+
+(defn- get-user
+  [session]
+  (let [identifier (get session :identity)]
+    (first (user-db/get-member-auth-data identifier :id))))
 
 (defn create
   [request]
-  (let [body (-> request :body)]
+  (let [body    (-> request :body)
+        session (-> request :session)
+        user    (get-user session)]
     (if (valid-bookmark? body)
-      (bm-db/create-bookmark)
-      {:error "Invalid Data"})))
+      (let [bookmark (assoc body :member_id (:id user)
+                                 :created_at (utils/get-timestamp))]
+        (bm-db/create bookmark))
+      {:error "Invalid params"})))
 
-(defn list-bookmark
+(defn list-all
   [request]
-  (let [params (clojure.walk/keywordize-keys (-> request :query-params))]
-    (if (empty? params)
-      (bm-db/list-all)
-      (if (valid-params? params)
-        (bm-db/list-by-params params)
-        {:error "Invalid Params"}))))
+  (let [session (-> request :session)
+        user    (get-user session)]
+    (bm-db/list-all (:id user))))
+
+(defn list-by-id
+  [request]
+  (let [id        (-> request :route-params :id)
+        session   (-> request :session)
+        user      (get-user session)
+        params    {:id id :member_id (:id user)}]
+    (if (id? params)
+      (bm-db/list-by-id params)
+      {:error "Invalid params"})))
 
 (defn delete
   [request]
-  (let [params (-> request :route-params)]
-    (if (valid-params? params)
-      (bm-db/delete-bookmark params)
+  (let [id        (-> request :route-params :id)
+        session   (-> request :session)
+        user      (get-user session)
+        params    {:id id :member_id (:id user)}]
+    (if (id? params)
+      (bm-db/delete params)
       {:error "Invalid params"})))

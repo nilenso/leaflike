@@ -1,54 +1,57 @@
 (ns leaflike.user.auth
   (:require [buddy.hashers :as hashers]
-            [buddy.auth.backends.session :refer [session-backend]]
-            [ring.util.response :as res]
-            [buddy.auth :refer [authenticated?
-                                throw-unauthorized]]))
+            [ring.util.response :as res]))
+
+(defonce user-session (atom nil))
+
+(defn- throw-unauthorized
+  [status]
+  (do (when-not (nil? @user-session)
+        (reset! user-session nil))
+      (res/redirect "/login")))
+
+(defn wrap-authorized
+  [handler]
+  (fn [request]
+    (if (nil? @user-session)
+      (throw-unauthorized 401)
+      (handler request))))
+
+(defn wrap-unauthorized
+  [handler]
+  (fn [request]
+    (let [response (handler request)]
+      (when (nil? @user-session)
+        (throw-unauthorized 403))
+      response)))
 
 (defn logout-auth
   [request]
   (let [session (:session request)]
     (if session
-      (-> (res/redirect "/login")
-          (assoc :session {}))
-      (throw-unauthorized))))
+      (do (res/redirect "/login")
+          (reset! user-session nil))
+      (throw-unauthorized 401))))
 
 (defn login-auth
   [request member]
-  (let [session         (:session request)
+  (let [session         @user-session
         verify-password (:verify-password member)
         user-password   (get-in member [:auth-data :password])
         username        (get-in member [:auth-data :username])]
 
     (if (hashers/check verify-password user-password)
       ;; login
-      (let [next-url        (get-in request [:query-params :next] "/")
-            session-updated (assoc session :identity (keyword username))]
-        (-> (res/redirect next-url)
-            (assoc :session session-updated)))
+      (let [session-updated (assoc session :identity (keyword username))]
+        (do (reset! user-session session-updated)
+            (res/response {:msg "yay"})))
       ;; 401
-      (throw-unauthorized))))
+      (throw-unauthorized 401))))
 
 (defn signup-auth
   [request username]
-  (let [session         (:session request)
+  (let [session         @user-session
         next-url        (get-in request [:query-params :next] "/")
         session-updated (assoc session :identity (keyword username))]
     (-> (res/redirect next-url)
-        (assoc :session session-updated))))
-
-(defn- unauthorized-handler
-  [request auth-data]
-  (cond
-    ;;authenticated -> 403
-    (authenticated? request)
-    (-> (res/response {:msg "Unauthorized"})
-        (assoc :headers {"Content-Type" "application/json"})
-        (assoc :status 403))
-    ;; redirect to login
-    :else
-    (let [cur-url (:uri request)]
-      (res/redirect (format "/login.html?next=%s" cur-url)))))
-
-(def session-auth-backend
-  (session-backend {:unauthorized-handler unauthorized-handler}))
+        (reset! user-session session-updated))))

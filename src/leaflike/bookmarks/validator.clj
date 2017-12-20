@@ -7,11 +7,11 @@
     (and (some? id)
          (number? (bigdec id)))))
 
-(defn title?
+(defn- title?
   [body]
   (contains? body :title))
 
-(defn url?
+(defn- url?
   [body]
   (let [validator (UrlValidator.)
         url (:url body)]
@@ -20,12 +20,6 @@
 
 (defn valid-bookmark?
   [body]
-  (and ((complement id?) body)
+  (and (nil?   (:id body))
        (title? body)
-       (url? body)))
-
-(defn valid-params?
-  [params]
-  (or
-   (id? params)
-   (title? params)))
+       (url?   body)))

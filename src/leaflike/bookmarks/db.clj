@@ -1,37 +1,37 @@
 (ns leaflike.bookmarks.db
   (:require [clojure.java.jdbc :as jdbc]
-            [leaflike.utils :as utils]
             [leaflike.config :refer [db-spec]]
             [honeysql.core :as sql]
             [honeysql.helpers :as helpers]))
 
-(defn create-bookmark
+(defn create
   [body]
-  (let [bookmark (utils/add-created-at body)]
-    (jdbc/execute! (db-spec) (-> (helpers/insert-into :bookmarks)
-                                 (helpers/values [bookmark])
-                                 sql/format))))
+  (jdbc/execute! (db-spec) (-> (helpers/insert-into :bookmarks)
+                               (helpers/values [body])
+                               sql/format)))
 
 (defn list-all
-  []
+  [member_id]
   (jdbc/query (db-spec) (-> (helpers/select :*)
                             (helpers/from :bookmarks)
+                            (helpers/where [:= :member_id member_id])
                             sql/format)))
 
-(defn list-by-params
+(defn list-by-id
   [params]
-  (let [id (Integer/parseInt (:id params))
-        title (:title params)]
+  (let [id        (Integer/parseInt (:id params))
+        member_id (:member_id params)]
     (jdbc/query (db-spec) (-> (helpers/select :*)
                               (helpers/from :bookmarks)
-                              (helpers/merge-where (when (> id 0)
-                                                     [:= :id id]))
-                              (helpers/merge-where (when-not (nil? title)
-                                                     ["like" :title (str \% title \%)]))
+                              (helpers/where [:and [:= :id id]
+                                              [:= :member_id member_id]])
                               sql/format))))
 
-(defn delete-bookmark
+(defn delete
   [params]
-  (jdbc/delete! (db-spec) (-> (helpers/delete-from :bookmarks)
-                              (helpers/merge-where [:= :id (Integer/parseInt (:id params))])
-                              sql/format)))
+  (let [id        (Integer/parseInt (:id params))
+        member_id (:member_id params)]
+    (jdbc/delete! (db-spec) (-> (helpers/delete-from :bookmarks)
+                                (helpers/where [:and [:= :id id]
+                                                [:= :member_id member_id]])
+                                sql/format))))

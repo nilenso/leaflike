@@ -1,31 +1,26 @@
 (ns leaflike.middlewares
-  (:require [buddy.auth.middleware :refer [wrap-authentication
-                                           wrap-authorization]]
-            [buddy.auth :refer [authenticated?
-                                throw-unauthorized]]
-            [clojure.algo.generic.functor :refer [fmap]]
-            [leaflike.user.auth :refer [session-auth-backend]]
+  (:require [clojure.algo.generic.functor :refer [fmap]]
+            [leaflike.user.auth :refer [wrap-authorized
+                                        wrap-unauthorized]]
             [ring.middleware.json :as json]
-            [ring.middleware.params :as params]))
+            [ring.middleware.params :as params]
+            [leaflike.user.db :as user-db]))
 
-(defn wrap-unauthorized
-  [handler]
-  (fn [request]
-    (when (not (authenticated? request))
-      (throw-unauthorized))))
+(defn auth-middleware
+  [handler-fn]
+  (-> handler-fn
+      json/wrap-json-response
+      (json/wrap-json-params {:keywords? true :bigdecimals? true})
+      params/wrap-params
+      wrap-authorized
+      wrap-unauthorized))
 
-(def auth-middleware
-  (comp #(wrap-authentication % session-auth-backend)
-        #(wrap-authorization % session-auth-backend)
-        wrap-unauthorized
-        params/wrap-params
-        #(json/wrap-json-body % {:keywords? true :bigdecimals? true})
-        json/wrap-json-response))
-
-(def home-middleware
-  (comp params/wrap-params
-        #(json/wrap-json-body % {:keywords? true :bigdecimals? true})
-        json/wrap-json-response))
+(defn home-middleware
+  [handler-fn]
+  (-> handler-fn
+      json/wrap-json-response
+      (json/wrap-json-params {:keywords? true :bigdecimals? true})
+      params/wrap-params))
 
 (defn with-home-middlewares
   [routes-map]

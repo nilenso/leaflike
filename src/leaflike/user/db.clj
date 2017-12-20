@@ -15,13 +15,19 @@
                             sql/format)))
 
 (defn get-member-auth-data
-  [identifier]
-  (jdbc/query (db-spec) (-> (helpers/select :*)
-                            (helpers/from :members)
-                            (helpers/where [:or [:= :username identifier]
-                                                [:= :email identifier]])
-                            sql/format)))
+  ([identifier]
+   (jdbc/query (db-spec) (-> (helpers/select :*)
+                             (helpers/from :members)
+                             (helpers/where [:or [:= :username identifier]
+                                             [:= :email identifier]])
+                             sql/format)))
 
+  ([identifier coll]
+   (jdbc/query (db-spec) (-> (helpers/select coll)
+                             (helpers/from :members)
+                             (helpers/where [:or [:= :username identifier]
+                                             [:= :email identifier]])
+                             (sql/format)))))
 
 (defn create-user
   [body]
