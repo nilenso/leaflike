@@ -5,17 +5,17 @@
             [leaflike.user.db :refer [get-member-if-exists
                                       get-member-auth-data]]))
 
-(defn- email?
+(defn email?
   [value]
   (and (required value)
-       (nil? (re-matches email-pattern value))))
+       (re-matches email-pattern value)))
 
-(defn- username?
+(defn username?
   [value]
   (and (required value)
-       (nil? (re-matches alpha-num-pattern value))))
+       (re-matches alpha-num-pattern value)))
 
-(defn- password?
+(defn password?
   [value]
   (required value))
 
