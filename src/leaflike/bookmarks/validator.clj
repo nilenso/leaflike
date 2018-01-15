@@ -5,13 +5,13 @@
   [body]
   (let [id (:id body)]
     (and (some? id)
-         (number? (bigdec id)))))
+         (number? id))))
 
-(defn- title?
+(defn title?
   [body]
   (contains? body :title))
 
-(defn- url?
+(defn url?
   [body]
   (let [validator (UrlValidator.)
         url (:url body)]
