@@ -20,6 +20,10 @@
   [request]
   (res/response (bm-core/list-by-id request)))
 
+#_(defn list-all-view
+  [request]
+  (res/response ()))
+
 
 (def bookmarks-routes
   {"bookmarks"        (with-auth-middlewares {:post   create

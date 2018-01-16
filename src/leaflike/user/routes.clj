@@ -1,5 +1,6 @@
 (ns leaflike.user.routes
   (:require [leaflike.user.core :as user-core]
+            [leaflike.user.views :as views]
             [leaflike.middlewares :refer [with-home-middlewares
                                           with-auth-middlewares]]
             [ring.util.response :as res]))
@@ -21,7 +22,7 @@
 
 (defn login-page
   [request]
-  (-> (res/resource-response "login.html" {:root "public"})
+  (-> (res/response (views/auth-page-view))
       (assoc :headers {"Content-Type" "text/html"})
       (assoc :status 200)))
 

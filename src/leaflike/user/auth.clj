@@ -8,7 +8,8 @@
   [status]
   (do (when-not (nil? @user-session)
         (reset! user-session nil))
-      (res/redirect "/login")))
+      (-> (res/redirect "/login")
+          (assoc :status status))))
 
 (defn wrap-authorized
   [handler]
@@ -44,7 +45,7 @@
       ;; login
       (let [session-updated (assoc session :identity (keyword username))]
         (do (reset! user-session session-updated)
-            (res/response {:msg "yay"})))
+            (res/response {:status 200})))
       ;; 401
       (throw-unauthorized 401))))
 
