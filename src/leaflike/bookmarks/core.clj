@@ -3,7 +3,7 @@
                                                   id?]]
             [leaflike.bookmarks.db :as bm-db]
             [leaflike.user.db :as user-db]
-            [leaflike.user.auth :refer user-session]
+            [leaflike.user.auth :refer [user-session]]
             [leaflike.utils :as utils]))
 
 (defn- get-user
