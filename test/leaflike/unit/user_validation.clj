@@ -21,6 +21,3 @@
 
   (testing "username is invalid 2"
     (not (username? "b@#."))))
-
-#_(deftest registration-test
-  [])

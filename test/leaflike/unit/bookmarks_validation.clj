@@ -1,4 +1,4 @@
-(ns leaflike.validation-test
+(ns leaflike.unit.bookmarks-validation
   (:require  [clojure.test :refer :all]
              [leaflike.bookmarks.validator :refer :all]))
 

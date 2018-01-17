@@ -1,0 +1,94 @@
+LOG:  database system was shut down at 2018-01-17 16:59:17 IST
+LOG:  MultiXact member wraparound protections are now enabled
+LOG:  database system is ready to accept connections
+LOG:  autovacuum launcher started
+FATAL:  database "leaflike" does not exist
+ERROR:  relation "members" does not exist at character 15
+STATEMENT:  SELECT * FROM members WHERE (username = $1 OR email = $2)
+ERROR:  could not open extension control file "/usr/local/pgsql/share/extension/citext.control": No such file or directory
+STATEMENT:  CREATE EXTENSION citext
+FATAL:  database "namc" does not exist
+ERROR:  could not open extension control file "/usr/local/pgsql/share/extension/postgis.control": No such file or directory
+STATEMENT:  CREATE EXTENSION postgis;
+ERROR:  could not open extension control file "/usr/local/pgsql/share/extension/postgis.control": No such file or directory
+STATEMENT:  CREATE EXTENSION postgis
+ERROR:  syntax error at or near "psql" at character 1
+STATEMENT:  psql -c 'CREATE EXTENSION postgis'[A[A[A[A[B[B
+	CREATE EXTENSION postgis
+	;
+ERROR:  syntax error at or near "" at character 1
+STATEMENT:  [A
+	CREATE EXTENSION postgis;
+ERROR:  could not open extension control file "/usr/local/pgsql/share/extension/postgis.control": No such file or directory
+STATEMENT:  CREATE EXTENSION postgis;
+ERROR:  could not open extension control file "/usr/local/pgsql/share/extension/postgis.control": No such file or directory
+STATEMENT:  CREATE EXTENSION postgis;
+ERROR:  could not open extension control file "/usr/local/pgsql/share/extension/citext.control": No such file or directory
+STATEMENT:  CREATE EXTENSION citext
+ERROR:  syntax error at or near "" at character 1
+STATEMENT:  [A[B
+	create extension citext;
+ERROR:  could not open extension control file "/usr/local/pgsql/share/extension/citext.control": No such file or directory
+STATEMENT:  CREATE EXTENSION citext;
+ERROR:  could not stat file "/usr/local/pgsql/share/extension/citext--1.5.sql": No such file or directory
+STATEMENT:  CREATE EXTENSION citext;
+ERROR:  type "citext" does not exist at character 116
+STATEMENT:  CREATE TABLE members (
+	                              id serial primary key,
+	                              username citext not null unique,
+	                              email citext not null unique,
+	                              password text not null,
+	                              created_at timestamp)
+ERROR:  syntax error at or near "not" at character 116
+STATEMENT:  CREATE TABLE members (
+	                              id serial primary key,
+	                              username not null unique,
+	                              email not null unique,
+	                              password text not null,
+	                              created_at timestamp)
+ERROR:  duplicate key value violates unique constraint "members_username_key"
+DETAIL:  Key (username)=(abc) already exists.
+STATEMENT:  INSERT INTO members (email, username, password, created_at) VALUES ($1, $2, $3, $4)
+ERROR:  duplicate key value violates unique constraint "members_username_key"
+DETAIL:  Key (username)=(abc) already exists.
+STATEMENT:  INSERT INTO members (email, username, password, created_at) VALUES ($1, $2, $3, $4)
+ERROR:  relation "members" does not exist at character 15
+STATEMENT:  SELECT * FROM members WHERE (username = $1 OR email = $2)
+ERROR:  could not stat file "/usr/local/pgsql/share/extension/citext--1.5.sql": No such file or directory
+STATEMENT:  CREATE EXTENSION citext
+ERROR:  could not stat file "/usr/local/pgsql/share/extension/citext--1.5.sql": No such file or directory
+STATEMENT:  CREATE EXTENSION citext
+ERROR:  relation "members" does not exist at character 15
+STATEMENT:  SELECT * FROM members WHERE (username = $1 OR email = $2)
+ERROR:  relation "members" does not exist at character 13
+STATEMENT:  INSERT INTO members (email, username, password, created_at) VALUES ($1, $2, $3, $4)
+ERROR:  relation "members" does not exist at character 15
+STATEMENT:  SELECT * FROM members WHERE (username = $1 OR email = $2)
+ERROR:  relation "members" does not exist at character 15
+STATEMENT:  SELECT * FROM members WHERE (username = $1 OR email = $2)
+ERROR:  relation "members" does not exist at character 15
+STATEMENT:  SELECT * FROM members WHERE (username = $1 OR email = $2)
+ERROR:  relation "members" does not exist at character 15
+STATEMENT:  SELECT * FROM members WHERE (username = $1 OR email = $2)
+ERROR:  relation "members" does not exist at character 15
+STATEMENT:  SELECT * FROM members WHERE (username = $1 OR email = $2)
+ERROR:  relation "members" does not exist at character 15
+STATEMENT:  SELECT * FROM members WHERE (username = $1 OR email = $2)
+ERROR:  relation "members" does not exist at character 13
+STATEMENT:  INSERT INTO members (email, username, password, created_at) VALUES ($1, $2, $3, $4)
+ERROR:  relation "members" does not exist at character 13
+STATEMENT:  INSERT INTO members (email, username, password, created_at) VALUES ($1, $2, $3, $4)
+ERROR:  relation "members" does not exist at character 13
+STATEMENT:  INSERT INTO members (email, username, password, created_at) VALUES ($1, $2, $3, $4)
+ERROR:  relation "members" does not exist at character 13
+STATEMENT:  INSERT INTO members (email, username, password, created_at) VALUES ($1, $2, $3, $4)
+ERROR:  relation "members" does not exist at character 13
+STATEMENT:  INSERT INTO members (email, username, password, created_at) VALUES ($1, $2, $3, $4)
+ERROR:  duplicate key value violates unique constraint "members_username_key"
+DETAIL:  Key (username)=(abc) already exists.
+STATEMENT:  INSERT INTO members (email, username, password, created_at) VALUES ($1, $2, $3, $4)
+ERROR:  relation "members" does not exist at character 15
+STATEMENT:  SELECT * FROM members WHERE (username = $1 OR email = $2)
+ERROR:  duplicate key value violates unique constraint "members_username_key"
+DETAIL:  Key (username)=(abc) already exists.
+STATEMENT:  INSERT INTO members (email, username, password, created_at) VALUES ($1, $2, $3, $4)

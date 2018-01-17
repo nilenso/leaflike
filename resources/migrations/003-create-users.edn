@@ -1,8 +1,8 @@
-{:up   ["CREATE EXTENSION citext;
+{:up   ["
          CREATE TABLE members (
                               id serial primary key,
-                              username citext not null unique,
-                              email citext not null unique,
+                              username text not null unique,
+                              email text not null unique,
                               password text not null,
                               created_at timestamp);"]
  :down ["DROP TABLE members;"]}

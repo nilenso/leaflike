@@ -23,20 +23,22 @@
   [body]
   (let [email    (:email body)
         username (:username body)
-        member   (get-member-if-exists email username)]
+        password (:password body)]
 
     (cond
-      (not email?)          {:error "Email is xinvalid"}
-      (not username?)       {:error "Username is invalid"}
-      (not password?)       {:error "Password is invalid"}
-      (not (empty? member)) {:error "User already exists"}
-      :else                 true)))
+      (not (email? email))              {:error "Email is invalid"}
+      (not (username? username))        {:error "Username is invalid"}
+      (not (password? password))        {:error "Password is invalid"}
+      (not-empty (get-member-if-exists email username)) {:error "User already exists"}
+      :else                             true)))
 
 (defn valid-user?
   [body]
   (let [username (:username body)
+        password (:password body)
         member   (get-member-auth-data username)]
 
     (cond
-      (not username?)     false
-      (not (nil? member)) (first member))))
+      (not (username? username)) false
+      (not (password? password)) false
+      (not-empty member)         member)))

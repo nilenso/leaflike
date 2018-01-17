@@ -11,7 +11,7 @@
   (bidi/make-handler ["/" (merge home-routes
                                  user-routes
                                  bookmarks-routes)]))
-
+;; todo
 (def app
   (-> handler))
 

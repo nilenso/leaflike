@@ -2,16 +2,16 @@
   (:require  [clojure.test :refer :all]
              [leaflike.migrations :as migrations]))
 
-(defn create-db
+(defn setup-test
   []
   (migrations/migrate false))
 
-(defn teardown
+(defn teardown-test
   []
-  (migrations/teardown))
+  (migrations/rollback-all false))
 
-(defn user-test-fixture
-  [func]
-  (create-db)
-  (func)
-  (teardown-db))
+(defn wrap-setup
+  [fun]
+  (setup-test)
+  (fun)
+  (teardown-test))

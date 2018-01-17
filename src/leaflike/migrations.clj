@@ -20,16 +20,16 @@
       (println ex))))
 
 (defn rollback
-  []
+  [not-test]
   (try
-    (repl/rollback (migration-config))
+    (repl/rollback (migration-config not-test))
     (catch Exception ex
       (println ex))))
 
 (defn rollback-all
-  []
+  [not-test]
   (try
-    (let [count-mig (-> (migration-config) :migrations count)]
-      (repl/rollback (migration-config) count-mig))
+    (let [count-mig (-> (migration-config not-test) :migrations count)]
+      (repl/rollback (migration-config not-test) count-mig))
     (catch Exception ex
       (println ex))))

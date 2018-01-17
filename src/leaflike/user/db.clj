@@ -18,16 +18,14 @@
   ([identifier]
    (jdbc/query (db-spec) (-> (helpers/select :*)
                              (helpers/from :members)
-                             (helpers/where [:or [:= :username identifier]
-                                             [:= :email identifier]])
+                             (helpers/where [:= :username identifier])
                              sql/format)))
 
   ([identifier coll]
    (jdbc/query (db-spec) (-> (helpers/select coll)
                              (helpers/from :members)
-                             (helpers/where [:or [:= :username identifier]
-                                             [:= :email identifier]])
-                             (sql/format)))))
+                             (helpers/where [:= :username identifier])
+                             sql/format))))
 
 (defn create-user
   [body]
