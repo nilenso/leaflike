@@ -32,4 +32,4 @@
 
 (defn logout
   [request]
-  (auth/logout-auth))
+  (auth/logout-auth request))

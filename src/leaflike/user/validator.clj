@@ -41,4 +41,4 @@
     (cond
       (not (username? username)) false
       (not (password? password)) false
-      (not-empty member)         member)))
+      (not-empty member)         (first member))))

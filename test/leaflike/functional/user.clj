@@ -46,11 +46,27 @@
       (is (= {:error "User already exists"} result)))))
 
 (deftest login-test
-  (testing "user login in valid"
-    (let [body {:username "abc"
+
+  (let [user  {:email    "a@b.com"
+               :username "a"
+               :password "1"}]
+    (user-db/create-user user))
+
+  (testing "user login is valid"
+    (let [body {:username "a"
                 :password "1"}
-          user (user-db/get-member-auth-data "abc")
-          ;;res  (valid-user? body)
-          ]
-      (print user)
-      #_(is res))))
+
+          res  (valid-user? body)]
+
+      (is (and (not-empty res)
+               (contains? res :username)
+               (contains? res :password)
+               (contains? res :email)
+               (contains? res :id)))))
+
+  (testing "user login is invalid. Missing data"
+    (let [body {:username "a"
+                :password ""}
+          res  (valid-user? body)]
+
+      (not res))))

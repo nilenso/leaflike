@@ -28,11 +28,10 @@
 
 (defn logout-auth
   [request]
-  (let [session (:session request)]
-    (if session
-      (do (res/redirect "/login")
-          (reset! user-session nil))
-      (throw-unauthorized 401))))
+  (if-not (nil? @user-session)
+    (do (reset! user-session nil)
+        (res/redirect "/login"))
+    (throw-unauthorized 401)))
 
 (defn login-auth
   [request member]
@@ -54,5 +53,5 @@
   (let [session         @user-session
         next-url        (get-in request [:query-params :next] "/")
         session-updated (assoc session :identity (keyword username))]
-    (-> (res/redirect next-url)
-        (reset! user-session session-updated))))
+    (do (reset! user-session session-updated)
+        (res/redirect next-url))))
