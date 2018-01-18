@@ -1,6 +1,5 @@
 (ns leaflike.functional.auth
   (:require [leaflike.user.auth :as user-auth]
-            [leaflike.user.db :as user-db]
             [leaflike.fixtures :refer [wrap-setup]]
             [clojure.test :refer :all]
             [leaflike.user.core :as user-core]))

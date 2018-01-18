@@ -3,14 +3,16 @@
                                                   id?]]
             [leaflike.bookmarks.db :as bm-db]
             [leaflike.user.db :as user-db]
-            [leaflike.user.auth :refer [user-session]]
+            [leaflike.user.auth :refer [user-session
+                                        throw-unauthorized]]
             [leaflike.utils :as utils]))
 
 (defn- get-user
   []
-  (when-not (nil? @user-session)
+  (if-not (nil? @user-session)
     (let [identifier (get @user-session :identity)]
-      (first (user-db/get-member-auth-data identifier :id)))))
+      (first (user-db/get-member-auth-data identifier :id)))
+    (throw-unauthorized)))
 
 (defn create
   [request]
@@ -19,13 +21,17 @@
     (if (valid-bookmark? body)
       (let [bookmark (assoc body :member_id (:id user)
                                  :created_at (utils/get-timestamp))]
-        (bm-db/create bookmark))
-      {:error "Invalid params"})))
+
+        {:result (bm-db/create bookmark)
+         :error  false})
+      {:error  true
+       :result "Invalid params"})))
 
 (defn list-all
   [request]
-  (let [user    (get-user)]
-    (bm-db/list-all (:id user))))
+  (let [user (get-user)]
+    {:result  (bm-db/list-all (:id user))
+     :error   false}))
 
 (defn list-by-id
   [request]
@@ -33,8 +39,10 @@
         user      (get-user)
         params    {:id id :member_id (:id user)}]
     (if (id? params)
-      (bm-db/list-by-id params)
-      {:error "Invalid params"})))
+      {:result  (bm-db/list-by-id params)
+       :error   false}
+      {:error  true
+       :result "Invalid params"})))
 
 (defn delete
   [request]
@@ -42,5 +50,7 @@
         user      (get-user)
         params    {:id id :member_id (:id user)}]
     (if (id? params)
-      (bm-db/delete params)
-      {:error "Invalid params"})))
+      {:result (bm-db/delete params)
+       :error  false}
+      {:error  true
+       :result "Invalid params"})))

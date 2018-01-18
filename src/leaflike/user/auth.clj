@@ -4,7 +4,7 @@
 
 (defonce user-session (atom nil))
 
-(defn- throw-unauthorized
+(defn throw-unauthorized
   [status]
   (do (when-not (nil? @user-session)
         (reset! user-session nil))

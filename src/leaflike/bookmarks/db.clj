@@ -31,7 +31,7 @@
   [params]
   (let [id        (Integer/parseInt (:id params))
         member_id (:member_id params)]
-    (jdbc/delete! (db-spec) (-> (helpers/delete-from :bookmarks)
-                                (helpers/where [:and [:= :id id]
+    (jdbc/execute! (db-spec) (-> (helpers/delete-from :bookmarks)
+                                 (helpers/where [:and [:= :id id]
                                                 [:= :member_id member_id]])
-                                sql/format))))
+                                 sql/format))))

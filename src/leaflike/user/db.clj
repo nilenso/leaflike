@@ -24,7 +24,7 @@
   ([identifier coll]
    (jdbc/query (db-spec) (-> (helpers/select coll)
                              (helpers/from :members)
-                             (helpers/where [:= :username identifier])
+                             (helpers/where [:= :username (name identifier)])
                              sql/format))))
 
 (defn create-user

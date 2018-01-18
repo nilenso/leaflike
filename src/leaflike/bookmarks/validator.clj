@@ -1,11 +1,14 @@
 (ns leaflike.bookmarks.validator
-  (:import org.apache.commons.validator.UrlValidator))
+  (:import org.apache.commons.validator.UrlValidator
+           java.lang.NumberFormatException))
 
 (defn id?
   [body]
-  (let [id (:id body)]
-    (and (some? id)
-         (number? id))))
+  (try
+    (let [id (Integer/parseInt (:id body))]
+      (and (some? id)
+           (number? id)))
+    (catch NumberFormatException e false)))
 
 (defn title?
   [body]
