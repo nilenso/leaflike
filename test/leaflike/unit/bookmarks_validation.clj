@@ -4,7 +4,7 @@
 
 (deftest id-test
   (testing "is id in input"
-    (let [a {:id 41}]
+    (let [a {:id "41"}]
       (is (id? a))))
 
   (testing "input id is invalid"
@@ -12,7 +12,7 @@
       (not (id? a))))
 
   (testing "id is absent in input"
-    (let [a {:not_id 78}]
+    (let [a {:not_id "78"}]
       (not (id? a)))))
 
 (deftest title-test
@@ -46,10 +46,10 @@
     (let [a {:url "http://google.com" :title "google" :tags "information"}]
       (is (valid-bookmark? a))))
 
-  (testing "is bookmark valid"
+  (testing "is bookmark valid with id?"
     (let [a {:id 20 :url "dance 123" :title "google"}]
       (not (valid-bookmark? a))))
 
-  (testing "is bookmark valid"
+  (testing "is bookmark valid without title?"
     (let [a {:id 20 :url "http://google.com"}]
       (not (valid-bookmark? a)))))
