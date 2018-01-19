@@ -1,16 +1,12 @@
 (ns leaflike.migrations
   (:require [ragtime.jdbc :as jdbc]
             [ragtime.repl :as repl]
-            [leaflike.config :refer [db-spec
-                                     test-db-spec]]))
+            [leaflike.config :refer [db-spec]]))
 
 (defn migration-config
   [not-test]
-  (if-not test
-    {:datastore  (jdbc/sql-database   (test-db-spec))
-     :migrations (jdbc/load-resources "migrations")}
-    {:datastore  (jdbc/sql-database   (db-spec))
-     :migrations (jdbc/load-resources "migrations")}))
+  {:datastore  (jdbc/sql-database   (db-spec))
+   :migrations (jdbc/load-resources "migrations")})
 
 (defn migrate
   [not-test]
