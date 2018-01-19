@@ -16,7 +16,7 @@
 
 (defn create
   [request]
-  (let [body    (-> request :body)
+  (let [body    (:body request)
         user    (get-user)]
     (if (valid-bookmark? body)
       (let [bookmark (assoc body :member_id (:id user)
@@ -35,7 +35,7 @@
 
 (defn list-by-id
   [request]
-  (let [id        (-> request :route-params :id)
+  (let [id        (get-in request [:route-params :id])
         user      (get-user)
         params    {:id id :member_id (:id user)}]
     (if (id? params)
@@ -46,7 +46,7 @@
 
 (defn delete
   [request]
-  (let [id        (-> request :route-params :id)
+  (let [id        (get-in request [:route-params :id])
         user      (get-user)
         params    {:id id :member_id (:id user)}]
     (if (id? params)

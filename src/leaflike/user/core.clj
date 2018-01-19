@@ -6,7 +6,7 @@
 (defn signup
   [request]
 
-  (let [body      (clojure.walk/keywordize-keys (-> request :params))
+  (let [body      (clojure.walk/keywordize-keys (:params request))
         valid-reg (validator/valid-registration? body)]
     (if valid-reg
        (do (user-db/create-user body)
@@ -16,7 +16,7 @@
 (defn login
   [request]
 
-    (let [body   (clojure.walk/keywordize-keys (-> request :params))
+    (let [body   (clojure.walk/keywordize-keys (:params request))
           member (validator/valid-user? body)]
 
       (if member
