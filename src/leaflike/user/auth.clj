@@ -34,7 +34,7 @@
     (throw-unauthorized 401)))
 
 (defn login-auth
-  [_ member]
+  [request member]
   (let [session         @user-session
         verify-password (:verify-password member)
         user-password   (get-in member [:auth-data :password])
