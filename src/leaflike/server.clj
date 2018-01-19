@@ -14,9 +14,12 @@
 
 (defonce server (atom nil))
 
-(defn start! []
-  (reset! server (httpkit/run-server
-                  app-handler (server-spec))))
+(defn start!
+  []
+  (let [server-spec (server-spec)]
+    (reset! server (httpkit/run-server
+                    app-handler server-spec))
+    (println "Server started at : " (:ip server-spec) ":" (:port server-spec))))
 
 (defn stop! []
   (when-not (nil? @server)

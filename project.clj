@@ -17,5 +17,6 @@
                  [org.clojure/algo.generic "0.1.2"]
                  [hiccup "2.0.0-alpha1"]
                  [clj-time "0.14.2"]]
-  :main ^:skip-aot leaflike.core
-  :target-path "target/%s")
+  :main          leaflike.core
+  :aot           [leaflike.core]
+  :target-path   "target/%s")
