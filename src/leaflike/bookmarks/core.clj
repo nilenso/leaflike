@@ -29,8 +29,8 @@
 
 (defn list-all
   [request]
-  (let [user (get-user)]
-    {:result  (bm-db/list-all (:id user))
+  (let [params {:member_id (:id (get-user))}]
+    {:result  (bm-db/list-all params)
      :error   false}))
 
 (defn list-by-id

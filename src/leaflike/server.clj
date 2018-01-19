@@ -7,19 +7,16 @@
             [leaflike.user.routes :refer [user-routes]]
             [leaflike.user.auth :refer [user-session]]))
 
-(def handler
+(def app-handler
   (bidi/make-handler ["/" (merge home-routes
                                  user-routes
                                  bookmarks-routes)]))
-;; todo
-(def app
-  (-> handler))
 
 (defonce server (atom nil))
 
 (defn start! []
   (reset! server (httpkit/run-server
-                  app (server-spec))))
+                  app-handler (server-spec))))
 
 (defn stop! []
   (when-not (nil? @server)

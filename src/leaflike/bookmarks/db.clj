@@ -5,33 +5,29 @@
             [honeysql.helpers :as helpers]))
 
 (defn create
-  [body]
+  [params]
   (jdbc/execute! (db-spec) (-> (helpers/insert-into :bookmarks)
-                               (helpers/values [body])
+                               (helpers/values [params])
                                sql/format)))
 
 (defn list-all
-  [member_id]
+  [{:keys [member_id]}]
   (jdbc/query (db-spec) (-> (helpers/select :*)
                             (helpers/from :bookmarks)
                             (helpers/where [:= :member_id member_id])
                             sql/format)))
 
 (defn list-by-id
-  [params]
-  (let [id        (Integer/parseInt (:id params))
-        member_id (:member_id params)]
-    (jdbc/query (db-spec) (-> (helpers/select :*)
-                              (helpers/from :bookmarks)
-                              (helpers/where [:and [:= :id id]
-                                              [:= :member_id member_id]])
-                              sql/format))))
+  [{:keys [id member_id]}]
+  (jdbc/query (db-spec) (-> (helpers/select :*)
+                            (helpers/from :bookmarks)
+                            (helpers/where [:and [:= :id (Integer/parseInt id)]
+                                            [:= :member_id member_id]])
+                            sql/format)))
 
 (defn delete
-  [params]
-  (let [id        (Integer/parseInt (:id params))
-        member_id (:member_id params)]
-    (jdbc/execute! (db-spec) (-> (helpers/delete-from :bookmarks)
-                                 (helpers/where [:and [:= :id id]
-                                                [:= :member_id member_id]])
-                                 sql/format))))
+  [{:keys [id member_id]}]
+  (jdbc/execute! (db-spec) (-> (helpers/delete-from :bookmarks)
+                               (helpers/where [:and [:= :id (Integer/parseInt id)]
+                                               [:= :member_id member_id]])
+                               sql/format)))
