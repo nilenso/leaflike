@@ -2,22 +2,17 @@
   (:require [leaflike.server :as server]
             [leaflike.migrations :as migrations]))
 
-(defn foo
-  "I don't do a whole lot."
-  [x]
-  (println x "Hello, World!"))
-
 (defn setup []
-  (migrations/migrate)
+  (migrations/migrate true)
   (server/start!))
 
 (defn teardown []
-  (migrations/rollback)
+  (migrations/rollback true)
   (server/stop!))
 
 (defn -main
   [& args]
   (case (first args)
-    "migrate"  (migrations/migrate)
-    "rollback" (migrations/rollback)
+    "migrate"  (migrations/migrate true)
+    "rollback" (migrations/rollback true)
     (setup)))

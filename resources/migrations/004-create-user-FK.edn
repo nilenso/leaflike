@@ -1,0 +1,2 @@
+{:up   ["ALTER table bookmarks ADD COLUMN member_id integer REFERENCES members"]
+ :down ["ALTER table bookmarks DROP COLUMN member_id"]}

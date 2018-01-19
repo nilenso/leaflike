@@ -1,20 +1,35 @@
 (ns leaflike.migrations
   (:require [ragtime.jdbc :as jdbc]
             [ragtime.repl :as repl]
-            [leaflike.db :refer [db-spec]]))
+            [leaflike.config :refer [db-spec
+                                     test-db-spec]]))
 
-(defn migration-config []
-  {:datastore  (jdbc/sql-database (db-spec))
-   :migrations (jdbc/load-resources "migrations")})
+(defn migration-config
+  [not-test]
+  (if-not test
+    {:datastore  (jdbc/sql-database   (test-db-spec))
+     :migrations (jdbc/load-resources "migrations")}
+    {:datastore  (jdbc/sql-database   (db-spec))
+     :migrations (jdbc/load-resources "migrations")}))
 
-(defn migrate []
+(defn migrate
+  [not-test]
   (try
-    (repl/migrate (migration-config))
+    (repl/migrate (migration-config not-test))
     (catch Exception ex
       (println ex))))
 
-(defn rollback []
+(defn rollback
+  [not-test]
   (try
-    (repl/rollback (migration-config))
+    (repl/rollback (migration-config not-test))
+    (catch Exception ex
+      (println ex))))
+
+(defn rollback-all
+  [not-test]
+  (try
+    (let [count-mig (-> (migration-config not-test) :migrations count)]
+      (repl/rollback (migration-config not-test) count-mig))
     (catch Exception ex
       (println ex))))
