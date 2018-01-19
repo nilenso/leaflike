@@ -4,7 +4,24 @@ A Clojure library designed to manage bookmarks.
 
 ## Usage
 
-FIXME
+## Setup and Installation
+
+### Development
+
+Install Java 8, leiningen and Postgresql >=9.6.6. Then run:
+
+```bash
+$ git clone https://github.com/nilenso/leaflike.git
+$ ./scripts/dev-deploy.sh
+```
+
+### Production
+
+```bash
+$ git clone https://github.com/nilenso/leaflike.git
+$ ./scripts/setup.sh
+$ ./scripts/deploy.sh
+```
 
 ## License
 
