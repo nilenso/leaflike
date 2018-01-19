@@ -1,7 +1,6 @@
 (ns leaflike.utils
-  (:import [java.util Date TimeZone]
-           [java.text SimpleDateFormat]
-           [java.sql Timestamp]))
+  (:require [clj-time.coerce]
+            [clj-time.core]))
 
 (def email-pattern #"[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*@(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?")
 
@@ -9,10 +8,7 @@
 
 (defn get-timestamp
   []
-  (let [date (Date.)]
-    (TimeZone/setDefault (TimeZone/getTimeZone "UTC"))
-    (.format (SimpleDateFormat. "yyyy-mm-dd hh:mm:ss") date)
-    (Timestamp. (.getTime date))))
+  (clj-time.coerce/to-sql-time (clj-time.core/now)))
 
 (defn required
   [value]
