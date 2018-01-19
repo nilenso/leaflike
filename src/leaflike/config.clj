@@ -14,4 +14,4 @@
 
 (defn server-spec
   []
-  :server-spec config)
+  (:server-spec config))

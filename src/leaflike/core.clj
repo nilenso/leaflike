@@ -1,6 +1,7 @@
 (ns leaflike.core
   (:require [leaflike.server :as server]
-            [leaflike.migrations :as migrations]))
+            [leaflike.migrations :as migrations])
+  (:gen-class))
 
 (defn setup []
   (migrations/migrate true)
