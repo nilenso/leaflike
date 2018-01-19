@@ -23,6 +23,11 @@ jobs:
           working_directory: ~/leaflike
 
       - run:
+          name: Copy config for test
+          command: cp resources/config.edn.test resources/config.edn
+          working_directory: ~/leaflike
+
+      - run:
           name: Run server tests
           command: lein test
           working_directory: ~/leaflike
