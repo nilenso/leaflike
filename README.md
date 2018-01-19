@@ -1,5 +1,7 @@
 # leaflike
 
+[![CircleCI](https://circleci.com/gh/nilenso/leaflike/tree/master.svg?style=svg)](https://circleci.com/gh/nilenso/leaflike/tree/master)
+
 A Clojure library designed to manage bookmarks.
 
 ## Usage

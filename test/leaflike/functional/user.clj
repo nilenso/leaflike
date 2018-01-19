@@ -4,7 +4,7 @@
             [leaflike.fixtures :refer [wrap-setup]]
             [clojure.test :refer :all]))
 
-(use-fixtures :once wrap-setup) ; wrap-setup around the whole namespace of tests.
+(use-fixtures :each wrap-setup) ; wrap-setup around the whole namespace of tests.
                                 ; use :each to wrap around each individual test
 
 (deftest registration-test

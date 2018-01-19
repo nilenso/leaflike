@@ -1,0 +1,2 @@
+{:db-spec {:connection-uri "jdbc:postgresql://localhost:5432/leaflike_test?user=root"}
+ :server-spec {:ip "127.0.0.1" :port 8000}}

@@ -4,10 +4,6 @@
 
 (def ^:private config (edn/read-string (slurp (io/resource "config.edn"))))
 
-(defn test-db-spec
-  []
-  (:test-db-spec config))
-
 (defn db-spec
   []
   (:db-spec config))
