@@ -6,7 +6,7 @@ jobs:
       - image: circleci/postgres:9.6-alpine
         environment:
         - POSTGRES_USER: root
-        - POSTGRES_DB: leaflike
+        - POSTGRES_DB: leaflike_test
 
     working_directory: ~/leaflike
 
