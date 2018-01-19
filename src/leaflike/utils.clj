@@ -12,6 +12,5 @@
 
 (defn required
   [value]
-    (if (string? value)
-    (not (empty? value))
-    (not (nil? value))))
+  (and (string? value)
+       (not-empty value)))

@@ -27,14 +27,14 @@
       response)))
 
 (defn logout-auth
-  [request]
+  [_]
   (if-not (nil? @user-session)
     (do (reset! user-session nil)
         (res/redirect "/login"))
     (throw-unauthorized 401)))
 
 (defn login-auth
-  [request member]
+  [_ member]
   (let [session         @user-session
         verify-password (:verify-password member)
         user-password   (get-in member [:auth-data :password])

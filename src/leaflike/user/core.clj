@@ -6,13 +6,12 @@
 (defn signup
   [request]
 
-  (let [body  (clojure.walk/keywordize-keys (-> request :params))
-        valid (validator/valid-registration? body)]
-    (cond
-      (true? valid) (do (user-db/create-user body)
-                        (auth/signup-auth request (:username body)))
-
-      :else         {:error valid})))
+  (let [body      (clojure.walk/keywordize-keys (-> request :params))
+        valid-reg (validator/valid-registration? body)]
+    (if valid-reg
+       (do (user-db/create-user body)
+           (auth/signup-auth request (:username body)))
+       {:error valid})))
 
 (defn login
   [request]
@@ -20,11 +19,10 @@
     (let [body   (clojure.walk/keywordize-keys (-> request :params))
           member (validator/valid-user? body)]
 
-      (when-not (false? member)
+      (when member
         (let [data {:auth-data        (-> member
                                           (assoc-in [:username] (str (:username member)))
-                                          (dissoc   :email)
-                                          (dissoc   :created_on))
+                                          (dissoc   :email :created_on))
 
                     :verify-password  (:password body)}]
 
