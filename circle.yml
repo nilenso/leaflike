@@ -1,6 +1,52 @@
 version: 2.0
+
 jobs:
-  build:
+
+  checkout_code:
+
+    docker:
+      - image: circleci/clojure:lein-2.7.1
+      - image: circleci/postgres:9.6-alpine
+        environment:
+          - POSTGRES_USER: root
+          - POSTGRES_DB: leaflike_test
+
+    working_directory: ~/leaflike
+
+    steps:
+      - checkout
+
+      - save_cache:
+          key: leaflike-{{ checksum "project.clj" }}
+          paths:
+            - ~/.m2
+
+  lein_dependencies:
+
+    docker:
+      - image: circleci/clojure:lein-2.7.1
+      - image: circleci/postgres:9.6-alpine
+        environment:
+          - POSTGRES_USER: root
+          - POSTGRES_DB: leaflike_test
+
+    working_directory: ~/leaflike
+
+    steps:
+      - restore_cache:
+          key: leaflike-{{ checksum "project.clj" }}
+
+      - run:
+          name: Download dependencies
+          command: lein deps
+
+      - save_cache:
+          key: leaflike-{{ checksum "project.clj" }}
+          paths:
+            - ~/.m2
+
+  test:
+
     docker:
       - image: circleci/clojure:lein-2.7.1
       - image: circleci/postgres:9.6-alpine
@@ -13,26 +59,23 @@ jobs:
     steps:
       - checkout
 
-      - restore_cache:
-          keys:
-            - leaflike-{{ checksum "project.clj" }}
-
-      - run:
-          name: Download dependencies
-          command: lein deps
-          working_directory: ~/leaflike
-
       - run:
           name: Copy config for test
-          command: cp resources/config.edn.test resources/config.edn
-          working_directory: ~/leaflike
+          command: cp resources/config/config.edn.test resources/config/config.edn
 
       - run:
           name: Run server tests
           command: lein test
-          working_directory: ~/leaflike
 
-      - save_cache:
-          key: leaflike-{{ checksum "project.clj" }}
-          paths:
-            - ~/.m2
+workflows:
+  version: 2
+
+  build-and-deploy:
+    jobs:
+      - checkout_code
+      - lein_dependencies:
+          requires:
+            - checkout_code
+      - test:
+          requires:
+            - lein_dependencies

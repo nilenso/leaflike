@@ -1,0 +1,150 @@
+version: 2.0
+
+jobs:
+
+  checkout_code:
+
+    docker:
+      - image: circleci/clojure:lein-2.7.1
+      - image: circleci/postgres:9.6-alpine
+
+    working_directory: ~/leaflike
+
+    steps:
+      - checkout
+
+      - save_cache:
+          key: leaflike-{{ checksum "project.clj" }}
+          paths:
+            - ~/.m2
+
+  lein_dependencies:
+
+    docker:
+      - image: circleci/clojure:lein-2.7.1
+      - image: circleci/postgres:9.6-alpine
+
+    working_directory: ~/leaflike
+
+    steps:
+
+      - restore_cache:
+          key: leaflike-{{ checksum "project.clj" }}
+
+      - run:
+          name: Download dependencies
+          command: lein deps
+
+      - save_cache:
+          key: leaflike-{{ checksum "project.clj" }}
+          paths:
+            - ~/.m2
+
+  test:
+
+    docker:
+      - image: circleci/clojure:lein-2.7.1
+      - image: circleci/postgres:9.6-alpine
+        environment:
+        - POSTGRES_USER: root
+        - POSTGRES_DB: leaflike_test
+
+    working_directory: ~/leaflike
+
+    steps:
+
+      - checkout
+
+      - run:
+          name: Copy config for test
+          command: cp resources/config.edn.test resources/config.edn
+
+      - run:
+          name: Run server tests
+          command: lein test
+
+  precompile_assets:
+
+    docker:
+      - image: circleci/clojure:lein-2.7.1
+      - image: circleci/postgres:9.6-alpine
+        environment:
+        - POSTGRES_USER: root
+        - POSTGRES_DB: leaflike
+
+    working_directory: ~/leaflike
+
+    environment:
+      - LEIN_ROOT: nbd
+      - JVM_OPTS: -Xmx3200m
+
+    steps:
+      - restore_cache:
+          key: leaflike-{{ checksum "project.clj" }}
+
+      - run: bundle --path vendor/bundle
+
+      - run:
+          name: Copy config for dev jar
+          command: cp resources/config.edn.dev resources/config.edn
+
+      - run:
+          name: Precompile assets
+          command: lein uberjar
+
+      - store_artifacts:
+          path: target/uberjar/leaflike.jar
+          destination: uberjar
+
+      - save_cache:
+          key: leaflike-{{ checksum "project.clj" }}
+          paths:
+            - ~/.m2
+
+  deploy:
+
+    machine:
+        enabled: true
+
+    working_directory: ~/leaflike
+
+    environment:
+      - LEIN_ROOT: nbd
+      - JVM_OPTS: -Xmx3200m
+
+    steps:
+      - restore_cache:
+          key: leaflike-{{ checksum "project.clj" }}
+
+      - run:
+          name: Setup DO box
+          command: bash .circleci/setup-do-box.sh
+
+      - run:
+          command: |
+            #git push heroku fan-in-fan-out:master
+            #heroku run rake db:migrate
+            #sleep 5 # sleep for 5 seconds to wait for dynos
+            #heroku restart
+
+workflows:
+
+  version: 2
+
+  build-and-deploy:
+
+    jobs:
+      - checkout_code
+      - lein_dependencies:
+          requires:
+            - checkout_code
+      - test:
+          requires:
+            - lein_dependencies
+      - precompile_assets:
+          requires:
+            - lein_dependencies
+      - deploy:
+          requires:
+            - test
+            - precompile_assets
