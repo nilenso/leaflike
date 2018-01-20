@@ -8,7 +8,7 @@ jobs:
         - POSTGRES_USER: root
         - POSTGRES_DB: leaflike_test
 
-    working_directory: /home/circleci/leaflike
+    working_directory: ~/leaflikee
 
     steps:
       - checkout
@@ -20,22 +20,22 @@ jobs:
       - run:
           name: Download dependencies
           command: lein deps
-          working_directory: /home/circleci/leaflike
+          working_directory: ~/leaflike
 
       - run:
           name: Copy config for test
-          command: cp /home/circleci/leaflike/resources/config/config.edn.test /home/circleci/leaflike/resources/config/config.edn
-          working_directory: /home/circleci/leaflike
+          command: cp ../resources/config/config.edn.test ../resources/config/config.edn
+          working_directory: ~/leaflike
 
       - run:
-          name: Run server tests
+          name: Run tests
           command: lein test
-          working_directory: /home/circleci/leaflike
+          working_directory: ~/leaflike
 
       - save_cache:
           key: leaflike-{{ checksum "project.clj" }}
           paths:
-            - /home/circleci/.m2
+            - ~/.m2
 
 workflows:
   version: 2
