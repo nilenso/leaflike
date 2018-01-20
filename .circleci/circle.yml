@@ -19,6 +19,11 @@ jobs:
           command: lein deps
           working_directory: ~/leaflike
 
+       - run:
+          name: Copy configs for lein trampoline
+          command: cp resources/config/config.edn.dev resources/config/config.edn
+          working_directory: ~/leaflike
+
       - save_cache:
           key: 
             - leaflike-{{ checksum "project.clj" }}
