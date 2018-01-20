@@ -37,10 +37,12 @@ jobs:
       - run:
           name: Copy config for test
           command: cp resources/config/config.edn.test resources/config/config.edn
+          working_directory: ~/leaflike
 
       - run:
           name: Run server tests
           command: lein test
+          working_directory: ~/leaflike
 
 workflows:
   version: 2
