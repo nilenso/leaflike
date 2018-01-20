@@ -26,6 +26,10 @@ jobs:
           paths:
             - /home/circleci/.m2
 
+      - persist_to_workspace:
+          root: .
+          paths: .
+
   test:
     docker:
       - image: circleci/clojure:lein-2.7.1
