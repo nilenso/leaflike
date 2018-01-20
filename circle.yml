@@ -61,7 +61,7 @@ jobs:
 
       - run:
           name: Copy config for test
-          command: cp resources/config.edn.test resources/config.edn
+          command: cp resources/config/config.edn.test resources/config/config.edn
 
       - run:
           name: Run server tests
