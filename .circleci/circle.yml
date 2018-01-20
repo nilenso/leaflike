@@ -19,6 +19,13 @@ jobs:
           command: lein deps
           working_directory: ~/leaflike
 
+      - run:
+          name: Run server tests
+          command: |
+            chmod +x scripts/run_tests.sh
+            ./scripts/run_tests.sh
+          working_directory: ~/leaflike
+
       - save_cache:
           key: 
             - leaflike-{{ checksum "project.clj" }}
