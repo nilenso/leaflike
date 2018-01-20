@@ -19,11 +19,6 @@ jobs:
           command: lein deps
           working_directory: ~/leaflike
 
-       - run:
-          name: Copy configs for lein trampoline
-          command: cp resources/config/config.edn.dev resources/config/config.edn
-          working_directory: ~/leaflike
-
       - save_cache:
           key: 
             - leaflike-{{ checksum "project.clj" }}
@@ -40,10 +35,6 @@ jobs:
     working_directory: ~/leaflike
 
     steps:
-      - restore_cache:
-          keys:
-            - leaflike-{{ checksum "project.clj" }}
-
       - run:
           name: Copy config for test
           command: cp resources/config/config.edn.test resources/config/config.edn
@@ -53,12 +44,6 @@ jobs:
           name: Run server tests
           command: lein test
           working_directory: ~/leaflike
-
-      - save_cache:
-          key: 
-            - leaflike-{{ checksum "project.clj" }}
-          paths:
-            - ~/.m2
 
 workflows:
   version: 2.0
