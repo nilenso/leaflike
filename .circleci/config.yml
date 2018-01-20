@@ -44,7 +44,15 @@ jobs:
       - attach_workspace:
           at: /home/circleci/leaflike
 
-      - run: cat /home/circleci/leaflike/resources/config/config.edn.test
+      - run: 
+          name: copy config file for test
+          command: cp /home/circleci/leaflike/resources/config/config.edn.test /home/circleci/leaflike/resources/config/config.edn
+          working_directory: /home/circleci/leaflike
+
+      - run:
+          name: leaflike tests
+          command: lein test
+          working_directory: /home/circleci/leaflike
 
 workflows:
   version: 2
