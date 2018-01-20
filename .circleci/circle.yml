@@ -24,12 +24,16 @@ jobs:
 
       - run:
           name: Copy config for test
-          command: cp ../resources/config/config.edn.test ../resources/config/config.edn
+          command: 
           working_directory: ~/leaflike
 
       - run:
           name: Run tests
-          command: lein test
+          command: |
+            cat ~/leaflike/resources/config/config.edn.test
+            cp ~/leaflike/resources/config/config.edn.test ~/leaflike/resources/config/config.edn
+            cat ~/leaflike/resources/config/config.edn
+
           working_directory: ~/leaflike
 
       - save_cache:
