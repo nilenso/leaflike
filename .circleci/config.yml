@@ -9,26 +9,44 @@ jobs:
     steps:
       - checkout
 
+      - attach_workspace:
+          at: /home/circleci/leaflike
+
       - restore_cache:
           keys:
             - leaflike-{{ checksum "project.clj" }}
 
-      - run: pwd
-      - run: ls
       - run:
           name: Download dependencies
           command: lein deps
           working_directory: /home/circleci/leaflike
-
-      - run: echo "Deps done"
 
       - save_cache:
           key: leaflike-{{ checksum "project.clj" }}
           paths:
             - /home/circleci/.m2
 
+  test:
+    docker:
+      - image: circleci/clojure:lein-2.7.1
+      - image: circleci/postgres:9.6-alpine
+        environment:
+        - POSTGRES_USER: root
+        - POSTGRES_DB: leaflike_test
+    
+    working_directory: /home/circleci/leaflike
+
+    steps:
+      - attach_workspace:
+          at: /home/circleci/leaflike
+
+      - run: cat /home/circleci/leaflike/resources/config/config.edn.test
+
 workflows:
   version: 2
   build-and-test:
     jobs:
       - build
+      - test:
+          requires:
+            - build
