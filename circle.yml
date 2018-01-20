@@ -1,14 +1,13 @@
-version: 2.0
+version: 2
 jobs:
   build:
+    working_directory: ~/leaflike
+    # The primary container is an instance of the first list image listed. 
+    # Your build commands run in this container.
+
     docker:
       - image: circleci/clojure:lein-2.7.1
       - image: circleci/postgres:9.6-alpine
-        environment:
-        - POSTGRES_USER: root
-        - POSTGRES_DB: leaflike_test
-
-    working_directory: ~/leaflike
 
     steps:
       - checkout
@@ -22,17 +21,38 @@ jobs:
           command: lein deps
           working_directory: ~/leaflike
 
-      - run:
-          name: Copy config for test
-          command: cp resources/config.edn.test resources/config.edn
-          working_directory: ~/leaflike
-
-      - run:
-          name: Run server tests
-          command: lein test
-          working_directory: ~/leaflike
-
       - save_cache:
           key: leaflike-{{ checksum "project.clj" }}
           paths:
             - ~/.m2
+  test:
+
+    working_directory: ~/leaflike
+
+    docker:
+      - image: circleci/clojure:lein-2.7.1
+      - image: circleci/postgres:9.6-alpine
+        environment:
+        - POSTGRES_USER: root
+        - POSTGRES_DB: leaflike_test
+
+    steps:
+
+      - checkout
+
+      - run:
+          name: Copy config for test
+          command: cp resources/config.edn.test resources/config.edn
+
+      - run:
+          name: Run server tests
+          command: lein test
+
+workflows:
+  version: 2
+  build_and_test:
+    jobs:
+      - build
+      - test:
+          requires:
+            - build
