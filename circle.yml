@@ -4,9 +4,6 @@ jobs:
     docker:
       - image: circleci/clojure:lein-2.7.1
       - image: circleci/postgres:9.6-alpine
-        environment:
-        - POSTGRES_USER: root
-        - POSTGRES_DB: leaflike_test
 
     working_directory: ~/leaflike
 
@@ -22,9 +19,29 @@ jobs:
           command: lein deps
           working_directory: ~/leaflike
 
+      - save_cache:
+          key: 
+            - leaflike-{{ checksum "project.clj" }}
+          paths:
+            - ~/.m2
+  test:
+    docker:
+      - image: circleci/clojure:lein-2.7.1
+      - image: circleci/postgres:9.6-alpine
+        environment:
+        - POSTGRES_USER: root
+        - POSTGRES_DB: leaflike_test
+
+    working_directory: ~/leaflike
+
+    steps:
+      - restore_cache:
+          keys:
+            - leaflike-{{ checksum "project.clj" }}
+
       - run:
           name: Copy config for test
-          command: cp resources/config.edn.test resources/config.edn
+          command: cp resources/config/config.edn.test resources/config/config.edn
           working_directory: ~/leaflike
 
       - run:
@@ -33,6 +50,16 @@ jobs:
           working_directory: ~/leaflike
 
       - save_cache:
-          key: leaflike-{{ checksum "project.clj" }}
+          key: 
+            - leaflike-{{ checksum "project.clj" }}
           paths:
             - ~/.m2
+
+workflows:
+  version: 2.0
+  built-and-test:
+    jobs:
+      - build
+      - test:
+          requires:
+            - build
