@@ -2,7 +2,7 @@
   (:require [clojure.edn :as edn]
             [clojure.java.io :as io]))
 
-(def ^:private config (edn/read-string (slurp (io/resource "config.edn"))))
+(def ^:private config (edn/read-string (slurp (io/resource "config/config.edn"))))
 
 (defn db-spec
   []
