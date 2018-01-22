@@ -4,17 +4,40 @@
 
 A Clojure library designed to manage bookmarks.
 
-## Usage
-
 ## Setup and Installation
 
 ### Development
 
-Install Java 8, leiningen and Postgresql >=9.6.6. Then run:
+Install Java 8, leiningen and Postgresql >=9.6.6. 
+
+#### Clone repository
 
 ```bash
 $ git clone https://github.com/nilenso/leaflike.git
-$ ./scripts/dev-deploy.sh
+```
+
+#### Setup Databases
+
+```
+$ createdb -U username leaflike
+$ createdb -U username leaflike_test
+```
+
+**Note : Change postgres username and password in config.end.test and config.end.dev if required**
+
+#### Run Tests
+
+```bash
+$ chmod +x scripts/run_tests.sh
+$ ./scripts/run_tests.sh
+```
+
+#### Run app
+
+```
+$ cp resources/config/config.edn.dev resources/config/config.edn
+$ lein run migrate
+$ lein run
 ```
 
 ### Production
