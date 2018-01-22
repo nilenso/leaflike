@@ -55,11 +55,15 @@ jobs:
           command: lein test
           working_directory: /home/circleci/leaflike
 
-  deploy:
+  build_jar:
     docker:
       - image: circleci/clojure:lein-2.7.1
 
     working_directory: /home/circleci/leaflike
+
+    environment:
+      LEIN_ROOT: nbd
+      JVM_OPTS: -Xmx3200m
 
     steps:
       - attach_workspace:
@@ -75,6 +79,17 @@ jobs:
           command: lein uberjar
           working_directory: /home/circleci/leaflike
 
+      - store_artifacts:
+          path: /home/circleci/leaflike/target/leaflike-0.0.1.jar
+          destination: uberjar
+
+      - run: ls /home/circleci/leaflike/target
+
+      - save_cache:
+          paths:
+            - /home/circleci/.m2
+          key: leaflike-{{ checksum "project.clj" }}
+
 workflows:
   version: 2
   build-and-test:
@@ -83,6 +98,6 @@ workflows:
       - test:
           requires:
             - build
-      - deploy:
+      - build_jar:
           requires:
             - test
