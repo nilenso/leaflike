@@ -55,7 +55,7 @@ jobs:
           command: lein test
           working_directory: /home/circleci/leaflike
 
-  build_jar:
+  deploy:
     docker:
       - image: circleci/clojure:lein-2.7.1
 
@@ -74,13 +74,6 @@ jobs:
           command: bash /home/circleci/leaflike/scripts/deploy.sh
           working_directory: /home/circleci/leaflike
 
-      - run:
-          name: Compile uberjar
-          command: lein uberjar
-          working_directory: /home/circleci/leaflike
-
-      - run: ls /home/circleci/leaflike/target/uberjar
-
       - save_cache:
           paths:
             - /home/circleci/.m2
@@ -94,6 +87,6 @@ workflows:
       - test:
           requires:
             - build
-      - build_jar:
+      - deploy:
           requires:
             - test
