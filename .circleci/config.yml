@@ -80,7 +80,7 @@ jobs:
           working_directory: /home/circleci/leaflike
 
       - store_artifacts:
-          path: /home/circleci/leaflike/target/leaflike-0.0.1.jar
+          path: /home/circleci/leaflike/target/uberjar/leaflike-0.0.1.jar
           destination: uberjar
 
       - run: ls /home/circleci/leaflike/target
