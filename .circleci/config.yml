@@ -55,25 +55,25 @@ jobs:
           command: lein test
           working_directory: /home/circleci/leaflike
 
-    deploy:
-      docker:
-        - image: circleci/clojure:lein-2.7.1
+  deploy:
+    docker:
+      - image: circleci/clojure:lein-2.7.1
 
-      working_directory: /home/circleci/leaflike
+    working_directory: /home/circleci/leaflike
 
-      steps:
-        - attach_workspace
-            at: /home/circleci/leaflike
+    steps:
+      - attach_workspace:
+          at: /home/circleci/leaflike
 
-        - run:
-            name: Clean artifacts
-            command: lein clean
-            working_directory: /home/circleci/leaflike
+      - run:
+          name: Clean artifacts
+          command: lein clean
+          working_directory: /home/circleci/leaflike
 
-        - run:
-            name: Compile uberjar
-            command: lein uberjar
-            working_directory: /home/circleci/leaflike
+      - run:
+          name: Compile uberjar
+          command: lein uberjar
+          working_directory: /home/circleci/leaflike
 
 workflows:
   version: 2
