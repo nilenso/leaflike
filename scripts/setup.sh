@@ -16,5 +16,5 @@ fi
 # TODO: set pasword
 
 apt-get install postgresql postgresql-contrib
-createuser leaflike_user -S -l -d
-createdb -U leaflike_user leaflike
+createuser leaflike -S -l -d
+createdb -U leaflike leaflike

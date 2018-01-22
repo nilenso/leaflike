@@ -70,18 +70,14 @@ jobs:
           at: /home/circleci/leaflike
 
       - run:
-          name: Clean artifacts
-          command: lein clean
+          name: deploy script
+          command: bash /home/circleci/leaflike/scripts/deploy.sh
           working_directory: /home/circleci/leaflike
 
       - run:
           name: Compile uberjar
           command: lein uberjar
           working_directory: /home/circleci/leaflike
-
-      - store_artifacts:
-          path: /home/circleci/leaflike/target/uberjar
-          destination: uberjar
 
       - run: ls /home/circleci/leaflike/target/uberjar
 

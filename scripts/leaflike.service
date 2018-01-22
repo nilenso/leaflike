@@ -1,0 +1,13 @@
+[Unit]
+Description=leaflike
+
+[Service]
+Type=simple
+ExecStartPre=/usr/bin/java -jar /home/leaflike/leaflike/leaflike-0.1.0-SNAPSHOT-standalone.jar migrate
+ExecStart=/usr/bin/java -jar /home/leaflike/leaflike/leaflike-0.1.0-SNAPSHOT-standalone.jar
+# EnvironmentFile=/home/leaflike/env
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=default.target
