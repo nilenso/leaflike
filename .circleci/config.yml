@@ -38,14 +38,14 @@ jobs:
         environment:
         - POSTGRES_USER: root
         - POSTGRES_DB: leaflike_test
-    
+
     working_directory: /home/circleci/leaflike
 
     steps:
       - attach_workspace:
           at: /home/circleci/leaflike
 
-      - run: 
+      - run:
           name: copy config file for test
           command: cp /home/circleci/leaflike/resources/config/config.edn.test /home/circleci/leaflike/resources/config/config.edn
           working_directory: /home/circleci/leaflike
@@ -55,6 +55,26 @@ jobs:
           command: lein test
           working_directory: /home/circleci/leaflike
 
+    deploy:
+      docker:
+        - image: circleci/clojure:lein-2.7.1
+
+      working_directory: /home/circleci/leaflike
+
+      steps:
+        - attach_workspace
+            at: /home/circleci/leaflike
+
+        - run:
+            name: Clean artifacts
+            command: lein clean
+            working_directory: /home/circleci/leaflike
+
+        - run:
+            name: Compile uberjar
+            command: lein uberjar
+            working_directory: /home/circleci/leaflike
+
 workflows:
   version: 2
   build-and-test:
@@ -63,3 +83,6 @@ workflows:
       - test:
           requires:
             - build
+      - deploy:
+          requires:
+            - test
