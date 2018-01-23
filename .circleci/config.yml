@@ -46,13 +46,8 @@ jobs:
           at: /home/circleci/leaflike
 
       - run:
-          name: copy config file for test
-          command: cp /home/circleci/leaflike/resources/config/config.edn.test /home/circleci/leaflike/resources/config/config.edn
-          working_directory: /home/circleci/leaflike
-
-      - run:
           name: leaflike tests
-          command: lein test
+          command: bash /home/circleci/leaflike/scripts/run_tests.sh
           working_directory: /home/circleci/leaflike
 
   deploy:
