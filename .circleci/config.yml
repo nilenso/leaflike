@@ -74,10 +74,9 @@ jobs:
             - $FINGERPRINT
 
       - run:
-          name: add fingerprint to known hosts
+          name: add known hosts
           command: |
             chmod 600 ~/.ssh/id_*
-            touch ~/.ssh/known_hosts
             echo $KNOWN_HOSTS >> ~/.ssh/known_hosts
 
       - run:
