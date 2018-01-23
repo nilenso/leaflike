@@ -72,10 +72,10 @@ jobs:
       - run:
           name: add fingerprint to known hosts
           command: |
-            ls /etc/ssh
             mkdir ~/.ssh
-            touch ~/.ssh/known_hosts
+            touch ~/.ssh/known_hosts && touch ~/.ssh/id_rsa
             echo $FINGERPRINT >> ~/.ssh/known_hosts
+            echo $PRIVATE_KEY >> ~/.ssh/id_rsa
 
       - run:
           name: deploy script
