@@ -70,6 +70,10 @@ jobs:
           at: /home/circleci/leaflike
 
       - run:
+          name: add fingerprint to known hosts
+          command: echo $FINGERPRINT >> ~/.ssh/known_hosts
+
+      - run:
           name: deploy script
           command: bash /home/circleci/leaflike/scripts/deploy.sh
           working_directory: /home/circleci/leaflike
