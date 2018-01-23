@@ -76,6 +76,7 @@ jobs:
             touch ~/.ssh/known_hosts && touch ~/.ssh/id_rsa
             echo $FINGERPRINT >> ~/.ssh/known_hosts
             echo $PRIVATE_KEY >> ~/.ssh/id_rsa
+            chmod 600 ~/.ssh/id_rsa
 
       - run:
           name: deploy script
