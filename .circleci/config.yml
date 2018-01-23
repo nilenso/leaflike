@@ -72,6 +72,7 @@ jobs:
       - run:
           name: add fingerprint to known hosts
           command: |
+            ls /etc/ssh
             mkdir ~/.ssh
             touch ~/.ssh/known_hosts
             echo $FINGERPRINT >> ~/.ssh/known_hosts

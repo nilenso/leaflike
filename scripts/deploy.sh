@@ -15,8 +15,8 @@ lein clean
 lein uberjar
 
 echo "Copying jar to server"
-scp -q target/uberjar/$JAR_NAME leaflike@$HOST:leaflike/
+scp -v target/uberjar/$JAR_NAME leaflike@$HOST:leaflike/
 
 
-echo "Running migrations"
-ssh -t leaflike@$HOST "${SCRIPT}"
+#echo "Running migrations"
+ssh -t -v leaflike@$HOST "${SCRIPT}"
