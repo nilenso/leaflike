@@ -38,22 +38,52 @@ jobs:
         environment:
         - POSTGRES_USER: root
         - POSTGRES_DB: leaflike_test
-    
+
     working_directory: /home/circleci/leaflike
 
     steps:
       - attach_workspace:
           at: /home/circleci/leaflike
 
-      - run: 
-          name: copy config file for test
-          command: cp /home/circleci/leaflike/resources/config/config.edn.test /home/circleci/leaflike/resources/config/config.edn
-          working_directory: /home/circleci/leaflike
-
       - run:
           name: leaflike tests
-          command: lein test
+          command: bash /home/circleci/leaflike/scripts/run_tests.sh
           working_directory: /home/circleci/leaflike
+
+  deploy:
+    docker:
+      - image: circleci/clojure:lein-2.7.1
+
+    working_directory: /home/circleci/leaflike
+
+    environment:
+      LEIN_ROOT: nbd
+      JVM_OPTS: -Xmx3200m
+
+    steps:
+      - attach_workspace:
+          at: /home/circleci/leaflike
+
+      - add_ssh_keys:
+          fingerprints:
+            - "de:45:b2:4b:ec:8b:55:d9:c4:c1:7a:31:f0:55:d6:23"
+
+      - run:
+          name: add known hosts
+          command: |
+            ls ~/.ssh
+            chmod 600 ~/.ssh/id_*
+            echo $KNOWN_HOSTS >> ~/.ssh/known_hosts
+
+      - run:
+          name: deploy script
+          command: bash /home/circleci/leaflike/scripts/deploy.sh
+          working_directory: /home/circleci/leaflike
+
+      - save_cache:
+          paths:
+            - /home/circleci/.m2
+          key: leaflike-{{ checksum "project.clj" }}
 
 workflows:
   version: 2
@@ -63,3 +93,9 @@ workflows:
       - test:
           requires:
             - build
+      - deploy:
+          requires:
+            - test
+          filters:
+            branches:
+              only: master

@@ -1,23 +1,12 @@
 #!/bin/bash
 
 export VERSION="0.1.0-SNAPSHOT"
+export HOST="139.59.65.123"
+export JAR_NAME="leaflike-$VERSION-standalone.jar"
 
-# Check if dependencies are present
-if ! [ -x "$(which java)" ]; then
-    echo "Java not installed"
-    exit
-fi
+SCRIPT="systemctl --user restart leaflike.service"
 
-if ! [ -x "$(which psql)" ]; then
-    echo "psql not installed"
-    exit
-else
-    psql -d leaflike --command='\q' 2>/dev/null
-    if [ $? == 2 ]; then
-	echo "Could not connect to the leaflike database"
-	exit
-    fi
-fi
+cp resources/config/config.edn.dev resources/config/config.edn
 
 # Clean out old jar file
 lein clean
@@ -25,8 +14,9 @@ lein clean
 # Build the uberjar
 lein uberjar
 
-# Run postgres migrations
-java -jar target/uberjar/leaflike-$VERSION-standalone.jar migrate
+echo "Copying jar to server"
+scp -v target/uberjar/$JAR_NAME leaflike@$HOST:leaflike/
 
-# Start server
-java -jar target/uberjar/leaflike-$VERSION-standalone.jar
+
+#echo "Running migrations"
+ssh -t -v leaflike@$HOST "${SCRIPT}"
