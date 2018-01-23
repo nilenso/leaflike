@@ -76,9 +76,8 @@ jobs:
       - run:
           name: add known hosts
           command: |
-            echo $KNOWN_HOSTS
-            exho $FINGERPRINT
             ls ~/.ssh
+            chmod 600 ~/.ssh/id_*
             echo $KNOWN_HOSTS >> ~/.ssh/known_hosts
 
       - run:
