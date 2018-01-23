@@ -69,15 +69,15 @@ jobs:
       - attach_workspace:
           at: /home/circleci/leaflike
 
-      - run: echo $FINGERPRINT
-
       - add_ssh_keys:
           fingerprints:
-            - $FINGERPRINT
+            - "de:45:b2:4b:ec:8b:55:d9:c4:c1:7a:31:f0:55:d6:23"
 
       - run:
           name: add known hosts
           command: |
+            echo $KNOWN_HOSTS
+            exho $FINGERPRINT
             ls ~/.ssh
             echo $KNOWN_HOSTS >> ~/.ssh/known_hosts
 
