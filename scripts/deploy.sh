@@ -1,8 +1,8 @@
 #!/bin/bash
 
-export VERSION="0.1.0-SNAPSHOT"
-export HOST="139.59.65.123"
-export JAR_NAME="leaflike-$VERSION-standalone.jar"
+VERSION="0.1.0-SNAPSHOT"
+HOST="139.59.65.123"
+JAR_NAME="leaflike-$VERSION-standalone.jar"
 
 SCRIPT="systemctl --user restart leaflike.service"
 
@@ -15,8 +15,8 @@ lein clean
 lein uberjar
 
 echo "Copying jar to server"
-scp -v target/uberjar/$JAR_NAME leaflike@$HOST:leaflike/
+scp target/uberjar/$JAR_NAME leaflike@$HOST:leaflike/
 
 
 #echo "Running migrations"
-ssh -t -v leaflike@$HOST "${SCRIPT}"
+ssh -t leaflike@$HOST "${SCRIPT}"
