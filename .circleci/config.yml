@@ -70,10 +70,7 @@ jobs:
 
       - run:
           name: add known hosts
-          command: |
-            ls ~/.ssh
-            chmod 600 ~/.ssh/id_*
-            echo $KNOWN_HOSTS >> ~/.ssh/known_hosts
+          command: echo $KNOWN_HOSTS >> ~/.ssh/known_hosts
 
       - run:
           name: deploy script
