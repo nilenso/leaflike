@@ -1,8 +1,8 @@
 #!/bin/bash
 
-export VERSION="0.1.0-SNAPSHOT"
-export HOST="139.59.65.123"
-export JAR_NAME="leaflike-$VERSION-standalone.jar"
+VERSION="0.1.0-SNAPSHOT"
+HOST="139.59.65.123"
+JAR_NAME="leaflike-$VERSION-standalone.jar"
 
 SCRIPT="systemctl --user restart leaflike.service"
 
