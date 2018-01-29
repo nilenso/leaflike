@@ -7,9 +7,9 @@
 
 (use-fixtures :once wrap-setup)
 
-(def signup (middlewares/home-middleware user-core/signup))
-(def login (middlewares/home-middleware user-core/login))
-(def logout (middlewares/auth-middleware user-core/logout))
+(def signup (middlewares/home-middleware user-core/signup :disable-csrf? true))
+(def login (middlewares/home-middleware user-core/login :disable-csrf? true))
+(def logout (middlewares/auth-middleware user-core/logout :disable-csrf? true))
 
 (defn make-request
   [input & {:keys [cookie]}]
@@ -17,8 +17,7 @@
                       :session nil
                       :query-params {:next nil}}]
     (if cookie
-      (assoc base-request
-             :headers {"cookie" cookie})
+      (assoc-in base-request [:headers "cookie"] cookie)
       base-request)))
 
 (deftest signup-auth-test

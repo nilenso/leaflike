@@ -6,25 +6,34 @@
             [ring.middleware.session :as session]
             [ring.middleware.session.memory :as mem]
             [ring.middleware.params :as params]
+            [ring.middleware.anti-forgery :as anti-forgery]
             [leaflike.user.db :as user-db]))
 
-(defonce all-sessions (atom {}))
+(defonce ^:private all-sessions (atom {}))
+
+(defn maybe-wrap-csrf
+  [handler-fn disable-csrf?]
+  (if disable-csrf?
+    handler-fn
+    (anti-forgery/wrap-anti-forgery handler-fn)))
 
 (defn auth-middleware
-  [handler-fn]
+  [handler-fn & {:keys [disable-csrf?] :or {disable-csrf? false}}]
   (-> handler-fn
       json/wrap-json-response
       (json/wrap-json-params {:keywords? true :bigdecimals? true})
-      params/wrap-params
       wrap-authorized
       wrap-unauthorized
+      (maybe-wrap-csrf disable-csrf?)
+      params/wrap-params
       (session/wrap-session {:store (mem/memory-store all-sessions)})))
 
 (defn home-middleware
-  [handler-fn]
+  [handler-fn & {:keys [disable-csrf?] :or {disable-csrf? false}}]
   (-> handler-fn
       json/wrap-json-response
       (json/wrap-json-params {:keywords? true :bigdecimals? true})
+      (maybe-wrap-csrf disable-csrf?)
       params/wrap-params
       (session/wrap-session {:store (mem/memory-store all-sessions)})))
 

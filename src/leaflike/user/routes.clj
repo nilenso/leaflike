@@ -3,6 +3,7 @@
             [leaflike.user.views :as views]
             [leaflike.middlewares :refer [with-home-middlewares
                                           with-auth-middlewares]]
+            [ring.middleware.anti-forgery :as anti-forgery]
             [ring.util.response :as res]))
 
 (defn signup
@@ -22,9 +23,9 @@
 
 (defn login-page
   [request]
-  (-> (res/response (views/auth-page-view))
-      (assoc :headers {"Content-Type" "text/html"})
-      (assoc :status 200)))
+  (-> (res/response (views/auth-page-view anti-forgery/*anti-forgery-token*))
+      (assoc :headers {"Content-Type" "text/html"}
+             :status 200)))
 
 (def user-routes
   {;; existing user
