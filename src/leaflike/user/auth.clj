@@ -2,19 +2,15 @@
   (:require [buddy.hashers :as hashers]
             [ring.util.response :as res]))
 
-(defonce user-session (atom nil))
-
 (defn throw-unauthorized
   [status]
-  (do (when-not (nil? @user-session)
-        (reset! user-session nil))
-      (-> (res/redirect "/login")
-          (assoc :status status))))
+  (-> (res/redirect "/login")
+      (assoc :status status)))
 
 (defn wrap-authorized
   [handler]
   (fn [request]
-    (if (nil? @user-session)
+    (if (nil? (get-in request [:session :username]))
       (throw-unauthorized 401)
       (handler request))))
 
@@ -22,36 +18,32 @@
   [handler]
   (fn [request]
     (let [response (handler request)]
-      (when (nil? @user-session)
+      (when (get-in request [:session :username])
         (throw-unauthorized 403))
       response)))
 
 (defn logout-auth
-  [_]
-  (if-not (nil? @user-session)
-    (do (reset! user-session nil)
-        (res/redirect "/login"))
+  [request]
+  (if-not (nil? (get-in request [:session :username]))
+    (assoc-in (res/redirect "/login")
+              [:session :username] nil)
     (throw-unauthorized 401)))
 
 (defn login-auth
   [request member]
-  (let [session         @user-session
-        verify-password (:verify-password member)
+  (let [verify-password (:verify-password member)
         user-password   (get-in member [:auth-data :password])
         username        (get-in member [:auth-data :username])]
 
     (if (hashers/check verify-password user-password)
       ;; login
-      (let [session-updated (assoc session :identity (keyword username))]
-        (do (reset! user-session session-updated)
-            (res/response {:status 200})))
+      (assoc (res/response {:status 200})
+             :session {:username username})
       ;; 401
       (throw-unauthorized 401))))
 
 (defn signup-auth
   [request username]
-  (let [session         @user-session
-        next-url        (get-in request [:query-params :next] "/")
-        session-updated (assoc session :identity (keyword username))]
-    (do (reset! user-session session-updated)
-        (res/redirect next-url))))
+  (let [next-url        (get-in request [:query-params :next] "/")]
+    (assoc (res/redirect next-url)
+           :session {:username username})))

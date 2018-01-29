@@ -18,7 +18,7 @@
 (defn logout
   [request]
   ;; logout
-  (user-core/logout))
+  (user-core/logout request))
 
 (defn login-page
   [request]
