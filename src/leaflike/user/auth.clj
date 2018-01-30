@@ -7,10 +7,14 @@
   (-> (res/redirect "/login")
       (assoc :status status)))
 
+(defn get-username
+  [request]
+  (get-in request [:session :username]))
+
 (defn wrap-authorized
   [handler]
   (fn [request]
-    (if (nil? (get-in request [:session :username]))
+    (if (nil? (get-username request))
       (throw-unauthorized 401)
       (handler request))))
 
@@ -18,13 +22,13 @@
   [handler]
   (fn [request]
     (let [response (handler request)]
-      (when (get-in request [:session :username])
+      (when (get-username request)
         (throw-unauthorized 403))
       response)))
 
 (defn logout-auth
   [request]
-  (if-not (nil? (get-in request [:session :username]))
+  (if-not (nil? (get-username request))
     (assoc-in (res/redirect "/login")
               [:session :username] nil)
     (throw-unauthorized 401)))

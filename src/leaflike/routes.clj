@@ -5,9 +5,11 @@
 
 (defn welcome
   [request]
-  (let [username (get-in request [:session :username])]
-    (assoc (res/response {:message (str "Welcome to Leaflike, " (or username
-                                                                    "Stranger"))})
+  (let [username (get-in request [:session :username])
+        welcome-message (str "Welcome to Leaflike"
+                             (when username
+                               (str ", " username)))]
+    (assoc (res/response {:message welcome-message})
            :session {:username username})))
 
 ;; Home page controller (ring handler)

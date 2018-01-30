@@ -9,7 +9,7 @@
             [ring.middleware.anti-forgery :as anti-forgery]
             [leaflike.user.db :as user-db]))
 
-(defonce ^:private all-sessions (atom {}))
+(defonce ^:private all-sessions (mem/memory-store))
 
 (defn maybe-wrap-csrf
   [handler-fn disable-csrf?]
@@ -26,7 +26,7 @@
       wrap-unauthorized
       (maybe-wrap-csrf disable-csrf?)
       params/wrap-params
-      (session/wrap-session {:store (mem/memory-store all-sessions)})))
+      (session/wrap-session {:store all-sessions})))
 
 (defn home-middleware
   [handler-fn & {:keys [disable-csrf?] :or {disable-csrf? false}}]
@@ -35,7 +35,7 @@
       (json/wrap-json-params {:keywords? true :bigdecimals? true})
       (maybe-wrap-csrf disable-csrf?)
       params/wrap-params
-      (session/wrap-session {:store (mem/memory-store all-sessions)})))
+      (session/wrap-session {:store all-sessions})))
 
 (defn with-home-middlewares
   [routes-map]
