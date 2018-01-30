@@ -17,11 +17,4 @@
   [:div {:id "content"}
    [:h1 {:class "text-success"} "Welcome to Leaflike"]
    (link-to {:type "button" :class "btn btn-primary btn-lg btn-space"} "/login" "Login")
-   (link-to {:type "button" :class "btn btn-secondary btn-lg btn-space"} "/register" "Register")])
-
-
-#_(defn not-found []
-  [:div {:class "well"}
-   [:h1 {:class "info-worning"} "Page Not Found"]
-   [:p "There's no requested page. "]
-   ])
+   (link-to {:type "button" :class "btn btn-secondary btn-lg btn-space"} "/signup" "Sign up")])

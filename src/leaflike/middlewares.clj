@@ -11,14 +11,6 @@
       wrap-authorized
       wrap-unauthorized))
 
-(defn home-middleware
-  [handler-fn]
-  handler-fn)
-
-(defn with-home-middlewares
-  [routes-map]
-  (fmap home-middleware routes-map))
-
 (defn with-auth-middlewares
   [route-map]
   (fmap auth-middleware route-map))
