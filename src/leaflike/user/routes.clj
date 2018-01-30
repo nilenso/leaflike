@@ -1,10 +1,10 @@
 (ns leaflike.user.routes
   (:require [leaflike.user.core :as user-core]
             [leaflike.user.views :as views]
-            [leaflike.middlewares :refer [with-home-middlewares
-                                          with-auth-middlewares]]
+            [leaflike.middlewares :refer [with-auth-middlewares]]
             [ring.middleware.anti-forgery :as anti-forgery]
-            [ring.util.response :as res]))
+            [ring.util.response :as res]
+            [leaflike.layout :as layout]))
 
 (defn signup
   [request]
@@ -23,14 +23,25 @@
 
 (defn login-page
   [request]
-  (-> (res/response (views/auth-page-view anti-forgery/*anti-forgery-token*))
-      (assoc :headers {"Content-Type" "text/html"}
-             :status 200)))
+  (-> (res/response (layout/application 
+                        "Login" 
+                        (views/login-form anti-forgery/*anti-forgery-token*)))
+      (assoc :headers {"Content-Type" "text/html"})
+      (assoc :status 200)))
+
+(defn signup-page
+  [request]
+  (-> (res/response (layout/application 
+                        "Signup" 
+                        (views/signup-form anti-forgery/*anti-forgery-token*)))
+      (assoc :headers {"Content-Type" "text/html"})
+      (assoc :status 200)))
 
 (def user-routes
   {;; existing user
-   "login"        (with-home-middlewares  {:post login
-                                           :get  login-page})
+   "login"        {:post login
+                   :get  login-page}
    "logout"       (with-auth-middlewares  {:post logout})
    ;; new user
-   "create-user"  (with-home-middlewares  {:post signup})})
+   "signup"       {:post signup
+                   :get  signup-page}})

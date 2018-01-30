@@ -1,7 +1,7 @@
 (ns leaflike.routes
-  (:require [leaflike.middlewares :refer [with-home-middlewares
-                                          with-auth-middlewares]]
-            [ring.util.response :as res]))
+  (:require [leaflike.middlewares :refer [with-auth-middlewares]]
+            [ring.util.response :as res]
+            [leaflike.layout :as layout]))
 
 (defn welcome
   [request]
@@ -15,10 +15,10 @@
 ;; Home page controller (ring handler)
 (defn home
   [request]
-  (-> (res/resource-response "index.html" {:root "public"})
-      (assoc :headers {"Content-Type" "text/html"})
-      (assoc :status 200)))
+  (let [homepage (layout/application "Leaflike" (layout/index))]
+    (-> (res/response homepage)
+        (assoc :headers {"Content-Type" "text/html"}))))
 
 (def home-routes
-  {""               (with-home-middlewares {:get welcome})
-   "home"           (with-auth-middlewares {:get home})})
+  {""        {:get home}
+   "welcome" {:get welcome}})

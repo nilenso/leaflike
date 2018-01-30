@@ -1,15 +1,34 @@
 (ns leaflike.server
-  (:require [bidi.ring :as bidi]
-            [org.httpkit.server :as httpkit]
-            [leaflike.config :refer [server-spec]]
-            [leaflike.routes :refer [home-routes]]
-            [leaflike.bookmarks.routes :refer [bookmarks-routes]]
-            [leaflike.user.routes :refer [user-routes]]))
+  (:require [leaflike.config                :refer [server-spec]]
+            [leaflike.routes                :refer [home-routes]]
+            [leaflike.bookmarks.routes      :refer [bookmarks-routes]]
+            [leaflike.user.routes           :refer [user-routes]]
+            [bidi.ring                      :as    bidi]
+            [org.httpkit.server             :as    httpkit]
+            [ring.middleware.resource       :refer [wrap-resource]]
+            [ring.middleware.json           :refer [wrap-json-params
+                                                    wrap-json-response]]
+            [ring.middleware.params         :refer [wrap-params]]
+            [ring.middleware.session        :as    session]
+            [ring.middleware.session.memory :as    mem]
+            [ring.middleware.anti-forgery   :refer [wrap-anti-forgery]]))
+
+(defonce ^:private all-sessions (mem/memory-store))
 
 (def app-handler
   (bidi/make-handler ["/" (merge home-routes
                                  user-routes
                                  bookmarks-routes)]))
+
+(defn app
+  []
+  (-> app-handler
+      wrap-anti-forgery
+      (wrap-resource "public")
+      (wrap-json-params {:keywords? true :bigdecimals? true})
+      wrap-json-response
+      wrap-params
+      (session/wrap-session {:store all-sessions})))
 
 (defonce server (atom nil))
 
@@ -17,7 +36,7 @@
   []
   (let [server-spec (server-spec)]
     (reset! server (httpkit/run-server
-                    app-handler server-spec))
+                    (app) server-spec))
     (println "Server started at : " (:ip server-spec) ":" (:port server-spec))))
 
 (defn stop! []
