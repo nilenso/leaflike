@@ -1,8 +1,28 @@
 (ns leaflike.user.views
-  (:require [hiccup.form :as hf]
-            [hiccup.core :as hc]))
+  (:require [hiccup.form :as f]
+            [hiccup.element :refer [link-to]]))
 
-(defn register-form
+#_(defn login-form
+  []
+  [:div {:class "well"}
+   [:form {:novalidate "" :role "form"}
+     [:post "/login"]
+     [:div {:class "form-group"}
+      (f/label {:class "control-label"} "username" "Username")
+      (f/text-field {:class "form-control" :placeholder "Username"} "username")]
+     [:div {:class "form-group"}
+      (f/label {:class "control-label"} "password" "Password")
+      (f/password-field {:class "form-control" :placeholder "Password"} "password")]
+     [:div
+      (f/submit-button {:class "btn btn-primary" :on-click "console.log(\"ma\")"} "Login")]]])
+
+(defn login-form
+  []
+  [:div {:class "well"}])
+
+#_(link-to {:class "btn btn-primary"} "/" "Take me to Home")
+
+#_(defn register-form
   []
   (hf/form-to [:post "/create-user"]
               (hf/text-field     {:placeholder "Username"} "username")
@@ -10,14 +30,7 @@
               (hf/password-field {:placeholder "Password"} "password")
               (hf/submit-button  "Register")))
 
-(defn login-form
-  []
-  (hf/form-to [:post "/login"]
-              (hf/text-field     {:placeholder "Username/Email"} "username")
-              (hf/password-field {:placeholder "Password"}       "password")
-              (hf/submit-button  "Login")))
-
-(defn auth-page-view
+#_(defn auth-page-view
   []
   (hc/html
    [:div#register (register-form)]
