@@ -4,8 +4,7 @@
 
 (defn application
   [title & content]
-  (html5 {:ng-app "leaflikeApp" :lang "en"}
-         [:head
+  (html5 [:head
           [:title title]
           (include-css "//netdna.bootstrapcdn.com/twitter-bootstrap/2.3.1/css/bootstrap-combined.min.css")
           (include-css "/css/styles.css")
