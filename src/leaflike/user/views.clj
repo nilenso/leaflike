@@ -1,24 +1,38 @@
 (ns leaflike.user.views
-  (:require [hiccup.form :as hf]
-            [hiccup.core :as hc]))
-
-(defn register-form
-  []
-  (hf/form-to [:post "/create-user"]
-              (hf/text-field     {:placeholder "Username"} "username")
-              (hf/email-field    {:placeholder "Email"}    "email")
-              (hf/password-field {:placeholder "Password"} "password")
-              (hf/submit-button  "Register")))
+  (:require [hiccup.form :as f]
+            [hiccup.element :refer [link-to]]))
 
 (defn login-form
   []
-  (hf/form-to [:post "/login"]
-              (hf/text-field     {:placeholder "Username/Email"} "username")
-              (hf/password-field {:placeholder "Password"}       "password")
-              (hf/submit-button  "Login")))
+  [:div {:id "content"}
+   [:h3 {:class "text-success"} "Login"]
+   [:div {:class "well well-width"}
+    (f/form-to {:role "form" :novalidate ""}
+               [:post "/login"]
+               [:div {:class "form-group"}
+                (f/label {:class "control-label"} "username" "Username")
+                (f/text-field {:class "form-control" :placeholder "Username"} "username")]
+               [:div {:class "form-group"}
+                (f/label {:class "control-label"} "password" "Password")
+                (f/password-field {:class "form-control" :placeholder "Password"} "password")]
+               [:div {:class "form-group"}
+                (f/submit-button {:class "btn btn-primary"} "Login")])]])
 
-(defn auth-page-view
+(defn signup-form
   []
-  (hc/html
-   [:div#register (register-form)]
-   [:div#login    (login-form)]))
+  [:div {:id "content"}
+   [:h3 {:class "text-success"} "Signup"]
+   [:div {:class "well well-width"}
+    (f/form-to {:role "form" :novalidate ""}
+               [:post "/signup"]
+               [:div {:class "form-group"}
+                (f/label {:class "control-label"} "email" "Email")
+                (f/email-field {:class "form-control" :placeholder "Email"} "email")]
+               [:div {:class "form-group"}
+                (f/label {:class "control-label"} "username" "Username")
+                (f/text-field {:class "form-control" :placeholder "Username"} "username")]
+               [:div {:class "form-group"}
+                (f/label {:class "control-label"} "password" "Password")
+                (f/password-field {:class "form-control" :placeholder "Password"} "password")]
+               [:div {:class "form-group"}
+                (f/submit-button {:class "btn btn-primary"} "Signup")])]])

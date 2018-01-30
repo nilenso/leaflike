@@ -1,9 +1,9 @@
 (ns leaflike.user.routes
   (:require [leaflike.user.core :as user-core]
             [leaflike.user.views :as views]
-            [leaflike.middlewares :refer [with-home-middlewares
-                                          with-auth-middlewares]]
-            [ring.util.response :as res]))
+            [leaflike.middlewares :refer [with-auth-middlewares]]
+            [ring.util.response :as res]
+            [leaflike.layout :as layout]))
 
 (defn signup
   [request]
@@ -22,14 +22,21 @@
 
 (defn login-page
   [request]
-  (-> (res/response (views/auth-page-view))
+  (-> (res/response (layout/application "Login" (views/login-form)))
+      (assoc :headers {"Content-Type" "text/html"})
+      (assoc :status 200)))
+
+(defn signup-page
+  [request]
+  (-> (res/response (layout/application "Signup" (views/signup-form)))
       (assoc :headers {"Content-Type" "text/html"})
       (assoc :status 200)))
 
 (def user-routes
   {;; existing user
-   "login"        (with-home-middlewares  {:post login
-                                           :get  login-page})
+   "login"        {:post login
+                   :get  login-page}
    "logout"       (with-auth-middlewares  {:post logout})
    ;; new user
-   "create-user"  (with-home-middlewares  {:post signup})})
+   "signup"       {:post signup
+                   :get  signup-page}})
