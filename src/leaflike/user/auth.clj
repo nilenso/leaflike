@@ -29,25 +29,26 @@
 (defn logout-auth
   [request]
   (if-not (nil? (get-username request))
-    (assoc-in (res/redirect "/login")
-              [:session :username] nil)
+    (-> res/redirect "/login"
+        (assoc :session {:username nil}))
     (throw-unauthorized 401)))
 
 (defn login-auth
   [request member]
   (let [verify-password (:verify-password member)
         user-password   (get-in member [:auth-data :password])
-        username        (get-in member [:auth-data :username])]
+        username        (get-in member [:auth-data :username])
+        next-url        (get-in request [:query-params :next] "/")]
 
     (if (hashers/check verify-password user-password)
       ;; login
-      (assoc (res/response {:status 200})
-             :session {:username username})
+      (-> res/redirect next-url
+          (assoc :session {:username username}))
       ;; 401
       (throw-unauthorized 401))))
 
 (defn signup-auth
   [request username]
-  (let [next-url        (get-in request [:query-params :next] "/")]
-    (assoc (res/redirect next-url)
-           :session {:username username})))
+  (let [next-url (get-in request [:query-params :next] "/")]
+    (-> (res/redirect next-url)
+        (assoc :session {:username username}))))

@@ -2,14 +2,13 @@
   (:require [leaflike.user.auth :as user-auth]
             [leaflike.fixtures :refer [wrap-setup]]
             [clojure.test :refer :all]
-            [leaflike.user.core :as user-core]
-            [leaflike.middlewares :as middlewares]))
+            [leaflike.user.core :as user-core]))
 
 (use-fixtures :once wrap-setup)
 
-(def signup (middlewares/home-middleware user-core/signup :disable-csrf? true))
-(def login (middlewares/home-middleware user-core/login :disable-csrf? true))
-(def logout (middlewares/auth-middleware user-core/logout :disable-csrf? true))
+(def signup user-core/signup)
+(def login  user-core/login)
+(def logout user-core/logout)
 
 (defn make-request
   [input & {:keys [cookie]}]

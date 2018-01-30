@@ -25,5 +25,5 @@
       (auth/throw-unauthorized 401))))
 
 (defn logout
-  [request]
+  [request]  
   (auth/logout-auth request))
