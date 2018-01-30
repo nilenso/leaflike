@@ -29,7 +29,7 @@
 (defn logout-auth
   [request]
   (if-not (nil? (get-username request))
-    (-> res/redirect "/login"
+    (-> (res/redirect "/login")
         (assoc :session {:username nil}))
     (throw-unauthorized 401)))
 
@@ -42,7 +42,7 @@
 
     (if (hashers/check verify-password user-password)
       ;; login
-      (-> res/redirect next-url
+      (-> (res/redirect next-url)
           (assoc :session {:username username}))
       ;; 401
       (throw-unauthorized 401))))

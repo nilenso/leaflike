@@ -23,42 +23,44 @@
   (testing "signup success"
     (let [response (signup (make-request {:username "a"
                                           :password "b"
-                                          :email "a@b.com"}))
-          cookie (first (get-in response [:headers "Set-Cookie"]))]
+                                          :email "a@b.com"}))]
       (is (= (:status response) 302)))))
 
 (deftest login-auth-test
   (let [response (signup (make-request {:username "b"
                                         :password "b"
-                                        :email "b@b.com"}))
-        cookie (first (get-in response [:headers "Set-Cookie"]))]
+                                        :email "b@b.com"}))]
 
     (testing "login success"
       (let [response (login (make-request {:username "b"
                                            :password "b"}))]
-        (is (= (:status response) 200))))
+        (is (= (:status response) 302))
+        (is (= (get-in response [:session :username]) "b"))))
 
     (testing "login failure. wrong password"
       (let [response (login (make-request {:username "b"
                                            :password "a"}))]
-        (is (= (:status response) 401))))
+        (is (= (:status response) 401))
+        (is (= (get-in response [:session :username]) nil))))
 
     (testing "login failure. no user"
       (let [response (login (make-request {:username "c"
                                            :password "a"}))]
-        (is (= (:status response) 401))))))
+        (is (= (:status response) 401))
+        (is (= (get-in response [:session :username]) nil))))))
 
 (deftest logout-auth-test
   (let [response (signup (make-request {:username "t"
                                         :password "c"
                                         :email "t@c.com"}))
-        cookie (first (get-in response [:headers "Set-Cookie"]))]
+        session  (:session response)]
     (testing "logout success"
-      (let [response (logout (make-request {}
-                                           :cookie cookie))]
+      (let [response (logout (-> (make-request {})
+                                 (assoc :session session)))]
         (is (= (:status response) 302))))
 
     (testing "logout failure. user session is already nil"
 
-      (let [response (logout (make-request {}))]
+      (let [response (logout (-> (make-request {})
+                                 (assoc :session {:username nil})))]
         (is (= (:status response) 401))))))
