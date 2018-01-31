@@ -1,32 +1,34 @@
 (ns leaflike.bookmarks.routes
   (:require [leaflike.bookmarks.core :as bm-core]
             [leaflike.middlewares :refer [with-auth-middlewares]]
+            [leaflike.layout :refer [application]]
             [ring.util.response :as res]
-            [buddy.auth :refer [authenticated?]]))
+            [buddy.auth :refer [authenticated?]]
+            [leaflike.bookmarks.views :as views]))
 
 (defn create
   [request]
   (res/response (bm-core/create request)))
 
-(defn list-all
+#_(defn list-all
   [request]
   (res/response (bm-core/list-all request)))
 
-(defn delete
+#_(defn delete
   [request]
   (res/response (bm-core/delete request)))
 
-(defn detail
+#_(defn detail
   [request]
   (res/response (bm-core/list-by-id request)))
 
-#_(defn list-all-view
+(defn list-all-view
   [request]
-  (res/response ()))
-
+  (let [bookmarks (:result (bm-core/list-all request))]
+    (print bookmarks)
+    (-> (res/response (application "Bookmarks" (views/list-all-view bookmarks)))
+        (assoc :headers {"Content-Type" "text/html"}))))
 
 (def bookmarks-routes
-  {"bookmarks"        (with-auth-middlewares {:post   create
-                                              :get    list-all})
-   ["bookmarks/" :id] (with-auth-middlewares {:get    detail
-                                              :delete delete})})
+  {"bookmarks" (with-auth-middlewares {:get  list-all-view
+                                       :post create})})
