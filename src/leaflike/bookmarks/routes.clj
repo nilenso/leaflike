@@ -10,7 +10,8 @@
 (defn create
   [request]
   (let [result (bm-core/create request)]
-    (if (:success result)
+    ;; error : false means bookmarks is created ^_^
+    (if-not (:error result)
       (-> (res/redirect "/bookmarks")
           (assoc-in [:headers "Content-Type"] "text/html"))
       (res/response result))))

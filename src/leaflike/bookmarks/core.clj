@@ -23,8 +23,8 @@
                             :member_id (:id user)
                             :created_at (utils/get-timestamp))]
         {:result (bm-db/create bookmark)
-         :success  true})
-      {:success false
+         :error false})
+      {:error true
        :result "Invalid params"})))
 
 (defn list-all
