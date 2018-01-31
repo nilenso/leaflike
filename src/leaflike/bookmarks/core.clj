@@ -3,25 +3,23 @@
                                                   id?]]
             [leaflike.bookmarks.db :as bm-db]
             [leaflike.user.db :as user-db]
-            [leaflike.user.auth :refer [user-session
-                                        throw-unauthorized]]
+            [leaflike.user.auth :refer [throw-unauthorized]]
             [leaflike.utils :as utils]))
 
 (defn- get-user
-  []
-  (if-not (nil? @user-session)
-    (let [identifier (get @user-session :identity)]
-      (first (user-db/get-member-auth-data identifier :id)))
-    (throw-unauthorized)))
+  [request]
+  (if-let [username (get-in request [:session :username])]
+    (first (user-db/get-member-auth-data username :id))
+    (throw-unauthorized 401)))
 
 (defn create
   [request]
   (let [body    (:body request)
-        user    (get-user)]
+        user    (get-user request)]
     (if (valid-bookmark? body)
-      (let [bookmark (assoc body :member_id (:id user)
-                                 :created_at (utils/get-timestamp))]
-
+      (let [bookmark (assoc body
+                            :member_id (:id user)
+                            :created_at (utils/get-timestamp))]
         {:result (bm-db/create bookmark)
          :error  false})
       {:error  true
@@ -29,14 +27,14 @@
 
 (defn list-all
   [request]
-  (let [params {:member_id (:id (get-user))}]
+  (let [params {:member_id (:id (get-user request))}]
     {:result  (bm-db/list-all params)
      :error   false}))
 
 (defn list-by-id
   [request]
   (let [id        (get-in request [:route-params :id])
-        user      (get-user)
+        user      (get-user request)
         params    {:id id :member_id (:id user)}]
     (if (id? params)
       {:result  (bm-db/list-by-id params)
@@ -47,7 +45,7 @@
 (defn delete
   [request]
   (let [id        (get-in request [:route-params :id])
-        user      (get-user)
+        user      (get-user request)
         params    {:id id :member_id (:id user)}]
     (if (id? params)
       {:result (bm-db/delete params)

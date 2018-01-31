@@ -16,7 +16,8 @@
                  [buddy "2.0.0"]
                  [org.clojure/algo.generic "0.1.2"]
                  [hiccup "2.0.0-alpha1"]
-                 [clj-time "0.14.2"]]
+                 [clj-time "0.14.2"]
+                 [ring/ring-anti-forgery "1.2.0"]]
   :main          leaflike.core
   :aot           [leaflike.core]
   :target-path   "target/%s")

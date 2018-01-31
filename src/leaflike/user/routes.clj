@@ -2,6 +2,7 @@
   (:require [leaflike.user.core :as user-core]
             [leaflike.user.views :as views]
             [leaflike.middlewares :refer [with-auth-middlewares]]
+            [ring.middleware.anti-forgery :as anti-forgery]
             [ring.util.response :as res]
             [leaflike.layout :as layout]))
 
@@ -18,17 +19,21 @@
 (defn logout
   [request]
   ;; logout
-  (user-core/logout))
+  (user-core/logout request))
 
 (defn login-page
   [request]
-  (-> (res/response (layout/application "Login" (views/login-form)))
+  (-> (res/response (layout/application 
+                        "Login" 
+                        (views/login-form anti-forgery/*anti-forgery-token*)))
       (assoc :headers {"Content-Type" "text/html"})
       (assoc :status 200)))
 
 (defn signup-page
   [request]
-  (-> (res/response (layout/application "Signup" (views/signup-form)))
+  (-> (res/response (layout/application 
+                        "Signup" 
+                        (views/signup-form anti-forgery/*anti-forgery-token*)))
       (assoc :headers {"Content-Type" "text/html"})
       (assoc :status 200)))
 
