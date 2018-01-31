@@ -11,26 +11,33 @@
   [request]
   (get-in request [:session :username]))
 
-(defn wrap-authorized
+(defn wrap-authorization
+  ;; checks if the incoming request is authorized
   [handler]
+  ;; handle request
   (fn [request]
-    (if (nil? (get-username request))
-      (throw-unauthorized 401)
-      (handler request))))
+    (let [username (get-username request)]
+      (if username
+        (handler request)
+        (throw-unauthorized 401)))))
 
-(defn wrap-unauthorized
+(defn wrap-auth-response
+  ;; if the request is authorized,
+  ;; embed session in the response
   [handler]
   (fn [request]
-    (let [response (handler request)]
-      (when (get-username request)
-        (throw-unauthorized 403))
-      response)))
+    (let [response (handler request)
+          username (get-username request)]
+      (if username
+        (-> response
+            (assoc :session {:username username}))
+        response))))
 
 (defn logout-auth
   [request]
   (if-not (nil? (get-username request))
     (-> (res/redirect "/login")
-        (assoc :session {:username nil}))
+        (assoc :session {}))
     (throw-unauthorized 401)))
 
 (defn login-auth

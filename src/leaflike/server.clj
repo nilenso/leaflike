@@ -9,7 +9,7 @@
             [ring.middleware.json           :refer [wrap-json-params
                                                     wrap-json-response]]
             [ring.middleware.params         :refer [wrap-params]]
-            [ring.middleware.session        :as    session]
+            [ring.middleware.session        :refer [wrap-session]]
             [ring.middleware.session.memory :as    mem]
             [ring.middleware.anti-forgery   :refer [wrap-anti-forgery]]))
 
@@ -28,7 +28,7 @@
       (wrap-json-params {:keywords? true :bigdecimals? true})
       wrap-json-response
       wrap-params
-      (session/wrap-session {:store all-sessions})))
+      (wrap-session {:store all-sessions})))
 
 (defonce server (atom nil))
 

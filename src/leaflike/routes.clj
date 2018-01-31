@@ -9,8 +9,7 @@
         welcome-message (str "Welcome to Leaflike"
                              (when username
                                (str ", " username)))]
-    (assoc (res/response {:message welcome-message})
-           :session {:username username})))
+    (res/response {:message welcome-message})))
 
 ;; Home page controller (ring handler)
 (defn home
@@ -21,4 +20,4 @@
 
 (def home-routes
   {""        {:get home}
-   "welcome" {:get welcome}})
+   "welcome" (with-auth-middlewares {:get welcome})})
