@@ -4,7 +4,8 @@
             [leaflike.bookmarks.db :as bm-db]
             [leaflike.user.db :as user-db]
             [leaflike.user.auth :refer [throw-unauthorized]]
-            [leaflike.utils :as utils]))
+            [leaflike.utils :as utils]
+            [clojure.walk :as walk]))
 
 (defn- get-user
   [request]
@@ -14,15 +15,16 @@
 
 (defn create
   [request]
-  (let [body    (:body request)
+  (let [body (select-keys (walk/keywordize-keys (:params request))
+                          [:title :url :tags])
         user    (get-user request)]
     (if (valid-bookmark? body)
       (let [bookmark (assoc body
                             :member_id (:id user)
                             :created_at (utils/get-timestamp))]
         {:result (bm-db/create bookmark)
-         :error  false})
-      {:error  true
+         :error false})
+      {:error true
        :result "Invalid params"})))
 
 (defn list-all

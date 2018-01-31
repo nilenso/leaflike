@@ -31,17 +31,17 @@
    (user-core/signup (make-request user {}))
 
   (testing "create bookmark success"
-    (let [response (bm-core/create (make-request {} bookmark))]
+    (let [response (bm-core/create (make-request bookmark {}))]
       (is (and (= false (:error response))
                (= '(1) (:result response))))))
 
     (testing "create bookmark success without tags"
-      (let [response (bm-core/create (make-request {} (dissoc bookmark :tags)))]
+      (let [response (bm-core/create (make-request (dissoc bookmark :tags) {}))]
         (is (and (= false (:error response))
                  (= '(1) (:result response))))))
 
   (testing "create bookmark failed"
-    (let [response (bm-core/create (make-request {} (dissoc bookmark :url)))]
+    (let [response (bm-core/create (make-request (dissoc bookmark :url) {}))]
       (is (and (:error response)
                (= "Invalid params" (:result response))))))
 
