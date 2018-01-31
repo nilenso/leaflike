@@ -30,7 +30,9 @@
           username (get-username request)]
       (if username
         (-> response
-            (assoc :session {:username username}))
+            ;; should not reset the antiforgery token
+            ;; hence using assoc-in and not assoc
+            (assoc-in [:session :username] username))
         response))))
 
 (defn logout-auth
@@ -50,7 +52,7 @@
     (if (hashers/check verify-password user-password)
       ;; login
       (-> (res/redirect next-url)
-          (assoc :session {:username username}))
+          (assoc-in [:session :username] username))
       ;; 401
       (throw-unauthorized 401))))
 
@@ -58,4 +60,4 @@
   [request username]
   (let [next-url (get-in request [:query-params :next] "/")]
     (-> (res/redirect next-url)
-        (assoc :session {:username username}))))
+        (assoc-in [:session :username] username))))

@@ -4,11 +4,16 @@
             [leaflike.layout :refer [application]]
             [ring.util.response :as res]
             [buddy.auth :refer [authenticated?]]
-            [leaflike.bookmarks.views :as views]))
+            [leaflike.bookmarks.views :as views]
+            [ring.middleware.anti-forgery :as anti-forgery]))
 
 (defn create
   [request]
-  (res/response (bm-core/create request)))
+  (let [result (bm-core/create request)]
+    (if (:success result)
+      (-> (res/redirect "/bookmarks")
+          (assoc-in [:headers "Content-Type"] "text/html"))
+      (res/response result))))
 
 #_(defn list-all
   [request]
@@ -25,10 +30,16 @@
 (defn list-all-view
   [request]
   (let [bookmarks (:result (bm-core/list-all request))]
-    (print bookmarks)
-    (-> (res/response (application "Bookmarks" (views/list-all-view bookmarks)))
+    (-> (res/response (application "Bookmarks" (views/list-all bookmarks)))
         (assoc :headers {"Content-Type" "text/html"}))))
+
+(defn create-view
+  [request]
+  (-> (res/response (application "Add Bookmark" (views/add-bookmark
+                                                 anti-forgery/*anti-forgery-token*)))
+      (assoc-in [:headers "Content-Type"] "text/html")))
 
 (def bookmarks-routes
   {"bookmarks" (with-auth-middlewares {:get  list-all-view
-                                       :post create})})
+                                       :post create})
+   "create-bookmark" (with-auth-middlewares {:get create-view})})
