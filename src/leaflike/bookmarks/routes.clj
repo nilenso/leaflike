@@ -41,6 +41,6 @@
       (assoc-in [:headers "Content-Type"] "text/html")))
 
 (def bookmarks-routes
-  {"bookmarks" (with-auth-middlewares {:get  list-all-view
-                                       :post create})
-   "create-bookmark" (with-auth-middlewares {:get create-view})})
+  {"bookmarks" {"" (with-auth-middlewares {:get  list-all-view
+                                           :post create})
+                "/add" (with-auth-middlewares {:get create-view})}})

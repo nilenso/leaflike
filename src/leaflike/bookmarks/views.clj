@@ -4,7 +4,12 @@
 (defn list-all
   [bookmarks]
   [:div {:id "content"}
-   [:h3 "Bookmarks"]
+   [:div {:class "row"}
+    [:div {:class "col"}
+     [:h3 "Bookmarks"]]
+    [:div {:class "col"}
+     [:a {:href "/bookmarks/add"}
+      [:button {:class "btn btn-large btn-primary"} "Add bookmark"]]]]
    [:table {:class "table"}
     [:thead {:class "thead-dark"}
      [:tr
@@ -23,6 +28,7 @@
 (defn add-bookmark
   [anti-forgery-token]
   [:div {:id "content"}
+   [:h3 "Add bookmark"]
    [:div {:class "well"}
     (f/form-to {:role "form" :novalidate ""}
                [:post "/bookmarks"]
