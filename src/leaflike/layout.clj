@@ -6,7 +6,7 @@
   [title & content]
   (html5 [:head
           [:title title]
-          (include-css "//netdna.bootstrapcdn.com/twitter-bootstrap/2.3.1/css/bootstrap-combined.min.css")
+          (include-css "//maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css")
           (include-css "/css/styles.css")
           [:body
            [:div {:class "container"} content]]]))
@@ -15,5 +15,5 @@
   []
   [:div {:id "content"}
    [:h1 {:class "text-success"} "Welcome to Leaflike"]
-   (link-to {:type "button" :class "btn btn-primary btn-lg btn-space"} "/login" "Login")
-   (link-to {:type "button" :class "btn btn-secondary btn-lg btn-space"} "/signup" "Sign up")])
+   [:a {:href "/signup"} [:button {:class "btn btn-primary btn-space"} "Signup"]]
+   [:a {:href "/login"}  [:button {:class "btn btn-primary btn-space"} "Login"]]])
