@@ -35,9 +35,8 @@ $ ./scripts/run_tests.sh
 #### Run app
 
 ```
-$ cp resources/config/config.edn.dev resources/config/config.edn
-$ lein run migrate
-$ lein run
+$ LEAFLIKE_ENV=dev lein run migrate
+$ LEAFLIKE_ENV=dev lein run
 ```
 
 ### Production
