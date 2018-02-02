@@ -2,14 +2,23 @@
   (:require [clojure.java.jdbc :as jdbc]
             [leaflike.config :refer [db-spec]]
             [honeysql.core :as sql]
-            [honeysql.helpers :as helpers]))
+            [honeysql.helpers :as helpers]
+            [honeysql.types :as types]))
+
+(defn format-tags
+  [params]
+  ;; check if tag exists
+  ;; check if tags is nil?
+  (if (nil? (get params :tags))
+    params
+    (update params :tags #(types/array %))))
 
 (defn create
   [params]
   (jdbc/execute! (db-spec) (-> (helpers/insert-into :bookmarks)
-                               (helpers/values [params])
-                               sql/format)))
-
+                               (helpers/values [(format-tags params)])
+                                sql/format)))
+  
 (defn list-all
   [{:keys [member_id]}]
   (jdbc/query (db-spec) (-> (helpers/select :*)

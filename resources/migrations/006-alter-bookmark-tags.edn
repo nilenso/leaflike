@@ -1,0 +1,4 @@
+{:up ["ALTER TABLE bookmarks DROP COLUMN tags;
+       ALTER TABLE bookmarks ADD COLUMN tags text[];"]
+ :down ["ALTER TABLE bookmarks DROP COLUMN tags;
+         ALTER TABLE bookmarks ADD COLUMN tags text;"]}
