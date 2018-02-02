@@ -12,7 +12,8 @@
   ;; check if tags is nil?
   (if (nil? tags)
     params
-    (do (str/split tags #"(\w)(\s+)([\.,])")
+    (do ;; :tags "space space , comma . dot"
+        (str/split tags #"(\w)(\s+)([\.,])")
         (assoc params :tags (types/array tags)))))
 
 (defn create
