@@ -6,10 +6,10 @@
             [honeysql.types :as types]))
 
 (defn format-tags
-  [params]
+  [{:keys [tags] :as params}]
   ;; check if tag exists
   ;; check if tags is nil?
-  (if (nil? (get params :tags))
+  (if (nil? tags)
     params
     (update params :tags #(types/array %))))
 
