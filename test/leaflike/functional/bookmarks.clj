@@ -12,7 +12,7 @@
 
 (def bookmark {:title "abc"
                :url   "http://abc.com"
-               :tags  "abc random test, music . something"})
+               :tags  "abc, random, test, music, something"})
 
 (defn make-request
   ([params body]
