@@ -43,7 +43,7 @@
       (not (valid-bookmark? a))))
 
   (testing "is bookmark valid with tags"
-    (let [a {:url "http://google.com" :title "google" :tags "information"}]
+    (let [a {:url "http://google.com" :title "google" :tags "information something"}]
       (is (valid-bookmark? a))))
 
   (testing "is bookmark valid with id?"
