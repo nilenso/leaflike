@@ -19,11 +19,11 @@ $ git clone https://github.com/nilenso/leaflike.git
 #### Setup Databases
 
 ```
-$ createdb -U username leaflike
-$ createdb -U username leaflike_test
+$ createdb -U <username> leaflike
+$ createdb -U <username> leaflike_test
 ```
 
-**Note : Change postgres username and password in config.end.test and config.end.dev if required**
+**Note : Change postgres username and password in `config.edn.test` and `config.edn.dev` if required**
 
 #### Run Tests
 
