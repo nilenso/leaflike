@@ -1,15 +1,26 @@
 (ns leaflike.bookmarks.db
   (:require [clojure.java.jdbc :as jdbc]
-            [leaflike.config :refer [db-spec]]
-            [honeysql.core :as sql]
-            [honeysql.helpers :as helpers]))
+            [honeysql.core     :as sql]
+            [honeysql.helpers  :as helpers]
+            [honeysql.types    :as types]
+            [clojure.string    :as str]
+            [leaflike.config   :refer [db-spec]]))
+
+(defn format-tags
+  [{:keys [tags] :as params}]
+  ;; check if tag exists
+  ;; check if tags is nil?
+  (if (nil? tags)
+    params
+    (let [tags (str/split tags #",")]
+      (assoc params :tags (types/array tags)))))
 
 (defn create
   [params]
   (jdbc/execute! (db-spec) (-> (helpers/insert-into :bookmarks)
-                               (helpers/values [params])
-                               sql/format)))
-
+                               (helpers/values [(format-tags params)])
+                                sql/format)))
+  
 (defn list-all
   [{:keys [member_id]}]
   (jdbc/query (db-spec) (-> (helpers/select :*)
