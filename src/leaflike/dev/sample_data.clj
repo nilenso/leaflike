@@ -6,7 +6,7 @@
             [faker.lorem :refer [sentences]]
             [clojure.string :as str]))
 
-(defn gen-bookmark
+(defn- gen-bookmark
   "Generates a bookmark filled with a random title, URL and tags."
   [& {:keys [num-tags] :or {num-tags 3}}]
   (let [name (domain-word)
@@ -18,14 +18,15 @@
      :url (str "http://" name ".com")
      :tags tags-str}))
 
-(defn add-bookmark
+(defn- add-bookmark
   "Adds `bookmark` as `username`."
   [username bookmark]
   (bm-core/create {:params bookmark
                    :session {:username username}}))
 
-(defn add-n-bookmarks
+(defn- add-n-bookmarks
   "Adds `num-bookmarks` generated bookmarks as `username`."
   [username num-bookmarks]
-  (dotimes [i num-bookmarks]
+  (println (format "Adding %d bookmarks as user %s" num-bookmarks username))
+  (dotimes [_ num-bookmarks]
     (add-bookmark username (gen-bookmark))))
