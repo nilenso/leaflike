@@ -33,6 +33,25 @@
     {:result  (bm-db/list-all params)
      :error   false}))
 
+(defn fetch-bookmarks
+  [request]
+  (let [items-per-page 10
+        page (Integer/parseInt (get-in request [:params :page]))
+        page (dec page)
+        user (get-user request)]
+    (if (>= page 0)
+      (let [bookmarks (bm-db/fetch-bookmarks {:member_id (:id user)
+                                              :limit items-per-page
+                                              :offset (* items-per-page page)})
+            num-bookmarks (-> (bm-db/count-bookmarks {:member_id (:id user)})
+                              first
+                              :count)]
+        {:result {:bookmarks bookmarks
+                  :num-pages (/ num-bookmarks items-per-page)}
+         :error false})
+      {:error true
+       :result "Invalid page number"})))
+
 (defn list-by-id
   [request]
   (let [id        (get-in request [:route-params :id])

@@ -30,8 +30,13 @@
 
 (defn list-all-view
   [request]
-  (let [bookmarks (:result (bm-core/list-all request))]
-    (-> (res/response (application "Bookmarks" (views/list-all bookmarks)))
+  (res/redirect "/bookmarks/page/1"))
+
+;;; TODO: convert all underscore's to hyphens
+(defn list-bookmarks-view
+  [request]
+  (let [{:keys [bookmarks num-pages]} (bm-core/fetch-bookmarks request)]
+    (-> (res/response (application "Bookmarks" (views/list-all bookmarks num-pages)))
         (assoc :headers {"Content-Type" "text/html"}))))
 
 (defn create-view
@@ -43,4 +48,6 @@
 (def bookmarks-routes
   {"bookmarks" {"" (with-auth-middlewares {:get  list-all-view
                                            :post create})
+                ["/page/" :page] (with-auth-middlewares
+                                  {:get list-bookmarks-view})
                 "/add" (with-auth-middlewares {:get create-view})}})
