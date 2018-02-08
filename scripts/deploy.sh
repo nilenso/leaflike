@@ -6,8 +6,6 @@ JAR_NAME="leaflike-$VERSION-standalone.jar"
 
 SCRIPT="systemctl --user restart leaflike.service"
 
-cp resources/config/config.edn.dev resources/config/config.edn
-
 # Clean out old jar file
 lein clean
 
