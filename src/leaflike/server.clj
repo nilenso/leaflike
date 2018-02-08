@@ -3,6 +3,7 @@
             [leaflike.routes                :refer [home-routes]]
             [leaflike.bookmarks.routes      :refer [bookmarks-routes]]
             [leaflike.user.routes           :refer [user-routes]]
+            [leaflike.middlewares :as middlewares]
             [bidi.ring                      :as    bidi]
             [org.httpkit.server             :as    httpkit]
             [ring.middleware.resource       :refer [wrap-resource]]
@@ -24,6 +25,7 @@
 (defn app
   []
   (-> app-handler
+      middlewares/wrap-exception-handling
       wrap-anti-forgery
       (wrap-resource "public")
       (wrap-json-params {:keywords? true :bigdecimals? true})
