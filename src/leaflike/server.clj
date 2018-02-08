@@ -11,7 +11,8 @@
             [ring.middleware.params         :refer [wrap-params]]
             [ring.middleware.session        :refer [wrap-session]]
             [ring.middleware.session.memory :as    mem]
-            [ring.middleware.anti-forgery   :refer [wrap-anti-forgery]]))
+            [ring.middleware.anti-forgery   :refer [wrap-anti-forgery]]
+            [clojure.tools.logging :as log]))
 
 (defonce ^:private all-sessions (mem/memory-store))
 
@@ -37,7 +38,7 @@
   (let [server-spec (server-spec)]
     (reset! server (httpkit/run-server
                     (app) server-spec))
-    (println "Server started at : " (:ip server-spec) ":" (:port server-spec))))
+    (log/info (format "Server started at: %s:%d" (:ip server-spec) (:port server-spec)))))
 
 (defn stop! []
   (when-not (nil? @server)
