@@ -9,7 +9,7 @@
                       "dev")
          config-filename (str "config/config.edn." env-type)]
      (log/info (str "Loading config file " config-filename))
-     (edn/read-string (slurp (io/resource config-filename))))))
+     (edn/read-string (slurp config-filename)))))
 
 (defn db-spec
   []
