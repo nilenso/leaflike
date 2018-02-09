@@ -2,7 +2,7 @@
   (:require [hiccup.form :as f]))
 
 (defn list-all
-  [bookmarks]
+  [bookmarks num-pages]
   [:div {:id "content"}
    [:div {:class "row"}
     [:div {:class "col"}
@@ -13,17 +13,20 @@
    [:table {:class "table"}
     [:thead {:class "thead-dark"}
      [:tr
-      [:th {:scope "col"} "Id"]
       [:th {:scope "col"} "Title"]
       [:th {:scope "col"} "Tags"]
       [:th {:scope "col"} "Date"]]]
     [:tbody
      (for [bookmark bookmarks]
        [:tr
-        [:th {:scope "row"} (:id bookmark)]
         [:td [:a {:href (:url bookmark)} (:title bookmark)]]
         [:td (:tags bookmark)]
-        [:td (:created_at bookmark)]])]]])
+        [:td (:created_at bookmark)]])]]
+
+   [:table {:class "table"}
+    (for [i (range num-pages)]
+      [:td {:scope "col"}
+       [:a {:href (str "/bookmarks/page/" (inc i))} (inc i)]])]])
 
 (defn add-bookmark
   [anti-forgery-token]

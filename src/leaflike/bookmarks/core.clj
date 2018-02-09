@@ -9,48 +9,56 @@
 
 (defn- get-user
   [request]
-  (if-let [username (get-in request [:session :username])]
-    (first (user-db/get-member-auth-data username :id))
-    (throw-unauthorized 401)))
+  (let [username (:username request)]
+    (first (user-db/get-member-auth-data username :id))))
 
 (defn create
-  [request]
-  (let [body (select-keys (walk/keywordize-keys (:params request))
+  [{:keys [params] :as request}]
+  (let [body (select-keys (walk/keywordize-keys params)
                           [:title :url :tags])
         user    (get-user request)]
     (if (valid-bookmark? body)
       (let [bookmark (assoc body
                             :member_id (:id user)
                             :created_at (utils/get-timestamp))]
-        {:result (bm-db/create bookmark)
-         :error false})
-      {:error true
-       :result "Invalid params"})))
+        (bm-db/create bookmark))
+      (throw (ex-info "Invalid params" {:bookmark body})))))
 
 (defn list-all
   [request]
-  (let [params {:member_id (:id (get-user request))}]
-    {:result  (bm-db/list-all params)
-     :error   false}))
+  (bm-db/list-all {:member_id (:id (get-user request))}))
+
+(defn fetch-bookmarks
+  [{:keys [params] :as request}]
+  (let [items-per-page 10
+        page (Integer/parseInt (:page params))
+        user (get-user request)]
+    (if (>= page 1)
+      (let [page (dec page)
+            bookmarks (bm-db/fetch-bookmarks {:member_id (:id user)
+                                              :limit items-per-page
+                                              :offset (* items-per-page page)})
+            num-bookmarks (-> (bm-db/count-bookmarks {:member_id (:id user)})
+                              first
+                              :count)]
+        {:bookmarks bookmarks
+         :num-pages (/ num-bookmarks items-per-page)})
+      (throw (ex-info "Invalid page number" {:page page})))))
 
 (defn list-by-id
-  [request]
-  (let [id        (get-in request [:route-params :id])
+  [{:keys [route-params] :as request}]
+  (let [id        (:id route-params)
         user      (get-user request)
         params    {:id id :member_id (:id user)}]
     (if (id? params)
-      {:result  (bm-db/list-by-id params)
-       :error   false}
-      {:error  true
-       :result "Invalid params"})))
+      (bm-db/list-by-id params)
+      (throw (ex-info "Invalid id" {:id id})))))
 
 (defn delete
-  [request]
+  [{:keys [route-params] :as request}]
   (let [id        (get-in request [:route-params :id])
-        user      (get-user request)
-        params    {:id id :member_id (:id user)}]
-    (if (id? params)
-      {:result (bm-db/delete params)
-       :error  false}
-      {:error  true
-       :result "Invalid params"})))
+        user      (get-user request)]
+    (if (id? {:id id})
+      (bm-db/delete {:id id
+                     :member_id (:id user)})
+      (throw (ex-info "Invalid id" {:id id})))))

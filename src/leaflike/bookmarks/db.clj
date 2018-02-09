@@ -20,12 +20,30 @@
   (jdbc/execute! (db-spec) (-> (helpers/insert-into :bookmarks)
                                (helpers/values [(format-tags params)])
                                 sql/format)))
-  
+
 (defn list-all
   [{:keys [member_id]}]
   (jdbc/query (db-spec) (-> (helpers/select :*)
                             (helpers/from :bookmarks)
                             (helpers/where [:= :member_id member_id])
+                            sql/format)))
+
+(defn count-bookmarks
+  "Return number of bookmarks the user has."
+  [{:keys [member_id]}]
+  (jdbc/query (db-spec) (-> (helpers/select :%count.*)
+                            (helpers/from :bookmarks)
+                            (helpers/where [:= :member_id member_id])
+                            sql/format)))
+
+(defn fetch-bookmarks
+  "Fetch a `limit` number of bookmarks starting from `offset`."
+  [{:keys [member_id limit offset] :or {offset 0}}]
+  (jdbc/query (db-spec) (-> (helpers/select :*)
+                            (helpers/from :bookmarks)
+                            (helpers/where [:= :member_id member_id])
+                            (helpers/limit limit)
+                            (helpers/offset offset)
                             sql/format)))
 
 (defn list-by-id
