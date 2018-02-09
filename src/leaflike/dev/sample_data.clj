@@ -22,7 +22,7 @@
   "Adds `bookmark` as `username`."
   [username bookmark]
   (bm-core/create {:params bookmark
-                   :session {:username username}}))
+                   :username username}))
 
 (defn- add-n-bookmarks
   "Adds `num-bookmarks` generated bookmarks as `username`."
