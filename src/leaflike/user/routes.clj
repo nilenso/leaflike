@@ -15,17 +15,16 @@
   ;; authenticate
   (user-core/login request))
 
-
 (defn logout
   [request]
   ;; logout
   (user-core/logout request))
 
 (defn login-page
-  [request]
+  [{{:strs [next]} :query-params :as request}]
   (-> (res/response (layout/application 
-                        "Login" 
-                        (views/login-form anti-forgery/*anti-forgery-token*)))
+                     "Login"
+                     (views/login-form anti-forgery/*anti-forgery-token* :next-url next)))
       (assoc :headers {"Content-Type" "text/html"})
       (assoc :status 200)))
 
@@ -41,7 +40,7 @@
   {;; existing user
    "login"        {:post login
                    :get  login-page}
-   "logout"       (with-auth-middlewares  {:post logout})
+   "logout"       (with-auth-middlewares  {:get logout})
    ;; new user
    "signup"       {:post signup
                    :get  signup-page}})

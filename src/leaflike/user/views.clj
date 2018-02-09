@@ -3,12 +3,12 @@
             [hiccup.element :refer [link-to]]))
 
 (defn login-form
-  [anti-forgery-token]
+  [anti-forgery-token & {:keys [next-url]}]
   [:div {:id "content"}
    [:h3 {:class "text-success"} "Login"]
    [:div {:class "well well-width"}
     (f/form-to {:role "form" :novalidate ""}
-               [:post "/login"]
+               [:post (str "/login?next=" next-url)]
                [:div {:class "form-group"}
                 (f/label {:class "control-label"} "username" "Username")
                 (f/text-field {:class "form-control" :placeholder "Username"} "username")]

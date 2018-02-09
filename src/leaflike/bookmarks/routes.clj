@@ -10,11 +10,8 @@
 (defn create
   [request]
   (let [result (bm-core/create request)]
-    ;; error : false means bookmarks is created ^_^
-    (if-not (:error result)
-      (-> (res/redirect "/bookmarks")
-          (assoc-in [:headers "Content-Type"] "text/html"))
-      (res/response result))))
+    (-> (res/redirect "/bookmarks")
+        (assoc-in [:headers "Content-Type"] "text/html"))))
 
 #_(defn list-all
   [request]
@@ -49,5 +46,5 @@
   {"bookmarks" {"" (with-auth-middlewares {:get  list-all-view
                                            :post create})
                 ["/page/" :page] (with-auth-middlewares
-                                  {:get list-bookmarks-view})
+                                   {:get list-bookmarks-view})
                 "/add" (with-auth-middlewares {:get create-view})}})

@@ -2,6 +2,10 @@
   (:require [buddy.hashers :as hashers]
             [ring.util.response :as res]))
 
+(defn redirect-to-login
+  [next-page]
+  (res/redirect (format "/login?next=%s" next-page)))
+
 (defn throw-unauthorized
   [status]
   (-> (res/redirect "/login")
@@ -18,22 +22,9 @@
   (fn [request]
     (let [username (get-username request)]
       (if username
-        (handler request)
-        (throw-unauthorized 401)))))
-
-(defn wrap-auth-response
-  ;; if the request is authorized,
-  ;; embed session in the response
-  [handler]
-  (fn [request]
-    (let [response (handler request)
-          username (get-username request)]
-      (if username
-        (-> response
-            ;; should not reset the antiforgery token
-            ;; hence using assoc-in and not assoc
-            (assoc-in [:session :username] username))
-        response))))
+        (handler (assoc request
+                        :username username))
+        (redirect-to-login (:uri request))))))
 
 (defn logout-auth
   [request]
@@ -47,7 +38,7 @@
   (let [verify-password (:verify-password member)
         user-password   (get-in member [:auth-data :password])
         username        (get-in member [:auth-data :username])
-        next-url        (get-in request [:query-params :next] "/")]
+        next-url        (get-in request [:query-params "next"] "/bookmarks")]
 
     (if (hashers/check verify-password user-password)
       ;; login
