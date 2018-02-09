@@ -1,28 +1,37 @@
 (ns leaflike.bookmarks.validator
+  (:require [clojure.spec.alpha :as s]
+            [clojure.string :as string])
   (:import org.apache.commons.validator.UrlValidator
            java.lang.NumberFormatException))
 
 (defn id?
-  [body]
-  (try
-    (let [id (Integer/parseInt (:id body))]
-      (and (some? id)
-           (number? id)))
-    (catch NumberFormatException e false)))
+  [id]
+  (and (some? id)
+       (string? id)
+       (try (Integer/parseInt id)
+            (catch NumberFormatException e false))))
+
+(s/def ::id id?)
 
 (defn title?
-  [body]
-  (contains? body :title))
+  [title]
+  (not (string/blank? title)))
+
+(s/def ::title title?)
 
 (defn url?
-  [body]
-  (let [validator (UrlValidator.)
-        url (:url body)]
+  [url]
+  (let [validator (UrlValidator.)]
     (and (some? url)
          (.isValid validator url))))
 
+(s/def ::url url?)
+
+(s/def ::tags (s/* string?))
+
+(s/def ::bookmark (s/keys :req-un [::title ::url]
+                          :opt-un [::id ::tags]))
+
 (defn valid-bookmark?
-  [body]
-  (and (nil?   (:id body))
-       (title? body)
-       (url?   body)))
+  [bookmark]
+  (s/valid? ::bookmark bookmark))
