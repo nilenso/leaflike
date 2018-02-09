@@ -39,7 +39,6 @@
         user-password   (get-in member [:auth-data :password])
         username        (get-in member [:auth-data :username])
         next-url        (get-in request [:query-params "next"] "/bookmarks")]
-
     (if (hashers/check verify-password user-password)
       ;; login
       (-> (res/redirect next-url)
@@ -49,6 +48,6 @@
 
 (defn signup-auth
   [request username]
-  (let [next-url (get-in request [:query-params :next] "/")]
+  (let [next-url (get-in request [:query-params "next"] "/")]
     (-> (res/redirect next-url)
         (assoc-in [:session :username] username))))
