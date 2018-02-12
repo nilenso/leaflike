@@ -29,8 +29,9 @@
 (s/def ::signup-details (s/keys :req-un [::email ::username ::password]))
 
 (defn valid-signup-details?
-  [user]
-  (s/valid? ::signup-details user))
+  [{:keys [email username] :as user}]
+  (and (s/valid? ::signup-details user)
+       (empty? (get-member-if-exists email username))))
 
 (s/def ::login-details (s/keys :req-un [::username ::password]))
 
