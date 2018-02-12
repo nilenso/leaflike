@@ -12,14 +12,16 @@
      (when error-msg
        [:div {:class "alert alert-danger"} error-msg])
      [:div {:class "well well-width"}
-      (f/form-to {:role "form" :novalidate ""}
+      (f/form-to {:role "form"}
                  [:post login-url]
                  [:div {:class "form-group"}
                   (f/label {:class "control-label"} "username" "Username")
-                  (f/text-field {:class "form-control" :placeholder "Username"} "username")]
+                  (f/text-field {:class "form-control" :placeholder "Username"
+                                 :required ""} "username")]
                  [:div {:class "form-group"}
                   (f/label {:class "control-label"} "password" "Password")
-                  (f/password-field {:class "form-control" :placeholder "Password"} "password")]
+                  (f/password-field {:class "form-control" :placeholder "Password"
+                                     :required ""} "password")]
                  [:div {:class "form-group"}
                   (f/submit-button {:class "btn btn-primary"} "Login")]
                  (f/hidden-field {:value anti-forgery-token} "__anti-forgery-token"))]]))
@@ -29,17 +31,20 @@
   [:div {:id "content"}
    [:h3 {:class "text-success"} "Signup"]
    [:div {:class "well well-width"}
-    (f/form-to {:role "form" :novalidate ""}
+    (f/form-to {:role "form"}
                [:post "/signup"]
                [:div {:class "form-group"}
                 (f/label {:class "control-label"} "email" "Email")
-                (f/email-field {:class "form-control" :placeholder "Email"} "email")]
+                (f/email-field {:class "form-control" :placeholder "Email"
+                                :required ""} "email")]
                [:div {:class "form-group"}
                 (f/label {:class "control-label"} "username" "Username")
-                (f/text-field {:class "form-control" :placeholder "Username"} "username")]
+                (f/text-field {:class "form-control" :placeholder "Username"
+                               :required ""} "username")]
                [:div {:class "form-group"}
                 (f/label {:class "control-label"} "password" "Password")
-                (f/password-field {:class "form-control" :placeholder "Password"} "password")]
+                (f/password-field {:class "form-control" :placeholder "Password"
+                                   :required ""} "password")]
                [:div {:class "form-group"}
                 (f/submit-button {:class "btn btn-primary"} "Signup")]
                (f/hidden-field {:value anti-forgery-token} "__anti-forgery-token"))]])
