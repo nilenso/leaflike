@@ -46,7 +46,7 @@
                               first
                               :count)]
         {:bookmarks bookmarks
-         :num-pages (/ num-bookmarks items-per-page)})
+         :num-pages (int (Math/ceil (/ num-bookmarks items-per-page)))})
       (throw (ex-info "Invalid page number" {:page page})))))
 
 (defn list-by-id

@@ -13,18 +13,6 @@
     (-> (res/redirect "/bookmarks")
         (assoc-in [:headers "Content-Type"] "text/html"))))
 
-#_(defn list-all
-  [request]
-  (res/response (bm-core/list-all request)))
-
-#_(defn delete
-  [request]
-  (res/response (bm-core/delete request)))
-
-#_(defn detail
-  [request]
-  (res/response (bm-core/list-by-id request)))
-
 (defn list-all-view
   [request]
   (res/redirect "/bookmarks/page/1"))
@@ -32,8 +20,11 @@
 ;;; TODO: convert all underscore's to hyphens
 (defn list-bookmarks-view
   [request]
-  (let [{:keys [bookmarks num-pages]} (bm-core/fetch-bookmarks request)]
-    (-> (res/response (application "Bookmarks" (views/list-all bookmarks num-pages)))
+  (let [current-page (Integer/parseInt (get-in request [:params :page]))
+        {:keys [bookmarks num-pages]} (bm-core/fetch-bookmarks request)]
+    (-> (res/response (application "Bookmarks" (views/list-all bookmarks
+                                                               num-pages
+                                                               current-page)))
         (assoc :headers {"Content-Type" "text/html"}))))
 
 (defn create-view
