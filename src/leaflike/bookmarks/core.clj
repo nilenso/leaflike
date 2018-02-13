@@ -12,13 +12,20 @@
   (let [username (:username request)]
     (first (user-db/get-member-auth-data username :id))))
 
+(defn- format-tags
+  "Convert :tags in a bookmark from a comma-separated string to a vector
+  of strings."
+  [bookmark]
+  (update bookmark :tags
+          #(if (string/blank? %)
+             nil
+             (string/split % #","))))
+
 (defn create
   [{:keys [params] :as request}]
-  (let [bookmark (-> (select-keys (walk/keywordize-keys params)
+  (let [bookmark (-> (select-keys params
                                   [:title :url :tags])
-                     (update-in [:tags] #(if (empty? %)
-                                           nil
-                                           (string/split % #","))))
+                     format-tags)
         user    (get-user request)]
     (if (valid-bookmark? bookmark)
       (let [bookmark (assoc bookmark
