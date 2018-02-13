@@ -21,9 +21,7 @@
   (let [login-details   (select-keys params [:username :password])
         member (validator/valid-login-details? login-details)]
     (if member
-      (let [data {:auth-data        (-> member
-                                        (assoc :username (str (:username member)))
-                                        (dissoc :email :created_at))
+      (let [data {:auth-data (select-keys member [:username :password :verify-password])
                   :verify-password  (:password login-details)}]
         (auth/login-auth request data))
       (throw (ex-info "Invalid login credentials" {:type :invalid-login
