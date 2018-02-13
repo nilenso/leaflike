@@ -1,0 +1,2 @@
+{:up ["ALTER TABLE bookmarks ALTER COLUMN member_id SET NOT NULL;"]
+ :down ["ALTER TABLE bookmarks ALTER COLUMN member_id DROP NOT NULL;"]}
