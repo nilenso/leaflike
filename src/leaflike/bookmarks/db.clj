@@ -12,8 +12,7 @@
   ;; check if tags is nil?
   (if (nil? tags)
     bookmark
-    (assoc bookmark
-           :tags (types/array tags))))
+    (assoc bookmark)))
 
 (defn create
   [params]
