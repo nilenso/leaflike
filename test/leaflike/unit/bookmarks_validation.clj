@@ -3,53 +3,43 @@
              [leaflike.bookmarks.validator :refer :all]))
 
 (deftest id-test
-  (testing "is id in input"
-    (let [a {:id "41"}]
-      (is (id? a))))
+  (testing "valid id"
+    (is (id? "41")))
 
-  (testing "input id is invalid"
-    (let [a {:id "abc"}]
-      (not (id? a))))
+  (testing "invalid id"
+    (is (not (id? "abc"))))
 
-  (testing "id is absent in input"
-    (let [a {:not_id "78"}]
-      (not (id? a)))))
+  (testing "nil is not a valid id"
+    (is (not (id? nil)))))
 
 (deftest title-test
-  (testing "Is title in input"
-    (let [a {:title "something important"}]
-      (is (title? a))))
+  (testing "valid title"
+    (is (title? "something important")))
 
-  (testing "is title absent"
-    (let [a {:not_title "no title"}]
-      (not (title? a)))))
+  (testing "invalid title"
+    (is (not (title? "")))
+    (is (not (title? nil)))))
 
 (deftest url-test
-  (testing "is url present in input"
-    (let [a {:url "http://google.com"}]
-      (is (url? a))))
+  (testing "valid url"
+    (is (url? "http://google.com")))
 
-  (testing "is url absent"
-    (let [a {:not_url "http://google.com"}]
-      (not (url? a))))
-
-  (testing "is url invalid"
-    (let [a {:url "dance with me"}]
-      (not (url? a)))))
+  (testing "invalid url"
+    (is (not (url? "")))
+    (is (not (url? "foobar")))
+    (is (not (url? nil)))))
 
 (deftest bookmark-test
-  (testing "is bookmark valid"
-    (let [a {:id 20 :url "http://google.com" :title "google"}]
-      (not (valid-bookmark? a))))
+  (let [good-bookmark {:title "google"
+                       :url "http://google.com"}]
+    (testing "valid bookmark"
+      (is (valid-bookmark? good-bookmark))
+      (is (valid-bookmark? (assoc good-bookmark
+                                  :tags ["search" "google"])))
+      (is (valid-bookmark? (assoc good-bookmark
+                                  :id "12"))))
 
-  (testing "is bookmark valid with tags"
-    (let [a {:url "http://google.com" :title "google" :tags "information something"}]
-      (is (valid-bookmark? a))))
 
-  (testing "is bookmark valid with id?"
-    (let [a {:id 20 :url "dance 123" :title "google"}]
-      (not (valid-bookmark? a))))
-
-  (testing "is bookmark valid without title?"
-    (let [a {:id 20 :url "http://google.com"}]
-      (not (valid-bookmark? a)))))
+    (testing "invalid bookmarks"
+      (is (not (valid-bookmark? (dissoc good-bookmark :url))))
+      (is (not (valid-bookmark? (dissoc good-bookmark :title)))))))

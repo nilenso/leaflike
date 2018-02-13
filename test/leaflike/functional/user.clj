@@ -12,22 +12,21 @@
     (let [user {:email    ""
                 :username "abc"
                 :password "1"}
-          result (valid-registration? user)]
-      (is (= {:error "Email is invalid"} result))))
+          result (valid-signup-details? user)]
+      (is (= false result))))
 
   (testing "user registration is invalid. missing password"
     (let [user {:email    "b@b.com"
                 :username "abc"
                 :password ""}
-          result (valid-registration? user)]
-      (is (= {:error "Password is invalid"} result))))
+          result (valid-signup-details? user)]
+      (is (= false result))))
 
   (testing "user registration is valid"
     (let [user {:email    "a@a.com"
                 :username "abc"
                 :password "1"}
-          result (valid-registration? user)]
-
+          result (valid-signup-details? user)]
       (is (= true result))
       (user-db/create-user user)))
 
@@ -35,15 +34,15 @@
     (let [user {:email    "a@a.com"
                 :username "abk"
                 :password "1"}
-          result (valid-registration? user)]
-      (is (= {:error "User already exists"} result))))
+          result (valid-signup-details? user)]
+      (is (= false result))))
 
   (testing "user registration is invalid. duplicate username"
     (let [user {:email    "a@ak.com"
                 :username "abc"
                 :password "1"}
-          result (valid-registration? user)]
-      (is (= {:error "User already exists"} result)))))
+          result (valid-signup-details? user)]
+      (is (= false result)))))
 
 (deftest login-test
 
@@ -56,7 +55,7 @@
     (let [body {:username "a"
                 :password "1"}
 
-          res  (valid-user? body)]
+          res  (valid-login-details? body)]
 
       (is (and (not-empty res)
                (contains? res :username)
@@ -67,6 +66,6 @@
   (testing "user login is invalid. Missing data"
     (let [body {:username "a"
                 :password ""}
-          res  (valid-user? body)]
+          res  (valid-login-details? body)]
 
       (not res))))

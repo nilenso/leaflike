@@ -1,13 +1,10 @@
 (ns leaflike.functional.auth
   (:require [leaflike.fixtures :refer [wrap-setup]]
             [clojure.test :refer :all]
-            [leaflike.user.core :as user-core]))
+            [leaflike.user.core :refer [signup login logout]])
+  (:import clojure.lang.ExceptionInfo))
 
 (use-fixtures :once wrap-setup)
-
-(def signup user-core/signup)
-(def login  user-core/login)
-(def logout user-core/logout)
 
 (defn make-request
   [input & {:keys [cookie]}]
@@ -37,16 +34,16 @@
         (is (= (get-in response [:session :username]) "b"))))
 
     (testing "login failure. wrong password"
-      (let [response (login (make-request {:username "b"
-                                           :password "a"}))]
-        (is (= (:status response) 401))
-        (is (= (get-in response [:session :username]) nil))))
+      (is (thrown-with-msg? ExceptionInfo
+                            #"Invalid login credentials"
+                            (login (make-request {:username "b"
+                                                  :password "a"})))))
 
     (testing "login failure. no user"
-      (let [response (login (make-request {:username "c"
-                                           :password "a"}))]
-        (is (= (:status response) 401))
-        (is (= (get-in response [:session :username]) nil))))))
+      (is (thrown-with-msg? ExceptionInfo
+                            #"Invalid login credentials"
+                            (login (make-request {:username "c"
+                                                  :password "a"})))))))
 
 (deftest logout-auth-test
   (let [response (signup (make-request {:username "t"

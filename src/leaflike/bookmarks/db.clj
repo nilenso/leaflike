@@ -7,19 +7,19 @@
             [leaflike.config   :refer [db-spec]]))
 
 (defn format-tags
-  [{:keys [tags] :as params}]
+  [{:keys [tags] :as bookmark}]
   ;; check if tag exists
   ;; check if tags is nil?
   (if (nil? tags)
-    params
-    (let [tags (str/split tags #",")]
-      (assoc params :tags (types/array tags)))))
+    bookmark
+    (assoc bookmark
+           :tags (types/array tags))))
 
 (defn create
   [params]
   (jdbc/execute! (db-spec) (-> (helpers/insert-into :bookmarks)
                                (helpers/values [(format-tags params)])
-                                sql/format)))
+                               sql/format)))
 
 (defn list-all
   [{:keys [member_id]}]

@@ -5,7 +5,8 @@
             [leaflike.user.db :as user-db]
             [leaflike.user.auth :refer [throw-unauthorized]]
             [leaflike.utils :as utils]
-            [clojure.walk :as walk]))
+            [clojure.walk :as walk]
+            [clojure.string :as string]))
 
 (defn- get-user
   [request]
@@ -14,15 +15,18 @@
 
 (defn create
   [{:keys [params] :as request}]
-  (let [body (select-keys (walk/keywordize-keys params)
-                          [:title :url :tags])
+  (let [bookmark (-> (select-keys (walk/keywordize-keys params)
+                                  [:title :url :tags])
+                     (update-in [:tags] #(if (empty? %)
+                                           nil
+                                           (string/split % #","))))
         user    (get-user request)]
-    (if (valid-bookmark? body)
-      (let [bookmark (assoc body
+    (if (valid-bookmark? bookmark)
+      (let [bookmark (assoc bookmark
                             :member_id (:id user)
                             :created_at (utils/get-timestamp))]
         (bm-db/create bookmark))
-      (throw (ex-info "Invalid params" {:bookmark body})))))
+      (throw (ex-info "Invalid params" {:bookmark bookmark})))))
 
 (defn list-all
   [request]
@@ -42,7 +46,7 @@
                               first
                               :count)]
         {:bookmarks bookmarks
-         :num-pages (/ num-bookmarks items-per-page)})
+         :num-pages (int (Math/ceil (/ num-bookmarks items-per-page)))})
       (throw (ex-info "Invalid page number" {:page page})))))
 
 (defn list-by-id
@@ -50,7 +54,7 @@
   (let [id        (:id route-params)
         user      (get-user request)
         params    {:id id :member_id (:id user)}]
-    (if (id? params)
+    (if (id? id)
       (bm-db/list-by-id params)
       (throw (ex-info "Invalid id" {:id id})))))
 
@@ -58,7 +62,7 @@
   [{:keys [route-params] :as request}]
   (let [id        (get-in request [:route-params :id])
         user      (get-user request)]
-    (if (id? {:id id})
+    (if (id? id)
       (bm-db/delete {:id id
                      :member_id (:id user)})
       (throw (ex-info "Invalid id" {:id id})))))

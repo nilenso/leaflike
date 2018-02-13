@@ -3,36 +3,41 @@
                                     alpha-num-pattern
                                     required]]
             [leaflike.user.db :refer [get-member-if-exists
-                                      get-member-auth-data]]))
+                                      get-member-auth-data]]
+            [clojure.spec.alpha :as s]))
 
 (defn email?
   [value]
   (and (required value)
        (re-matches email-pattern value)))
 
+(s/def ::email email?)
+
 (defn username?
   [value]
   (and (required value)
        (re-matches alpha-num-pattern value)))
 
+(s/def ::username username?)
+
 (defn password?
   [value]
   (required value))
 
-(defn valid-registration?
-  [{:keys [email username password]}]
-  (cond
-    (not (email? email))              {:error "Email is invalid"}
-    (not (username? username))        {:error "Username is invalid"}
-    (not (password? password))        {:error "Password is invalid"}
-    (not-empty (get-member-if-exists email username)) {:error "User already exists"}
-    :else                             true))
+(s/def ::password password?)
 
-(defn valid-user?
-  [{:keys [username password]}]
+(s/def ::signup-details (s/keys :req-un [::email ::username ::password]))
 
-  (let [member (get-member-auth-data username)]
-    (cond
-      (not (username? username)) false
-      (not (password? password)) false
-      (not-empty member)         (first member))))
+(defn valid-signup-details?
+  [{:keys [email username] :as user}]
+  (and (s/valid? ::signup-details user)
+       (empty? (get-member-if-exists email username))))
+
+(s/def ::login-details (s/keys :req-un [::username ::password]))
+
+(defn valid-login-details?
+  [{:keys [username password] :as user}]
+  (if (s/valid? ::login-details user)
+    (let [member (get-member-auth-data username)]
+      (first member))
+    false))
