@@ -14,9 +14,11 @@
 ;; Home page controller (ring handler)
 (defn home
   [request]
-  (let [homepage (layout/application "Leaflike" (layout/index))]
-    (-> (res/response homepage)
-        (assoc :headers {"Content-Type" "text/html"}))))
+  (if (get-in request [:session :username])
+    (res/redirect "/bookmarks")
+    (let [homepage (layout/application "Leaflike" (layout/index))]
+      (-> (res/response homepage)
+          (assoc :headers {"Content-Type" "text/html"})))))
 
 (def home-routes
   {""        {:get home}

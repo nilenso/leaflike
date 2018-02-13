@@ -5,12 +5,22 @@
   (:import clojure.lang.ExceptionInfo))
 
 (defn handle-exception
+  "In case of an ExceptionInfo caused by bad input, adds a `flash`
+  message to be displayed to the user. If the `type` in the
+  ExceptionInfo is not known, return a HTTP 500 error."
   [e]
   (let [info (ex-data e)
-        type (:type info)]
-    (case type
-      :invalid-login (res/redirect "/login?error=1")
-      {:status 400
+        error-type (:type info)]
+    (case error-type
+      :invalid-login (assoc (res/redirect "/login")
+                            :flash {:error-msg "Invalid username/password"})
+      ;; TODO: Use spec/explain-* fns to figure out which keys were invalid.
+      :invalid-bookmark (assoc (res/redirect "/bookmarks/add")
+                               :flash {:error-msg "Invalid bookmark"})
+      ;; TODO: Use spec/explain-* fns to figure out what went wrong.
+      :invalid-signup (assoc (res/redirect "/signup")
+                             :flash {:error-msg "Invalid signup details"})
+      {:status 500
        :body (.getMessage e)})))
 
 (defn wrap-exception-handling

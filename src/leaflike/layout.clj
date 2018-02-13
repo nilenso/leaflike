@@ -3,26 +3,33 @@
             [hiccup.element :refer [link-to]]))
 
 (defn application
-  [title & content]
+  [title content & {:keys [username error-msg]}]
   (html5 [:head
           [:title title]
           (include-css "//maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css")
           (include-css "/css/styles.css")
-          [:body content]]))
+          [:body
+           [:header {:class "navbar navbar-dark bg-light"}
+            [:a.navbar-brand "Leaflike"]
+            [:div {:class "navbar-nav-scroll"
+                   :id "navbarSupportedContent"}
+             (when username [:ul {:class "navbar-nav"}
+                             [:li {:class "nav-item"}
+                              (str "Logged in as " username)]
+                             [:li {:class "nav-item"}
+                              [:a {:href "/logout"} "Logout"]]])]]
+           [:div.container
+            [:div#content
+             [:h3 {:class "text-success"} title]
+             (when error-msg
+               [:div {:class "alert alert-danger"} error-msg])
+             content]]]]))
 
 (defn user-view
-  [title username & content]
-  (application title
-               [:header {:class "navbar navbar-dark bg-light"}
-                [:a.navbar-brand "Leaflike"]
-                [:div {:class "navbar-nav-scroll"
-                       :id "navbarSupportedContent"}
-                 [:ul {:class "navbar-nav"}
-                  [:li {:class "nav-item"}
-                   (str "Logged in as " username)]
-                  [:li {:class "nav-item"}
-                   [:a {:href "/logout"} "Logout"]]]]]
-               [:div {:class "container"} content]))
+  [title username content & {:keys [error-msg]}]
+  (application title content
+               :username username
+               :error-msg error-msg))
 
 (defn index
   []

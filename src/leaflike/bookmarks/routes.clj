@@ -30,11 +30,13 @@
 
 (defn create-view
   [request]
-  (let [username (get-in request [:session :username])]
+  (let [username (get-in request [:session :username])
+        error-msg (get-in request [:flash :error-msg])]
     (-> (res/response (user-view "Add Bookmark"
                                  username
                                  (views/add-bookmark
-                                  anti-forgery/*anti-forgery-token*)))
+                                  anti-forgery/*anti-forgery-token*)
+                                 :error-msg error-msg))
         (assoc-in [:headers "Content-Type"] "text/html"))))
 
 (def bookmarks-routes

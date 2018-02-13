@@ -7,8 +7,6 @@
   [:div {:id "content"}
    [:div {:class "row"}
     [:div {:class "col"}
-     [:h3 "Bookmarks"]]
-    [:div {:class "col"}
      [:a {:href "/bookmarks/add"}
       [:button {:class "btn btn-large btn-primary"} "Add bookmark"]]]]
    [:table {:class "table"}
@@ -35,14 +33,12 @@
             :href (str "/bookmarks/page/" (dec current-page))}
         "Previous"]])
     ;; List of pages
-    (for [i (range num-pages)]
-      (let [page-num (inc i)
-            active? (= page-num current-page)
-            li-classes ["page-item"]
-            li-classes (if active?
-                         (conj li-classes "active")
-                         li-classes)
-            li-class (string/join " " li-classes)]
+    (for [page-num (range 1 (inc num-pages))]
+      (let [active? (= page-num current-page)
+            li-class "page-item"
+            li-class (if active?
+                       (str li-class " active")
+                       li-class)]
         [:li {:class li-class}
          [:a {:class "page-link"
               :href (str "/bookmarks/page/" page-num)} page-num]]))
@@ -59,24 +55,22 @@
 
 (defn add-bookmark
   [anti-forgery-token]
-  [:div {:id "content"}
-   [:h3 "Add bookmark"]
-   [:div {:class "well"}
-    (f/form-to {:role "form"}
-               [:post "/bookmarks"]
-               [:div {:class "form-group"}
-                (f/label {:class "control-label"} "url" "URL")
-                (f/text-field {:class "form-control" :placeholder "URL"
-                               :required ""} "url")]
-               [:div {:class "form-group"}
-                (f/label {:class "control-label"} "title" "Title")
-                (f/text-field {:class "form-control" :placeholder "Title"
-                               :required ""} "title")]
-               [:div {:class "form-group"}
-                (f/label {:class "control-label"} "tags" "Tags")
-                (f/text-field {:class "form-control" :placeholder "Tags"} "tags")]
+  [:div {:class "well"}
+   (f/form-to {:role "form"}
+              [:post "/bookmarks"]
+              [:div {:class "form-group"}
+               (f/label {:class "control-label"} "url" "URL")
+               (f/text-field {:class "form-control" :placeholder "URL"
+                              :required ""} "url")]
+              [:div {:class "form-group"}
+               (f/label {:class "control-label"} "title" "Title")
+               (f/text-field {:class "form-control" :placeholder "Title"
+                              :required ""} "title")]
+              [:div {:class "form-group"}
+               (f/label {:class "control-label"} "tags" "Tags")
+               (f/text-field {:class "form-control" :placeholder "Tags"} "tags")]
 
-               [:div {:class "form-group"}
-                (f/submit-button {:class "btn btn-primary"} "Submit")]
+              [:div {:class "form-group"}
+               (f/submit-button {:class "btn btn-primary"} "Submit")]
 
-               (f/hidden-field {:value anti-forgery-token} "__anti-forgery-token"))]])
+              (f/hidden-field {:value anti-forgery-token} "__anti-forgery-token"))])
