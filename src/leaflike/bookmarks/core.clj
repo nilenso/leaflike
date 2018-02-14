@@ -39,23 +39,27 @@
   [request]
   (bm-db/list-all {:member_id (:id (get-user request))}))
 
-(defn fetch-bookmarks
-  [{:keys [params] :as request}]
-  (let [items-per-page 10
-        page (Integer/parseInt (:page params))
-        user (get-user request)]
-    (if (>= page 1)
-      (let [page (dec page)
-            bookmarks (bm-db/fetch-bookmarks {:member_id (:id user)
-                                              :limit items-per-page
-                                              :offset (* items-per-page page)})
-            num-bookmarks (-> (bm-db/count-bookmarks {:member_id (:id user)})
-                              first
-                              :count)]
-        {:bookmarks bookmarks
-         :num-pages (int (Math/ceil (/ num-bookmarks items-per-page)))})
-      (throw (ex-info "Invalid page number" {:type :invalid-page
-                                             :data page})))))
+(let [;; default number of pages when paginating
+      items-per-page 10]
+  (defn fetch-bookmarks
+    [{:keys [params] :as request}]
+    (let [page (Integer/parseInt (:page params))
+          user (get-user request)
+          tag (:tag params)]
+      (if (>= page 1)
+        (let [page (dec page)
+              query {:member_id (:id user)
+                     :tag tag}
+              bookmarks (bm-db/fetch-bookmarks (merge query
+                                                      {:limit items-per-page
+                                                       :offset (* items-per-page page)}))
+              num-bookmarks (-> (bm-db/count-bookmarks query)
+                                first
+                                :count)]
+          {:bookmarks bookmarks
+           :num-pages (int (Math/ceil (/ num-bookmarks items-per-page)))})
+        (throw (ex-info "Invalid page number" {:type :invalid-page
+                                               :data page}))))))
 
 (defn list-by-id
   [{:keys [route-params] :as request}]

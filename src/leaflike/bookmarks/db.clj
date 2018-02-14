@@ -24,23 +24,33 @@
                             (helpers/where [:= :member_id member_id])
                             sql/format)))
 
+(defn- build-where-clause
+  [{:keys [member_id tag]}]
+  (let [where-clause [:and [:= :member_id member_id]]
+        where-clause (if tag
+                       (conj where-clause [:= tag :%any.tags])
+                       where-clause)]
+    where-clause))
+
 (defn count-bookmarks
   "Return number of bookmarks the user has."
-  [{:keys [member_id]}]
-  (jdbc/query (db-spec) (-> (helpers/select :%count.*)
-                            (helpers/from :bookmarks)
-                            (helpers/where [:= :member_id member_id])
-                            sql/format)))
+  [{:keys [member_id tag] :as query}]
+  (let [where-clause (build-where-clause (select-keys query [:member_id :tag]))]
+    (jdbc/query (db-spec) (-> (helpers/select :%count.*)
+                              (helpers/from :bookmarks)
+                              (helpers/where where-clause)
+                              sql/format))))
 
 (defn fetch-bookmarks
   "Fetch a `limit` number of bookmarks starting from `offset`."
-  [{:keys [member_id limit offset] :or {offset 0}}]
-  (jdbc/query (db-spec) (-> (helpers/select :*)
-                            (helpers/from :bookmarks)
-                            (helpers/where [:= :member_id member_id])
-                            (helpers/limit limit)
-                            (helpers/offset offset)
-                            sql/format)))
+  [{:keys [member_id limit offset tag] :or {offset 0} :as query}]
+  (let [where-clause (build-where-clause (select-keys query [:member_id :tag]))]
+    (jdbc/query (db-spec) (-> (helpers/select :*)
+                              (helpers/from :bookmarks)
+                              (helpers/where where-clause)
+                              (helpers/limit limit)
+                              (helpers/offset offset)
+                              sql/format))))
 
 (defn list-by-id
   [{:keys [id member_id]}]

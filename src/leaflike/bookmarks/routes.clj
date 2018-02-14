@@ -17,7 +17,6 @@
   [request]
   (res/redirect "/bookmarks/page/1"))
 
-;;; TODO: convert all underscore's to hyphens
 (defn list-bookmarks-view
   [request]
   (let [current-page (Integer/parseInt (get-in request [:params :page]))
@@ -25,7 +24,23 @@
         {:keys [bookmarks num-pages]} (bm-core/fetch-bookmarks request)]
     (-> (res/response (user-view "Bookmarks" username (views/list-all bookmarks
                                                                       num-pages
-                                                                      current-page)))
+                                                                      current-page
+                                                                      "/bookmarks/page/%d")))
+        (assoc :headers {"Content-Type" "text/html"}))))
+
+(defn tag-filtered-view
+  [{:keys [params] :as request}]
+  (let [current-page (Integer/parseInt (:page params))
+        tag (:tag params)
+        username (get-in request [:session :username])
+        {:keys [bookmarks num-pages]} (bm-core/fetch-bookmarks request)]
+    (-> (res/response (user-view (str "Bookmarks with tag: " tag)
+                                 username
+                                 (views/list-all bookmarks
+                                                 num-pages
+                                                 current-page
+                                                 (str (format "/bookmarks/tag/%s" tag)
+                                                      "/page/%d"))))
         (assoc :headers {"Content-Type" "text/html"}))))
 
 (defn create-view
@@ -42,6 +57,8 @@
 (def bookmarks-routes
   {"bookmarks" {"" (with-auth-middlewares {:get  list-all-view
                                            :post create})
+                ["/tag/" :tag "/page/" :page] (with-auth-middlewares
+                                                {:get tag-filtered-view})
                 ["/page/" :page] (with-auth-middlewares
                                    {:get list-bookmarks-view})
                 "/add" (with-auth-middlewares {:get create-view})}})

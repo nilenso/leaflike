@@ -4,7 +4,7 @@
             [leaflike.bookmarks.routes      :refer [bookmarks-routes]]
             [leaflike.user.routes           :refer [user-routes]]
             [leaflike.middlewares :as middlewares]
-            [bidi.ring                      :as    bidi]
+            [bidi.ring                      :as    bidi-ring]
             [org.httpkit.server             :as    httpkit]
             [ring.middleware.resource       :refer [wrap-resource]]
             [ring.middleware.json           :refer [wrap-json-params
@@ -19,10 +19,10 @@
 
 (defonce ^:private all-sessions (mem/memory-store))
 
-(def app-handler
-  (bidi/make-handler ["/" (merge home-routes
-                                 user-routes
-                                 bookmarks-routes)]))
+(def app-routes ["/" (merge home-routes
+                            user-routes
+                            bookmarks-routes)])
+(def app-handler (bidi-ring/make-handler app-routes))
 
 (defn app
   []
