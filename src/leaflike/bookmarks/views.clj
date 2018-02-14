@@ -1,6 +1,8 @@
 (ns leaflike.bookmarks.views
   (:require [hiccup.form :as f]
-            [clojure.string :as string]))
+            [clojure.string :as string]
+            [clj-time.coerce :as time-coerce]
+            [clj-time.format :as time-format]))
 
 (defn- format-page-route
   [page-format page-num]
@@ -56,8 +58,12 @@
      (for [bookmark bookmarks]
        [:tr
         [:td [:a {:href (:url bookmark)} (:title bookmark)]]
-        [:td (:tags bookmark)]
-        [:td (:created_at bookmark)]])]]
+        [:td (for [tag (:tags bookmark)]
+               [:a {:href (format "/bookmarks/tag/%s/page/1" tag)}
+                [:button.btn.btn-outline-primary.btn-sm tag]])]
+        [:td (->> (:created_at bookmark)
+                  time-coerce/from-sql-time
+                  (time-format/unparse (time-format/formatter :date)))]])]]
    (when (> num-pages 1)
      (pagination num-pages current-page page-route))])
 

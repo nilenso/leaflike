@@ -6,6 +6,12 @@
             [clojure.string    :as str]
             [leaflike.config   :refer [db-spec]]))
 
+;;; Parse java.sql.Array into a vector.
+(extend-protocol jdbc/IResultSetReadColumn
+  java.sql.Array
+  (result-set-read-column [val _ _]
+    (into [] (.getArray val))))
+
 (defn- seq->pgarray
   [s]
   (when s (types/array s)))
