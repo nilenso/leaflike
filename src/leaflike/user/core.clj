@@ -7,6 +7,10 @@
             [leaflike.layout :as layout]
             [ring.middleware.anti-forgery :as anti-forgery]))
 
+(defn logged-in?
+  [{:keys [session] :as request}]
+  (:username session))
+
 (defn signup
   [{:keys [params] :as request}]
   (let [user (select-keys params [:email :username :password])]
@@ -33,21 +37,25 @@
 
 (defn login-page
   [{{:keys [next]} :params :as request}]
-  (let [error-msg (get-in request [:flash :error-msg])]
-    (-> (layout/application "Login"
-                            (views/login-form anti-forgery/*anti-forgery-token*
-                                              :next-url next)
-                            :error-msg error-msg)
-        res/response
-        (assoc :headers {"Content-Type" "text/html"}
-               :status 200))))
+  (if (logged-in? request)
+    (res/redirect "/bookmarks")
+    (let [error-msg (get-in request [:flash :error-msg])]
+      (-> (layout/application "Login"
+                              (views/login-form anti-forgery/*anti-forgery-token*
+                                                :next-url next)
+                              :error-msg error-msg)
+          res/response
+          (assoc :headers {"Content-Type" "text/html"}
+                 :status 200)))))
 
 (defn signup-page
   [request]
-  (let [error-msg (get-in request [:flash :error-msg])]
-    (-> (res/response (layout/application 
-                       "Signup"
-                       (views/signup-form anti-forgery/*anti-forgery-token*)
-                       :error-msg error-msg))
-        (assoc :headers {"Content-Type" "text/html"}
-               :status 200))))
+  (if (logged-in? request)
+    (res/redirect "/bookmarks")
+    (let [error-msg (get-in request [:flash :error-msg])]
+      (-> (res/response (layout/application
+                         "Signup"
+                         (views/signup-form anti-forgery/*anti-forgery-token*)
+                         :error-msg error-msg))
+          (assoc :headers {"Content-Type" "text/html"}
+                 :status 200)))))
