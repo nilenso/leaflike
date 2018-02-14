@@ -56,6 +56,7 @@
                               (helpers/where where-clause)
                               (helpers/limit limit)
                               (helpers/offset offset)
+                              (helpers/order-by [:created_at :desc])
                               sql/format))))
 
 (defn list-by-id
