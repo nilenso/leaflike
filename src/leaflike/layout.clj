@@ -9,8 +9,8 @@
           (include-css "//maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css")
           (include-css "/css/styles.css")
           [:body
-           [:header {:class "navbar navbar-dark bg-light"}
-            [:a.navbar-brand "Leaflike"]
+           [:header {:class "navbar navbar-light bg-light"}
+            [:a.navbar-brand {:href "/"} "Leaflike"]
             [:div {:class "navbar-nav-scroll"
                    :id "navbarSupportedContent"}
              (when username [:ul {:class "navbar-nav"}
