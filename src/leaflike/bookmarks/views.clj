@@ -4,12 +4,8 @@
             [clj-time.coerce :as time-coerce]
             [clj-time.format :as time-format]))
 
-(defn- format-page-route
-  [page-format page-num]
-  (format page-format page-num))
-
 (defn pagination
-  [num-pages current-page page-route]
+  [num-pages current-page path-format-fn]
   [:ul.pagination
    ;; "Previous" button
    (let [disabled-prev? (= current-page 1)
@@ -18,7 +14,7 @@
                           "")]
      [:li {:class (str "page-item" disabled-class)}
       [:a {:class "page-link"
-           :href (format-page-route page-route (dec current-page))}
+           :href (path-format-fn :page (dec current-page))}
        "Previous"]])
    ;; List of pages
    (for [page-num (range 1 (inc num-pages))]
@@ -29,7 +25,7 @@
                       li-class)]
        [:li {:class li-class}
         [:a {:class "page-link"
-             :href (format-page-route page-route page-num)} page-num]]))
+             :href (path-format-fn :page page-num)} page-num]]))
 
    ;; "Next" button
    (let [disabled-next? (= current-page num-pages)
@@ -38,11 +34,11 @@
                           "")]
      [:li {:class (str "page-item" disabled-class)}
       [:a {:class "page-link"
-           :href (format-page-route page-route (inc current-page))}
+           :href (path-format-fn :page (inc current-page))}
        "Next"]])])
 
 (defn list-all
-  [bookmarks num-pages current-page page-route]
+  [bookmarks num-pages current-page path-format-fn]
   [:div {:id "content"}
    [:div {:class "row"}
     [:div {:class "col"}
@@ -65,7 +61,7 @@
                   time-coerce/from-sql-time
                   (time-format/unparse (time-format/formatter :date)))]])]]
    (when (> num-pages 1)
-     (pagination num-pages current-page page-route))])
+     (pagination num-pages current-page path-format-fn))])
 
 (defn add-bookmark
   [anti-forgery-token]

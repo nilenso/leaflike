@@ -8,6 +8,16 @@
             [ring.middleware.anti-forgery :as anti-forgery]
             [clojure.string :as string]))
 
+(defn- format-tag-page-uri
+  "Return a path with `tag` and `page` formatted in."
+  [& {:keys [tag page]}]
+  (format "/bookmarks/tag/%s/page/%d" tag page))
+
+(defn- format-page-uri
+  "Return a path with `page` formatted in."
+  [& {:keys [tag page]}]
+  (format "/bookmarks/page/%d" page))
+
 (defn create
   [request]
   (let [result (bm-core/create request)]
@@ -32,16 +42,15 @@
         page-title (case view-type
                      :all-bookmarks "Bookmarks"
                      :tag-bookmarks (str "Bookmarks with tag: " tag))
-        page-route-template (case view-type
-                              :all-bookmarks "/bookmarks/page/%d"
-                              :tag-bookmarks (str (format "/bookmarks/tag/%s" tag)
-                                                  "/page/%d"))]
+        path-format-fn (case view-type
+                         :all-bookmarks format-page-uri
+                         :tag-bookmarks (partial format-tag-page-uri :tag tag))]
     (-> (res/response (user-view page-title
                                  username
                                  (views/list-all bookmarks
                                                  num-pages
                                                  current-page
-                                                 page-route-template)))
+                                                 path-format-fn)))
         (assoc :headers {"Content-Type" "text/html"}))))
 
 (def all-bookmarks-view (partial bookmarks-list-view :all-bookmarks))
