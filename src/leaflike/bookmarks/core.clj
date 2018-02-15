@@ -43,7 +43,7 @@
       items-per-page 10]
   (defn fetch-bookmarks
     [{:keys [params] :as request}]
-    (let [page (Integer/parseInt (:page params))
+    (let [page (:page params)
           user (get-user request)
           tag (:tag params)]
       (if (>= page 1)
