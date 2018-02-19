@@ -1,4 +1,4 @@
-(ns leaflike.user.core
+(ns leaflike.user
   (:require [leaflike.user.db :as user-db]
             [leaflike.user.auth :as auth]
             [leaflike.user.validator :as validator]
