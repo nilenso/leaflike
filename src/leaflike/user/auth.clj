@@ -43,9 +43,8 @@
       ;; login
       (-> (res/redirect next-url)
           (assoc-in [:session :username] username))
-      (throw (ex-info "Invalid login credentials"
-                      {:type :invalid-login
-                       :data {:username username}})))))
+      (assoc (res/redirect "/login")
+             :flash {:error-msg "Invalid username/password"}))))
 
 (defn signup-auth
   [request username]

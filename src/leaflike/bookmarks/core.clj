@@ -5,7 +5,8 @@
             [leaflike.user.auth :refer [throw-unauthorized]]
             [leaflike.utils :as utils]
             [clojure.spec.alpha :as s]
-            [clojure.string :as string]))
+            [clojure.string :as string]
+            [ring.util.response :as res]))
 
 (defn- get-user
   [request]
@@ -32,8 +33,8 @@
                             :member_id (:id user)
                             :created_at (utils/get-timestamp))]
         (bm-db/create bookmark))
-      (throw (ex-info "Invalid params" {:type :invalid-bookmark
-                                        :data bookmark})))))
+      (assoc (res/redirect "/bookmarks/add")
+             :flash {:error-msg "Invalid bookmark"}))))
 
 (defn list-all
   [request]
@@ -58,8 +59,8 @@
                                 :count)]
           {:bookmarks bookmarks
            :num-pages (int (Math/ceil (/ num-bookmarks items-per-page)))})
-        (throw (ex-info "Invalid page number" {:type :invalid-page
-                                               :data page}))))))
+        (assoc (res/redirect "/bookmarks")
+               :flash {:error-msg "Invalid page number"})))))
 
 (defn list-by-id
   [{:keys [route-params] :as request}]
@@ -68,8 +69,8 @@
         params    {:id id :member_id (:id user)}]
     (if (s/valid? :leaflike.bookmarks.validator/id id)
       (bm-db/list-by-id params)
-      (throw (ex-info "Invalid id" {:type :invalid-id
-                                    :data id})))))
+      (assoc (res/redirect "/bookmarks")
+             :flash {:error-msg "Invalid bookmark id"}))))
 
 (defn delete
   [{:keys [route-params] :as request}]
@@ -78,5 +79,5 @@
     (if (s/valid? :leaflike.bookmarks.validator/id id)
       (bm-db/delete {:id id
                      :member_id (:id user)})
-      (throw (ex-info "Invalid id" {:type :invalid-id
-                                    :id id})))))
+      (assoc (res/redirect "/bookmarks")
+             :flash {:error-msg "Invalid bookmark id"}))))

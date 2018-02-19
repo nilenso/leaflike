@@ -29,9 +29,10 @@
       (is (= '(1) response))))
 
   (testing "create bookmark failed"
-    (is (thrown-with-msg? ExceptionInfo #"Invalid params"
-                          (bm-core/create {:params (dissoc bookmark :url)
-                                           :username (:username user)}))))
+    (let [{:keys [status flash]} (bm-core/create {:params (dissoc bookmark :url)
+                                           :username (:username user)})]
+      (is (= status 302))
+      (is (= (:error-msg flash) "Invalid bookmark"))))
 
   (testing "list all bookmarks"
     (let [response (bm-core/list-all {:username (:username user)})]
@@ -40,9 +41,10 @@
       ))
 
   (testing "list bookmark by id, wrong input in id"
-    (is (thrown-with-msg? ExceptionInfo #"Invalid id"
-                          (bm-core/list-by-id {:route-params {:id "2abc"}
-                                               :username (:username user)}))))
+    (let [{:keys [status flash]} (bm-core/list-by-id {:route-params {:id "2abc"}
+                                                      :username (:username user)})]
+      (is (= status 302))
+      (is (= (:error-msg flash) "Invalid bookmark id"))))
 
   (testing "list bookmark by id"
     (let [response (bm-core/list-by-id {:route-params {:id "1"}
@@ -55,9 +57,10 @@
       (is (= '(1) response))))
 
   (testing "delete bookmark failed, invalid input"
-    (is (thrown-with-msg? ExceptionInfo #"Invalid id"
-                          (bm-core/delete {:route-params {:id "1jgk"}
-                                           :username (:username user)}))))
+    (let [{:keys [status flash]} (bm-core/delete {:route-params {:id "1jgk"}
+                                           :username (:username user)})]
+        (is (= status 302))
+        (is (= (:error-msg flash) "Invalid bookmark id"))))
 
   (testing "delete bookmark"
     (let [response (bm-core/delete {:route-params {:id "31"}

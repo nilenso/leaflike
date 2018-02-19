@@ -34,16 +34,16 @@
         (is (= (get-in response [:session :username]) "b"))))
 
     (testing "login failure. wrong password"
-      (is (thrown-with-msg? ExceptionInfo
-                            #"Invalid login credentials"
-                            (login (make-request {:username "b"
-                                                  :password "a"})))))
+      (let [{:keys [status flash]} (login (make-request {:username "b"
+                                                         :password "a"}))]
+        (is (= status 302))
+        (is (= (:error-msg flash) "Invalid username/password"))))
 
     (testing "login failure. no user"
-      (is (thrown-with-msg? ExceptionInfo
-                            #"Invalid login credentials"
-                            (login (make-request {:username "c"
-                                                  :password "a"})))))))
+      (let [{:keys [status flash]} (login (make-request {:username "c"
+                                                         :password "a"}))]
+        (is (= status 302))
+        (is (= (:error-msg flash) "Invalid username/password"))))))
 
 (deftest logout-auth-test
   (let [response (signup (make-request {:username "t"
