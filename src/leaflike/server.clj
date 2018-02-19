@@ -10,6 +10,8 @@
             [ring.middleware.json           :refer [wrap-json-params
                                                     wrap-json-response]]
             [ring.middleware.params         :refer [wrap-params]]
+            [ring.middleware.keyword-params :refer [wrap-keyword-params]]
+            [ring.middleware.flash :refer [wrap-flash]]
             [ring.middleware.session        :refer [wrap-session]]
             [ring.middleware.session.memory :as    mem]
             [ring.middleware.anti-forgery   :refer [wrap-anti-forgery]]
@@ -30,7 +32,9 @@
       (wrap-resource "public")
       (wrap-json-params {:keywords? true :bigdecimals? true})
       wrap-json-response
+      wrap-keyword-params
       wrap-params
+      wrap-flash
       (wrap-session {:store all-sessions})))
 
 (defonce server (atom nil))
@@ -42,13 +46,15 @@
                     (app) server-spec))
     (log/info (format "Server started at: %s:%d" (:ip server-spec) (:port server-spec)))))
 
-(defn stop! []
+(defn stop!
+  []
   (when-not (nil? @server)
     ;; graceful shutdown: wait 100ms for existing requests to be finished
     ;; :timeout is optional, when no timeout, stop immediately
     (@server :timeout 100)
     (reset! server nil)))
 
-(defn restart-server []
+(defn restart-server
+  []
   (stop!)
   (start!))

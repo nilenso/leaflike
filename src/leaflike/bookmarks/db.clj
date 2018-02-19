@@ -2,24 +2,20 @@
   (:require [clojure.java.jdbc :as jdbc]
             [honeysql.core     :as sql]
             [honeysql.helpers  :as helpers]
-            [honeysql.types    :as types]
+            [honeysql.types  :as types]
             [clojure.string    :as str]
             [leaflike.config   :refer [db-spec]]))
 
-(defn format-tags
-  [{:keys [tags] :as bookmark}]
-  ;; check if tag exists
-  ;; check if tags is nil?
-  (if (nil? tags)
-    bookmark
-    (assoc bookmark
-           :tags (types/array tags))))
+(defn- seq->pgarray
+  [s]
+  (when s (types/array s)))
 
 (defn create
-  [params]
-  (jdbc/execute! (db-spec) (-> (helpers/insert-into :bookmarks)
-                               (helpers/values [(format-tags params)])
-                               sql/format)))
+  [bookmark]
+  (let [bookmark (update bookmark :tags seq->pgarray)]
+    (jdbc/execute! (db-spec) (-> (helpers/insert-into :bookmarks)
+                                 (helpers/values [bookmark])
+                                 sql/format))))
 
 (defn list-all
   [{:keys [member_id]}]
