@@ -1,7 +1,7 @@
 (ns leaflike.user
   (:require [leaflike.user.db :as user-db]
             [leaflike.user.auth :as auth]
-            [leaflike.user.validator :as validator]
+            [leaflike.user.spec :as user-spec]
             [leaflike.user.views :as views]
             [ring.util.response :as res]
             [leaflike.layout :as layout]
@@ -15,7 +15,7 @@
 (defn signup
   [{:keys [params] :as request}]
   (let [user (select-keys params [:email :username :password])]
-    (if (validator/valid-signup-details? user)
+    (if (user-spec/valid-signup-details? user)
       (do (user-db/create-user user)
           (auth/signup-auth request (:username user)))
       (assoc (res/redirect "/signup")
@@ -24,7 +24,7 @@
 (defn login
   [{:keys [params] :as request}]
   (let [login-details   (select-keys params [:username :password])
-        member (validator/valid-login-details? login-details)]
+        member (user-spec/valid-login-details? login-details)]
     (if member
       (let [data {:auth-data (select-keys member [:username :password :verify-password])
                   :verify-password  (:password login-details)}]

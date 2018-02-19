@@ -1,4 +1,4 @@
-(ns leaflike.bookmarks.validator
+(ns leaflike.bookmarks.spec
   (:require [clojure.spec.alpha :as s]
             [clojure.string :as string])
   (:import org.apache.commons.validator.UrlValidator

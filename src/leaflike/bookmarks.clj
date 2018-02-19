@@ -1,5 +1,5 @@
 (ns leaflike.bookmarks
-  (:require [leaflike.bookmarks.validator :refer [valid-bookmark?]]
+  (:require [leaflike.bookmarks.spec :refer [valid-bookmark?]]
             [leaflike.bookmarks.db :as bm-db]
             [leaflike.bookmarks.utils :refer [format-tag-page-uri
                                               format-page-uri]]
