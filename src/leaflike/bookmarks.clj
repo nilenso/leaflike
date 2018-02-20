@@ -93,13 +93,13 @@
              :flash {:error-msg "Invalid bookmark id"}))))
 
 (defn- view-type-info
-  [view-type {:keys [tag search-terms search-query]}]
+  [view-type {:keys [tag search-query]}]
   (case view-type
     :all-bookmarks {:page-title "Bookmarks"
                     :path-format-fn format-page-uri}
     :tag-bookmarks {:page-title (str "Bookmarks with tag: " tag)
                     :path-format-fn (partial format-tag-page-uri :tag tag)}
-    :search-bookmarks {:page-title (str "Search results for: " search-terms)
+    :search-bookmarks {:page-title (str "Search results for: " search-query)
                        :path-format-fn (partial format-search-uri
                                                 :search-query search-query)}))
 
