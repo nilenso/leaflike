@@ -24,15 +24,15 @@
                                  sql/format))))
 
 (defn list-all
-  [{:keys [member_id]}]
+  [{:keys [member-id]}]
   (jdbc/query (db-spec) (-> (helpers/select :*)
                             (helpers/from :bookmarks)
-                            (helpers/where [:= :member_id member_id])
+                            (helpers/where [:= :member_id member-id])
                             sql/format)))
 
 (defn- build-where-clause
-  [{:keys [member_id tag]}]
-  (let [where-clause [:and [:= :member_id member_id]]
+  [{:keys [member-id tag]}]
+  (let [where-clause [:and [:= :member_id member-id]]
         where-clause (if tag
                        (conj where-clause [:= tag :%any.tags])
                        where-clause)]
@@ -40,8 +40,8 @@
 
 (defn count-bookmarks
   "Return number of bookmarks the user has."
-  [{:keys [member_id tag] :as query}]
-  (let [where-clause (build-where-clause (select-keys query [:member_id :tag]))]
+  [{:keys [member-id tag] :as query}]
+  (let [where-clause (build-where-clause (select-keys query [:member-id :tag]))]
     (jdbc/query (db-spec) (-> (helpers/select :%count.*)
                               (helpers/from :bookmarks)
                               (helpers/where where-clause)
@@ -49,8 +49,8 @@
 
 (defn fetch-bookmarks
   "Fetch a `limit` number of bookmarks starting from `offset`."
-  [{:keys [member_id limit offset tag] :or {offset 0} :as query}]
-  (let [where-clause (build-where-clause (select-keys query [:member_id :tag]))]
+  [{:keys [member-id limit offset tag] :or {offset 0} :as query}]
+  (let [where-clause (build-where-clause (select-keys query [:member-id :tag]))]
     (jdbc/query (db-spec) (-> (helpers/select :*)
                               (helpers/from :bookmarks)
                               (helpers/where where-clause)
@@ -60,16 +60,16 @@
                               sql/format))))
 
 (defn list-by-id
-  [{:keys [id member_id]}]
+  [{:keys [id member-id]}]
   (jdbc/query (db-spec) (-> (helpers/select :*)
                             (helpers/from :bookmarks)
                             (helpers/where [:and [:= :id (Integer/parseInt id)]
-                                            [:= :member_id member_id]])
+                                            [:= :member_id member-id]])
                             sql/format)))
 
 (defn delete
-  [{:keys [id member_id]}]
+  [{:keys [id member-id]}]
   (jdbc/execute! (db-spec) (-> (helpers/delete-from :bookmarks)
                                (helpers/where [:and [:= :id (Integer/parseInt id)]
-                                               [:= :member_id member_id]])
+                                               [:= :member_id member-id]])
                                sql/format)))

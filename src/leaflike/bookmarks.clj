@@ -29,8 +29,7 @@
 
 (defn create
   [{:keys [params] :as request}]
-  (let [bookmark (-> (select-keys params
-                                  [:title :url :tags])
+  (let [bookmark (-> (select-keys params [:title :url :tags])
                      format-tags)
         user    (get-user request)]
     (if (valid-bookmark? bookmark)
@@ -45,7 +44,7 @@
 
 (defn list-all
   [request]
-  (bm-db/list-all {:member_id (:id (get-user request))}))
+  (bm-db/list-all {:member-id (:id (get-user request))}))
 
 (let [;; default number of pages when paginating
       items-per-page 10]
@@ -56,7 +55,7 @@
           tag (:tag params)]
       (if (>= page 1)
         (let [page (dec page)
-              query {:member_id (:id user)
+              query {:member-id (:id user)
                      :tag tag}
               bookmarks (bm-db/fetch-bookmarks (merge query
                                                       {:limit items-per-page
@@ -73,8 +72,8 @@
   [{:keys [route-params] :as request}]
   (let [id        (:id route-params)
         user      (get-user request)
-        params    {:id id :member_id (:id user)}]
-    (if (s/valid? :leaflike.bookmarks.validator/id id)
+        params    {:id id :member-id (:id user)}]
+    (if (s/valid? :leaflike.bookmarks.spec/id id)
       (bm-db/list-by-id params)
       (assoc (res/redirect "/bookmarks")
              :flash {:error-msg "Invalid bookmark id"}))))
@@ -83,9 +82,9 @@
   [{:keys [route-params] :as request}]
   (let [id        (get-in request [:route-params :id])
         user      (get-user request)]
-    (if (s/valid? :leaflike.bookmarks.validator/id id)
+    (if (s/valid? :leaflike.bookmarks.spec/id id)
       (bm-db/delete {:id id
-                     :member_id (:id user)})
+                     :member-id (:id user)})
       (assoc (res/redirect "/bookmarks")
              :flash {:error-msg "Invalid bookmark id"}))))
 

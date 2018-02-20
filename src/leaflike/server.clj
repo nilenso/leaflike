@@ -27,6 +27,7 @@
       (wrap-resource "public")
       (wrap-json-params {:keywords? true :bigdecimals? true})
       wrap-json-response
+      middlewares/wrap-kebab-case
       wrap-keyword-params
       wrap-params
       wrap-flash
