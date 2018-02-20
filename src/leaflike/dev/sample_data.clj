@@ -8,11 +8,12 @@
 
 (defn- gen-bookmark
   "Generates a bookmark filled with a random title, URL and tags."
-  [& {:keys [num-tags] :or {num-tags 3}}]
+  [& {:keys [tags num-tags] :or {num-tags 3}}]
   (let [name (domain-word)
         rand-sentence (first (sentences))
         title (str name " - " rand-sentence)
-        tags (for [_ (range num-tags)] (domain-word))
+        tags (or tags
+                 (take num-tags (repeatedly domain-word)))
         tags-str (str/join "," tags)]
     {:title title
      :url (str "http://" name ".com")
@@ -26,7 +27,7 @@
 
 (defn- add-n-bookmarks
   "Adds `num-bookmarks` generated bookmarks as `username`."
-  [username num-bookmarks]
+  [username num-bookmarks & {:keys [tags]}]
   (println (format "Adding %d bookmarks as user %s" num-bookmarks username))
   (dotimes [_ num-bookmarks]
-    (add-bookmark username (gen-bookmark))))
+    (add-bookmark username (gen-bookmark :tags tags))))

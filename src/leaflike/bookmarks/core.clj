@@ -5,7 +5,8 @@
             [leaflike.user.auth :refer [throw-unauthorized]]
             [leaflike.utils :as utils]
             [clojure.spec.alpha :as s]
-            [clojure.string :as string]))
+            [clojure.string :as string]
+            [ring.util.response :as res]))
 
 (defn- get-user
   [request]
@@ -32,30 +33,34 @@
                             :member_id (:id user)
                             :created_at (utils/get-timestamp))]
         (bm-db/create bookmark))
-      (throw (ex-info "Invalid params" {:type :invalid-bookmark
-                                        :data bookmark})))))
+      (assoc (res/redirect "/bookmarks/add")
+             :flash {:error-msg "Invalid bookmark"}))))
 
 (defn list-all
   [request]
   (bm-db/list-all {:member_id (:id (get-user request))}))
 
-(defn fetch-bookmarks
-  [{:keys [params] :as request}]
-  (let [items-per-page 10
-        page (Integer/parseInt (:page params))
-        user (get-user request)]
-    (if (>= page 1)
-      (let [page (dec page)
-            bookmarks (bm-db/fetch-bookmarks {:member_id (:id user)
-                                              :limit items-per-page
-                                              :offset (* items-per-page page)})
-            num-bookmarks (-> (bm-db/count-bookmarks {:member_id (:id user)})
-                              first
-                              :count)]
-        {:bookmarks bookmarks
-         :num-pages (int (Math/ceil (/ num-bookmarks items-per-page)))})
-      (throw (ex-info "Invalid page number" {:type :invalid-page
-                                             :data page})))))
+(let [;; default number of pages when paginating
+      items-per-page 10]
+  (defn fetch-bookmarks
+    [{:keys [params] :as request}]
+    (let [page (:page params)
+          user (get-user request)
+          tag (:tag params)]
+      (if (>= page 1)
+        (let [page (dec page)
+              query {:member_id (:id user)
+                     :tag tag}
+              bookmarks (bm-db/fetch-bookmarks (merge query
+                                                      {:limit items-per-page
+                                                       :offset (* items-per-page page)}))
+              num-bookmarks (-> (bm-db/count-bookmarks query)
+                                first
+                                :count)]
+          {:bookmarks bookmarks
+           :num-pages (int (Math/ceil (/ num-bookmarks items-per-page)))})
+        (assoc (res/redirect "/bookmarks")
+               :flash {:error-msg "Invalid page number"})))))
 
 (defn list-by-id
   [{:keys [route-params] :as request}]
@@ -64,8 +69,8 @@
         params    {:id id :member_id (:id user)}]
     (if (s/valid? :leaflike.bookmarks.validator/id id)
       (bm-db/list-by-id params)
-      (throw (ex-info "Invalid id" {:type :invalid-id
-                                    :data id})))))
+      (assoc (res/redirect "/bookmarks")
+             :flash {:error-msg "Invalid bookmark id"}))))
 
 (defn delete
   [{:keys [route-params] :as request}]
@@ -74,5 +79,5 @@
     (if (s/valid? :leaflike.bookmarks.validator/id id)
       (bm-db/delete {:id id
                      :member_id (:id user)})
-      (throw (ex-info "Invalid id" {:type :invalid-id
-                                    :id id})))))
+      (assoc (res/redirect "/bookmarks")
+             :flash {:error-msg "Invalid bookmark id"}))))

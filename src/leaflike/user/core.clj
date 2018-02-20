@@ -5,7 +5,8 @@
             [leaflike.user.views :as views]
             [ring.util.response :as res]
             [leaflike.layout :as layout]
-            [ring.middleware.anti-forgery :as anti-forgery]))
+            [ring.middleware.anti-forgery :as anti-forgery]
+            [ring.util.response :as res]))
 
 (defn logged-in?
   [{:keys [session] :as request}]
@@ -17,8 +18,8 @@
     (if (validator/valid-signup-details? user)
       (do (user-db/create-user user)
           (auth/signup-auth request (:username user)))
-      (throw (ex-info "Invalid params" {:type :invalid-signup
-                                        :data params})))))
+      (assoc (res/redirect "/signup")
+             :flash {:error-msg "Invalid signup details"}))))
 
 (defn login
   [{:keys [params] :as request}]
@@ -28,8 +29,8 @@
       (let [data {:auth-data (select-keys member [:username :password :verify-password])
                   :verify-password  (:password login-details)}]
         (auth/login-auth request data))
-      (throw (ex-info "Invalid login credentials" {:type :invalid-login
-                                                   :data params})))))
+      (assoc (res/redirect "/login")
+             :flash {:error-msg "Invalid username/password"}))))
 
 (defn logout
   [request]  
