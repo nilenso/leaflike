@@ -40,7 +40,8 @@
                                  {:get bookmarks/tag-bookmarks-view})
                 ["/tag/" :tag "/page/" :page] (with-auth-middlewares
                                                 {:get bookmarks/tag-bookmarks-view})
-
+                ["/search/page/" :page] (with-auth-middlewares
+                                          {:get bookmarks/search-bookmarks-view})
                 "/add" (with-auth-middlewares {:get bookmarks/create-view})}})
 
 (def home-routes

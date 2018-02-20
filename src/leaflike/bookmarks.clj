@@ -2,7 +2,8 @@
   (:require [leaflike.bookmarks.spec :refer [valid-bookmark?]]
             [leaflike.bookmarks.db :as bm-db]
             [leaflike.bookmarks.utils :refer [format-tag-page-uri
-                                              format-page-uri]]
+                                              format-page-uri
+                                              format-search-uri]]
             [leaflike.user.db :as user-db]
             [leaflike.user.auth :refer [throw-unauthorized]]
             [leaflike.utils :as utils]
@@ -32,6 +33,7 @@
   (let [bookmark (-> (select-keys params [:title :url :tags])
                      format-tags)
         user    (get-user request)]
+    (def *b bookmark)
     (if (valid-bookmark? bookmark)
       (let [bookmark (assoc bookmark
                             :member_id (:id user)
@@ -52,11 +54,13 @@
     [{:keys [params] :as request}]
     (let [page (:page params)
           user (get-user request)
-          tag (:tag params)]
+          tag (:tag params)
+          search-terms (:search-terms params)]
       (if (>= page 1)
         (let [page (dec page)
               query {:member-id (:id user)
-                     :tag tag}
+                     :tag tag
+                     :search-terms search-terms}
               bookmarks (bm-db/fetch-bookmarks (merge query
                                                       {:limit items-per-page
                                                        :offset (* items-per-page page)}))
@@ -88,6 +92,16 @@
       (assoc (res/redirect "/bookmarks")
              :flash {:error-msg "Invalid bookmark id"}))))
 
+(defn- view-type-info
+  [view-type {:keys [tag search-terms search-query]}]
+  (case view-type
+    :all-bookmarks {:page-title "Bookmarks"
+                    :path-format-fn format-page-uri}
+    :tag-bookmarks {:page-title (str "Bookmarks with tag: " tag)
+                    :path-format-fn (partial format-tag-page-uri :tag tag)}
+    :search-bookmarks {:page-title (str "Search results for: " search-terms)
+                       :path-format-fn (partial format-search-uri
+                                                :search-query search-query)}))
 
 (defn- bookmarks-list-view
   "Common function to show list of bookmarks. `view-type` can be either of:
@@ -98,18 +112,19 @@
   (let [current-page (if (string/blank? (:page params))
                        1
                        (Integer/parseInt (:page params)))
-        request (update-in request
-                           [:params :page]
-                           (constantly current-page))
-        tag (:tag params)
+        {:keys [tag search-query]} params
+
+        search-terms (when (not (string/blank? search-query))
+                       (string/split search-query #" "))
+        request (-> (update-in request
+                               [:params :page]
+                               (constantly current-page))
+                    (assoc-in [:params :search-terms] search-terms))
+
         username (get-in request [:session :username])
         {:keys [bookmarks num-pages]} (fetch-bookmarks request)
-        page-title (case view-type
-                     :all-bookmarks "Bookmarks"
-                     :tag-bookmarks (str "Bookmarks with tag: " tag))
-        path-format-fn (case view-type
-                         :all-bookmarks format-page-uri
-                         :tag-bookmarks (partial format-tag-page-uri :tag tag))]
+        {:keys [page-title path-format-fn]} (view-type-info view-type
+                                                            (:params request))]
     (-> (res/response (user-view page-title
                                  username
                                  (views/list-all bookmarks
@@ -120,6 +135,7 @@
 
 (def all-bookmarks-view (partial bookmarks-list-view :all-bookmarks))
 (def tag-bookmarks-view (partial bookmarks-list-view :tag-bookmarks))
+(def search-bookmarks-view (partial bookmarks-list-view :search-bookmarks))
 
 (defn create-view
   [request]
