@@ -25,7 +25,7 @@
   (update bookmark :tags
           #(if (string/blank? %)
              nil
-             (string/split % #","))))
+             (map string/trim (string/split % #",")))))
 
 (defn create
   [{:keys [params] :as request}]

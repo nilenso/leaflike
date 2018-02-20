@@ -1,5 +1,5 @@
 (ns leaflike.functional.user
-  (:require [leaflike.user.validator :refer :all]
+  (:require [leaflike.user.spec :refer :all]
             [leaflike.user.db :as user-db]
             [leaflike.fixtures :refer [wrap-setup]]
             [clojure.test :refer :all]))

@@ -15,7 +15,7 @@
 (defn signup
   [{:keys [params] :as request}]
   (let [user (select-keys params [:email :username :password])]
-    (if (user-spec/valid-signup-details? user)
+    (if (user-spec/valid-signup-details? params)
       (do (user-db/create-user user)
           (auth/signup-auth request (:username user)))
       (assoc (res/redirect "/signup")
@@ -24,7 +24,7 @@
 (defn login
   [{:keys [params] :as request}]
   (let [login-details   (select-keys params [:username :password])
-        member (user-spec/valid-login-details? login-details)]
+        member (user-spec/valid-login-details? params)]
     (if member
       (let [data {:auth-data (select-keys member [:username :password :verify-password])
                   :verify-password  (:password login-details)}]

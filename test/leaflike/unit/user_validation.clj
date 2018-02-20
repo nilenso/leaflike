@@ -1,6 +1,6 @@
 (ns leaflike.unit.user-validation
   (:require  [clojure.test :refer :all]
-             [leaflike.user.validator :refer :all]))
+             [leaflike.user.spec :refer :all]))
 
 (deftest email-test
   (testing "test email is valid"
