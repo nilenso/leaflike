@@ -1,8 +1,8 @@
 (ns leaflike.functional.bookmarks
-  (:require [leaflike.bookmarks.core :as bm-core]
+  (:require [leaflike.bookmarks :as bm]
             [leaflike.fixtures :refer [wrap-setup]]
             [clojure.test :refer :all]
-            [leaflike.user.core :as user-core])
+            [leaflike.user :as user])
   (:import clojure.lang.ExceptionInfo))
 
 (use-fixtures :once wrap-setup)
@@ -16,53 +16,55 @@
                :tags  "abc, random, test, music, something"})
 
 (deftest bookmark-tests
-  (user-core/signup {:params user})
+  (user/signup {:params user})
 
   (testing "create bookmark success"
-    (let [response (bm-core/create {:params bookmark
-                                    :username (:username user)})]
-      (is (= '(1) response))))
+    (let [{:keys [status flash]} (bm/create {:params bookmark
+                                             :session {:username (:username user)}})]
+      (is (= 302 status))
+      (is (empty? (:error-msg flash)))))
 
   (testing "create bookmark success without tags"
-    (let [response (bm-core/create {:params (dissoc bookmark :tags)
-                                    :username (:username user)})]
-      (is (= '(1) response))))
+    (let [{:keys [status flash]} (bm/create {:params (dissoc bookmark :tags)
+                                             :session {:username (:username user)}})]
+      (is (= 302 status))
+      (is (empty? (:error-msg flash)))))
 
   (testing "create bookmark failed"
-    (let [{:keys [status flash]} (bm-core/create {:params (dissoc bookmark :url)
-                                           :username (:username user)})]
+    (let [{:keys [status flash]} (bm/create {:params (dissoc bookmark :url)
+                                             :session {:username (:username user)}})]
       (is (= status 302))
       (is (= (:error-msg flash) "Invalid bookmark"))))
 
   (testing "list all bookmarks"
-    (let [response (bm-core/list-all {:username (:username user)})]
+    (let [response (bm/list-all {:session {:username (:username user)}})]
       (is (= 2 (count response)))
       ;; todo - array selective equals
       ))
 
   (testing "list bookmark by id, wrong input in id"
-    (let [{:keys [status flash]} (bm-core/list-by-id {:route-params {:id "2abc"}
-                                                      :username (:username user)})]
+    (let [{:keys [status flash]} (bm/list-by-id {:route-params {:id "2abc"}
+                                                 :session {:username (:username user)}})]
       (is (= status 302))
       (is (= (:error-msg flash) "Invalid bookmark id"))))
 
   (testing "list bookmark by id"
-    (let [response (bm-core/list-by-id {:route-params {:id "1"}
-                                        :username (:username user)})]
+    (let [response (bm/list-by-id {:route-params {:id "1"}
+                                   :session {:username (:username user)}})]
       (is (= 1 (count response)))))
 
   (testing "delete bookmark"
-    (let [response (bm-core/delete {:route-params {:id "1"}
-                                    :username (:username user)})]
+    (let [response (bm/delete {:route-params {:id "1"}
+                               :session {:username (:username user)}})]
       (is (= '(1) response))))
 
   (testing "delete bookmark failed, invalid input"
-    (let [{:keys [status flash]} (bm-core/delete {:route-params {:id "1jgk"}
-                                           :username (:username user)})]
-        (is (= status 302))
-        (is (= (:error-msg flash) "Invalid bookmark id"))))
+    (let [{:keys [status flash]} (bm/delete {:route-params {:id "1jgk"}
+                                             :session {:username (:username user)}})]
+      (is (= status 302))
+      (is (= (:error-msg flash) "Invalid bookmark id"))))
 
   (testing "delete bookmark"
-    (let [response (bm-core/delete {:route-params {:id "31"}
-                                    :username (:username user)})]
+    (let [response (bm/delete {:route-params {:id "31"}
+                               :session {:username (:username user)}})]
       (is (= '(0) response)))))

@@ -18,7 +18,8 @@
                  [hiccup "2.0.0-alpha1"]
                  [clj-time "0.14.2"]
                  [ring/ring-anti-forgery "1.2.0"]
-                 [org.clojure/tools.logging "0.4.0"]]
+                 [org.clojure/tools.logging "0.4.0"]
+                 [camel-snake-kebab "0.4.0"]]
   :profiles {:dev {:dependencies [[faker "0.2.2"]]}}
   :main          leaflike.core
   :aot           [leaflike.core]

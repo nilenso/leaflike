@@ -22,8 +22,7 @@
   (fn [request]
     (let [username (get-username request)]
       (if username
-        (handler (assoc request
-                        :username username))
+        (handler request)
         (redirect-to-login (:uri request))))))
 
 (defn logout-auth

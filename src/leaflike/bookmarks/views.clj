@@ -14,7 +14,7 @@
                           "")]
      [:li {:class (str "page-item" disabled-class)}
       [:a {:class "page-link"
-           :href (path-format-fn :page (dec current-page))}
+           :href (path-format-fn (dec current-page))}
        "Previous"]])
    ;; List of pages
    (for [page-num (range 1 (inc num-pages))]
@@ -25,7 +25,7 @@
                       li-class)]
        [:li {:class li-class}
         [:a {:class "page-link"
-             :href (path-format-fn :page page-num)} page-num]]))
+             :href (path-format-fn page-num)} page-num]]))
 
    ;; "Next" button
    (let [disabled-next? (= current-page num-pages)
@@ -34,7 +34,7 @@
                           "")]
      [:li {:class (str "page-item" disabled-class)}
       [:a {:class "page-link"
-           :href (path-format-fn :page (inc current-page))}
+           :href (path-format-fn (inc current-page))}
        "Next"]])])
 
 (defn list-all

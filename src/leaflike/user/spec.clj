@@ -1,4 +1,4 @@
-(ns leaflike.user.validator
+(ns leaflike.user.spec
   (:require [leaflike.utils :refer [email-pattern
                                     alpha-num-pattern
                                     required]]

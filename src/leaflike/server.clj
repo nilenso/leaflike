@@ -1,8 +1,6 @@
 (ns leaflike.server
   (:require [leaflike.config                :refer [server-spec]]
-            [leaflike.routes                :refer [home-routes]]
-            [leaflike.bookmarks.routes      :refer [bookmarks-routes]]
-            [leaflike.user.routes           :refer [user-routes]]
+            [leaflike.routes                :refer [app-routes]]
             [leaflike.middlewares :as middlewares]
             [bidi.ring                      :as    bidi-ring]
             [org.httpkit.server             :as    httpkit]
@@ -19,9 +17,6 @@
 
 (defonce ^:private all-sessions (mem/memory-store))
 
-(def app-routes ["/" (merge home-routes
-                            user-routes
-                            bookmarks-routes)])
 (def app-handler (bidi-ring/make-handler app-routes))
 
 (defn app
@@ -32,6 +27,7 @@
       (wrap-resource "public")
       (wrap-json-params {:keywords? true :bigdecimals? true})
       wrap-json-response
+      middlewares/wrap-kebab-case
       wrap-keyword-params
       wrap-params
       wrap-flash

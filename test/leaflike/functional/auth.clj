@@ -1,7 +1,7 @@
 (ns leaflike.functional.auth
   (:require [leaflike.fixtures :refer [wrap-setup]]
             [clojure.test :refer :all]
-            [leaflike.user.core :refer [signup login logout]])
+            [leaflike.user :refer [signup login logout]])
   (:import clojure.lang.ExceptionInfo))
 
 (use-fixtures :once wrap-setup)

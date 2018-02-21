@@ -1,6 +1,15 @@
 (ns leaflike.layout
   (:require [hiccup.page :refer [html5 include-css]]
-            [hiccup.element :refer [link-to]]))
+            [hiccup.element :refer [link-to]]
+            [hiccup.form :as f]))
+
+(defn search-form
+  []
+  (f/form-to {:class "form-inline" :role "form"}
+             [:get "/bookmarks/search/page/1"]
+             [:span
+              (f/text-field {:class "form-control" :placeholder "Search"
+                             :required ""} "search_query")]))
 
 (defn application
   [title content & {:keys [username error-msg]}]
@@ -9,15 +18,15 @@
           (include-css "//maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css")
           (include-css "/css/styles.css")
           [:body
-           [:header {:class "navbar navbar-light bg-light"}
+           [:nav.navbar.navbar-expand-lg.navbar-light.bg-light
             [:a.navbar-brand {:href "/"} "Leaflike"]
-            [:div {:class "navbar-nav-scroll"
-                   :id "navbarSupportedContent"}
-             (when username [:ul {:class "navbar-nav"}
-                             [:li {:class "nav-item"}
-                              (str "Logged in as " username)]
-                             [:li {:class "nav-item"}
-                              [:a {:href "/logout"} "Logout"]]])]]
+            [:div.collapse.navbar-collapse
+             [:ul.navbar-nav.mr-auto.mt-2.mt-lg-0
+              [:li.nav-item
+               (search-form)]]
+             (str "Logged in as " username)
+             [:a {:class "nav-link" :href "/logout"} "Logout"]]]
+
            [:div.container
             [:div#content
              [:h3 {:class "text-success"} title]
