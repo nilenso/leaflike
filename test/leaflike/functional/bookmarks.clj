@@ -20,51 +20,51 @@
 
   (testing "create bookmark success"
     (let [{:keys [status flash]} (bm/create {:params bookmark
-                                             :username (:username user)})]
+                                             :session {:username (:username user)}})]
       (is (= 302 status))
       (is (empty? (:error-msg flash)))))
 
   (testing "create bookmark success without tags"
     (let [{:keys [status flash]} (bm/create {:params (dissoc bookmark :tags)
-                                             :username (:username user)})]
+                                             :session {:username (:username user)}})]
       (is (= 302 status))
       (is (empty? (:error-msg flash)))))
 
   (testing "create bookmark failed"
     (let [{:keys [status flash]} (bm/create {:params (dissoc bookmark :url)
-                                             :username (:username user)})]
+                                             :session {:username (:username user)}})]
       (is (= status 302))
       (is (= (:error-msg flash) "Invalid bookmark"))))
 
   (testing "list all bookmarks"
-    (let [response (bm/list-all {:username (:username user)})]
+    (let [response (bm/list-all {:session {:username (:username user)}})]
       (is (= 2 (count response)))
       ;; todo - array selective equals
       ))
 
   (testing "list bookmark by id, wrong input in id"
     (let [{:keys [status flash]} (bm/list-by-id {:route-params {:id "2abc"}
-                                                 :username (:username user)})]
+                                                 :session {:username (:username user)}})]
       (is (= status 302))
       (is (= (:error-msg flash) "Invalid bookmark id"))))
 
   (testing "list bookmark by id"
     (let [response (bm/list-by-id {:route-params {:id "1"}
-                                   :username (:username user)})]
+                                   :session {:username (:username user)}})]
       (is (= 1 (count response)))))
 
   (testing "delete bookmark"
     (let [response (bm/delete {:route-params {:id "1"}
-                               :username (:username user)})]
+                               :session {:username (:username user)}})]
       (is (= '(1) response))))
 
   (testing "delete bookmark failed, invalid input"
     (let [{:keys [status flash]} (bm/delete {:route-params {:id "1jgk"}
-                                             :username (:username user)})]
+                                             :session {:username (:username user)}})]
       (is (= status 302))
       (is (= (:error-msg flash) "Invalid bookmark id"))))
 
   (testing "delete bookmark"
     (let [response (bm/delete {:route-params {:id "31"}
-                               :username (:username user)})]
+                               :session {:username (:username user)}})]
       (is (= '(0) response)))))

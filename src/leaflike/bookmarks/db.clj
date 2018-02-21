@@ -84,18 +84,6 @@
                               (helpers/order-by [:created_at :desc])
                               sql/format))))
 
-#_(defn search-bookmarks
-  "Search for `member_id`'s bookmarks whose title or URL contains `search_terms`"
-  [{:keys [member-id search-terms]}]
-  (let [ts-query (str/join " & " search-terms)]
-    (jdbc/query (db-spec) (-> (helpers/select :*)
-                              (helpers/from :bookmarks)
-                              (helpers/where [:and
-                                              [:= :member_id member-id]
-                                              [:matches [(sql/call :concat :%to_tsvector.title :%to_tsvector.url)]
-                                               [(sql/call :to_tsquery ts-query)]]])
-                              sql/format))))
-
 (defn list-by-id
   [{:keys [id member-id]}]
   (jdbc/query (db-spec) (-> (helpers/select :*)

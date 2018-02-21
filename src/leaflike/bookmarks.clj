@@ -31,7 +31,6 @@
   (let [bookmark (-> (select-keys params [:title :url :tags])
                      format-tags)
         user    (get-user request)]
-    (def *b bookmark)
     (if (valid-bookmark? bookmark)
       (let [bookmark (assoc bookmark
                             :member_id (:id user)
