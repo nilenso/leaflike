@@ -20,12 +20,13 @@
           [:body
            [:nav.navbar.navbar-expand-lg.navbar-light.bg-light
             [:a.navbar-brand {:href "/"} "Leaflike"]
-            [:div.collapse.navbar-collapse
-             [:ul.navbar-nav.mr-auto.mt-2.mt-lg-0
-              [:li.nav-item
-               (search-form)]]
-             (str "Logged in as " username)
-             [:a {:class "nav-link" :href "/logout"} "Logout"]]]
+            (when username
+              [:div.collapse.navbar-collapse
+               [:ul.navbar-nav.mr-auto.mt-2.mt-lg-0
+                [:li.nav-item
+                 (search-form)]]
+               (str "Logged in as " username)
+               [:a {:class "nav-link" :href "/logout"} "Logout"]])]
 
            [:div.container
             [:div#content

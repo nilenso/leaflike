@@ -74,7 +74,6 @@
 (defn fetch-bookmarks
   "Fetch a `limit` number of bookmarks starting from `offset`."
   [{:keys [member-id limit offset tag search-terms] :or {offset 0} :as query}]
-  (println query)
   (let [where-clause (build-where-clause (select-keys query [:member-id :tag :search-terms]))]
     (jdbc/query (db-spec) (-> (helpers/select :*)
                               (helpers/from :bookmarks)
