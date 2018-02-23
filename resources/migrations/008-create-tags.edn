@@ -1,0 +1,13 @@
+{:up ["ALTER TABLE bookmarks DROP COLUMN tags;
+
+      CREATE TABLE tags (
+                          id bigserial primary key,
+                          name text not null unique);
+
+      CREATE TABLE bookmark_tag (
+                                 tag_id bigint references tags(id),
+                                 bookmark_id integer references bookmarks(id),
+                                 PRIMARY KEY (tag_id, bookmark_id));"]
+ :down ["DROP TABLE bookmark_tag;
+         DROP TABLE tags;
+         ALTER TABLE bookmarks ADD COLUMN tags text[];"]}

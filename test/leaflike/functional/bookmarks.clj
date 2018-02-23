@@ -37,7 +37,7 @@
       (is (= (:error-msg flash) "Invalid bookmark"))))
 
   (testing "list all bookmarks"
-    (let [response (bm/list-all {:session {:username (:username user)}})]
+    (let [response (bm/fetch-bookmarks (:username user) {:page 1})]
       (is (= 2 (count response)))
       ;; todo - array selective equals
       ))

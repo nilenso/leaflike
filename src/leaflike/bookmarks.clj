@@ -2,6 +2,7 @@
   (:require [leaflike.bookmarks.spec :refer [valid-bookmark?]]
             [leaflike.bookmarks.db :as bm-db]
             [leaflike.bookmarks.uri :as uri]
+            [leaflike.tags.db :as tags-db]
             [leaflike.user.db :as user-db]
             [leaflike.user.auth :refer [throw-unauthorized]]
             [leaflike.utils :as utils]
@@ -30,20 +31,21 @@
   [{:keys [params] :as request}]
   (let [bookmark (-> (select-keys params [:title :url :tags])
                      format-tags)
-        user    (get-user request)]
+        user    (get-user request)
+        tags (:tags bookmark)]
     (if (valid-bookmark? bookmark)
-      (let [bookmark (assoc bookmark
-                            :member_id (:id user)
-                            :created_at (utils/get-timestamp))]
-        (bm-db/create bookmark)
+      (let [bookmark (-> bookmark
+                         (dissoc :tags)
+                         (assoc :member_id (:id user)
+                                :created_at (utils/get-timestamp)))]
+        (let [bookmark-id (bm-db/create bookmark)]
+          (when (not-empty tags)
+            (tags-db/create tags)
+            (bm-db/tag-bookmark bookmark-id tags)))
         (-> (res/redirect "/bookmarks")
             (assoc-in [:headers "Content-Type"] "text/html")))
       (assoc (res/redirect "/bookmarks/add")
              :flash {:error-msg "Invalid bookmark"}))))
-
-(defn list-all
-  [request]
-  (bm-db/list-all {:member-id (:id (get-user request))}))
 
 (def items-per-page 10)
 
@@ -73,11 +75,13 @@
 
 (defn delete
   [{:keys [route-params] :as request}]
-  (let [id        (get-in request [:route-params :id])
-        user      (get-user request)]
-    (if (s/valid? :leaflike.bookmarks.spec/id id)
-      (bm-db/delete {:id id
-                     :member-id (:id user)})
+  (let [user      (hutils/get-user request)
+        unparsed-id (get-in request [:route-params :id])]
+    (if (s/valid? :leaflike.bookmarks.spec/id unparsed-id)
+      (let [id (Integer/parseInt unparsed-id)]
+        (do (bm-db/remove-all-tags id)
+            (bm-db/delete {:id id
+                           :member-id (:id user)})))
       (assoc (res/redirect "/bookmarks")
              :flash {:error-msg "Invalid bookmark id"}))))
 
