@@ -24,7 +24,9 @@
               [:div.collapse.navbar-collapse
                [:ul.navbar-nav.mr-auto.mt-2.mt-lg-0
                 [:li.nav-item
-                 (search-form)]]
+                 (search-form)]
+                [:li.nav-item
+                 [:a.nav-link {:href "/tags"} "All tags"]]]
                (str "Logged in as " username)
                [:a {:class "nav-link" :href "/logout"} "Logout"]])]
 
