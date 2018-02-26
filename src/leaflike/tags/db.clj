@@ -27,6 +27,7 @@
                                       (helpers/where [:and [:= :member_id member-id]
                                                       [:= :bt.bookmark_id :b.id]])
                                       (helpers/group :bt.tag_id))])
+                  (helpers/order-by :name)
                   sql/format)))
 
 (defn list-bookmarks
