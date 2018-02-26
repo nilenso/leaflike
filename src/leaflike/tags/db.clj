@@ -15,6 +15,20 @@
                                          (pg-helpers/on-conflict)))
                      sql/format)))
 
+(defn fetch-tags
+  [{:keys [member-id]}]
+  (jdbc/query (db-spec)
+              (-> (helpers/select :*)
+                  (helpers/from :tags)
+                  (helpers/where [:in :id
+                                  (-> (helpers/select :tag_id)
+                                      (helpers/from [:bookmark_tag :bt]
+                                                    [:bookmarks :b])
+                                      (helpers/where [:and [:= :member_id member-id]
+                                                      [:= :bt.bookmark_id :b.id]])
+                                      (helpers/group :bt.tag_id))])
+                  sql/format)))
+
 (defn list-bookmarks
   "List bookmark tagged with `tag-name`"
   [tag-name]

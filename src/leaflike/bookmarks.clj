@@ -6,17 +6,13 @@
             [leaflike.user.db :as user-db]
             [leaflike.user.auth :refer [throw-unauthorized]]
             [leaflike.utils :as utils]
+            [leaflike.handler-utils :as hutils]
             [leaflike.layout :as layout]
             [leaflike.bookmarks.views :as views]
             [ring.middleware.anti-forgery :as anti-forgery]
             [clojure.spec.alpha :as s]
             [clojure.string :as string]
             [ring.util.response :as res]))
-
-(defn- get-user
-  [request]
-  (let [username (get-in request [:session :username])]
-    (first (user-db/get-member-auth-data username :id))))
 
 (defn- format-tags
   "Convert :tags in a bookmark from a comma-separated string to a vector
@@ -31,7 +27,7 @@
   [{:keys [params] :as request}]
   (let [bookmark (-> (select-keys params [:title :url :tags])
                      format-tags)
-        user    (get-user request)
+        user    (hutils/get-user request)
         tags (:tags bookmark)]
     (if (valid-bookmark? bookmark)
       (let [bookmark (-> bookmark
@@ -51,7 +47,7 @@
 
 (defn fetch-bookmarks
   [username {:keys [tag search-terms] :as params}]
-  (let [user (get-user {:session {:username username}})
+  (let [user (hutils/get-user {:session {:username username}})
         page (dec (:page params))
         query {:member-id (:id user)
                :tag tag
@@ -66,7 +62,7 @@
 (defn list-by-id
   [{:keys [route-params] :as request}]
   (let [id        (:id route-params)
-        user      (get-user request)
+        user      (hutils/get-user request)
         params    {:id id :member-id (:id user)}]
     (if (s/valid? :leaflike.bookmarks.spec/id id)
       (bm-db/list-by-id params)
