@@ -27,11 +27,11 @@
       (let [bookmark (-> (select-keys params [:title :url])
                          (assoc :member_id (:id user)
                                 :created_at (utils/get-timestamp)))
-            tags (split-tags (:tags params))
-            bookmark-id (bm-db/create bookmark)]
-        (when (not-empty tags)
-          (tags-db/create tags)
-          (bm-db/tag-bookmark bookmark-id tags))
+            tags (split-tags (:tags params))]
+        (let [bookmark-id (bm-db/create bookmark)]
+          (when (not-empty tags)
+            (tags-db/create tags)
+            (bm-db/tag-bookmark bookmark-id tags)))
         (-> (res/redirect "/bookmarks")
             (assoc-in [:headers "Content-Type"] "text/html")))
       (assoc (res/redirect "/bookmarks/add")
