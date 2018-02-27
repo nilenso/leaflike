@@ -27,7 +27,7 @@
 
 (s/def ::url url?)
 
-(s/def ::tags (s/* string?))
+(s/def ::tags string?)
 
 (s/def ::bookmark (s/keys :req-un [::title ::url]
                           :opt-un [::id ::tags]))

@@ -14,30 +14,24 @@
             [clojure.string :as string]
             [ring.util.response :as res]))
 
-(defn- format-tags
-  "Convert :tags in a bookmark from a comma-separated string to a vector
-  of strings."
-  [bookmark]
-  (update bookmark :tags
-          #(if (string/blank? %)
-             nil
-             (map string/trim (string/split % #",")))))
+(defn- split-tags
+  [tags]
+  (if (string/blank? tags)
+    nil
+    (remove string/blank? (map string/trim (string/split tags #",")))))
 
 (defn create
   [{:keys [params] :as request}]
-  (let [bookmark (-> (select-keys params [:title :url :tags])
-                     format-tags)
-        user    (hutils/get-user request)
-        tags (:tags bookmark)]
-    (if (valid-bookmark? bookmark)
-      (let [bookmark (-> bookmark
-                         (dissoc :tags)
+  (let [user    (hutils/get-user request)]
+    (if (valid-bookmark? params)
+      (let [bookmark (-> (select-keys params [:title :url])
                          (assoc :member_id (:id user)
-                                :created_at (utils/get-timestamp)))]
-        (let [bookmark-id (bm-db/create bookmark)]
-          (when (not-empty tags)
-            (tags-db/create tags)
-            (bm-db/tag-bookmark bookmark-id tags)))
+                                :created_at (utils/get-timestamp)))
+            tags (split-tags (:tags params))
+            bookmark-id (bm-db/create bookmark)]
+        (when (not-empty tags)
+          (tags-db/create tags)
+          (bm-db/tag-bookmark bookmark-id tags))
         (-> (res/redirect "/bookmarks")
             (assoc-in [:headers "Content-Type"] "text/html")))
       (assoc (res/redirect "/bookmarks/add")
