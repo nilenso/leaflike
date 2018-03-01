@@ -48,14 +48,18 @@
     [:thead {:class "thead-dark"}
      [:tr
       [:th {:scope "col"} "Title"]
+      [:th {:scope "col"} ""]
       [:th {:scope "col"} "Tags"]
       [:th {:scope "col"} "Date"]]]
     [:tbody
      (for [bookmark bookmarks]
        [:tr
-        [:td [:a {:href (:url bookmark)
-                  :target "_blank"
-                  :bookmark_id (str (:id bookmark))} (:title bookmark)]]
+        [:td [:a.col {:href (:url bookmark)
+                      :target "_blank"
+                      :bookmark_id (str (:id bookmark))} (:title bookmark)]]
+        [:td [:a {:href (str "/bookmarks/edit/" (:id bookmark))
+                  :bookmark_id (str (:id bookmark))}
+              [:button.btn.btn-sm.btn-outline-secondary "Edit"]]]
         [:td (for [tag (:tags bookmark)]
                [:a {:href (format "/bookmarks/tag/%s/page/1" tag)}
                 [:button.btn.btn-outline-primary.btn-sm tag]])]
@@ -66,23 +70,31 @@
      (pagination num-pages current-page path-format-fn))])
 
 (defn add-bookmark
-  [anti-forgery-token]
+  [anti-forgery-token form-post-url {:keys [id url title tags]
+                                     :or {id ""
+                                          url ""
+                                          title ""
+                                          tags ""}}]
   [:div {:class "well"}
    (f/form-to {:role "form"}
-              [:post "/bookmarks"]
+              [:post form-post-url]
               [:div {:class "form-group"}
                (f/label {:class "control-label"} "url" "URL")
                (f/text-field {:class "form-control" :placeholder "URL"
+                              :value url
                               :required ""} "url")]
               [:div {:class "form-group"}
                (f/label {:class "control-label"} "title" "Title")
                (f/text-field {:class "form-control" :placeholder "Title"
+                              :value title
                               :required ""} "title")]
               [:div {:class "form-group"}
                (f/label {:class "control-label"} "tags" "Tags")
-               (f/text-field {:class "form-control" :placeholder "Tags"} "tags")]
+               (f/text-field {:class "form-control" :placeholder "Tags"
+                              :value (string/join "," tags)} "tags")]
 
               [:div {:class "form-group"}
                (f/submit-button {:class "btn btn-primary"} "Submit")]
 
+              (f/hidden-field {:value id} "id")
               (f/hidden-field {:value anti-forgery-token} "__anti-forgery-token"))])

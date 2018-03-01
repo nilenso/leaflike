@@ -35,8 +35,7 @@
 
 (defn bookmarks-routes
   []
-  {"bookmarks" {"" (with-auth-middlewares {:get  bookmarks/all-bookmarks-view
-                                           :post bookmarks/create})
+  {"bookmarks" {"" (with-auth-middlewares {:get  bookmarks/all-bookmarks-view})
                 ["/page/" :page] (with-auth-middlewares
                                    {:get bookmarks/all-bookmarks-view})
                 ["/tag/" :tag] (with-auth-middlewares
@@ -45,7 +44,10 @@
                                                 {:get bookmarks/tag-bookmarks-view})
                 ["/search/page/" :page] (with-auth-middlewares
                                           {:get bookmarks/search-bookmarks-view})
-                "/add" (with-auth-middlewares {:get bookmarks/create-view})}})
+                "/add" (with-auth-middlewares {:get bookmarks/create-view
+                                               :post bookmarks/create})
+                "/edit" {"" {:post bookmarks/edit}
+                         ["/" :bookmark-id] {:get bookmarks/edit-view}}}})
 
 (defn tags-routes
   []

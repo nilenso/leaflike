@@ -67,6 +67,17 @@
       first
       :id))
 
+;;; NOTE: Named `update-bookmark` to avoid shadowing `update`
+(defn update-bookmark
+  [bookmark-id member-id updated-keys]
+  (let [updated-keys (select-keys updated-keys [:title :url])]
+    (jdbc/execute! (db-spec)
+                   (-> (helpers/update :bookmarks)
+                       (helpers/sset updated-keys)
+                       (helpers/where [:and [:= :id bookmark-id]
+                                       [:= :member_id member-id]])
+                       sql/format))))
+
 (defn- build-where-clause
   [{:keys [member-id tag search-terms]}]
   (let [where-clause [:and [:= :member_id member-id]]
@@ -104,6 +115,20 @@
                                    sql/format))
          first
          :count)))
+
+(defn fetch-bookmark
+  [bookmark-id member-id]
+  (-> (jdbc/query (db-spec)
+                  (-> (helpers/select :b.url :b.title :b.created_at :b.id :b.member_id
+                                      [(sql/call :array_remove :%array_agg.t.name :null) :tags])
+                      (helpers/from [:bookmarks :b])
+                      (helpers/left-join [:bookmark_tag :bt] [:= :b.id :bt.bookmark_id]
+                                         [:tags :t] [:= :bt.tag_id :t.id])
+                      (helpers/where [:and [:= :b.id bookmark-id]
+                                      [:= :b.member_id member-id]])
+                      (helpers/group :b.id)
+                      sql/format))
+      first))
 
 
 (defn fetch-bookmarks
