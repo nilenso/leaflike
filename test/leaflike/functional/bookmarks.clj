@@ -15,6 +15,16 @@
                :url   "http://abc.com"
                :tags  "abc, random, test, music, something"})
 
+(defn- fetch-all-bookmarks
+  [username]
+  (loop [all []
+         page-num 1]
+    (let [{:keys [bookmarks num-pages]} (bm/fetch-bookmarks username {:page page-num})]
+      (if (> page-num num-pages)
+        all
+        (recur (concat all bookmarks)
+               (inc page-num))))))
+
 (deftest bookmark-tests
   (user/signup {:params user})
 
@@ -37,10 +47,8 @@
       (is (= (:error-msg flash) "Invalid bookmark"))))
 
   (testing "list all bookmarks"
-    (let [response (bm/fetch-bookmarks (:username user) {:page 1})]
-      (is (= 2 (count response)))
-      ;; todo - array selective equals
-      ))
+    (let [response (fetch-all-bookmarks (:username user))]
+      (is (= 2 (count response)))))
 
   (testing "list bookmark by id, wrong input in id"
     (let [{:keys [status flash]} (bm/list-by-id {:route-params {:id "2abc"}
