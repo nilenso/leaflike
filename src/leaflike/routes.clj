@@ -3,7 +3,8 @@
             [ring.util.response :as res]
             [leaflike.layout :as layout]
             [leaflike.user :as user]
-            [leaflike.bookmarks :as bookmarks]))
+            [leaflike.bookmarks :as bookmarks]
+            [leaflike.tags :as tags]))
 
 (defn welcome
   [request]
@@ -22,7 +23,8 @@
       (-> (res/response homepage)
           (assoc :headers {"Content-Type" "text/html"})))))
 
-(def user-routes
+(defn user-routes
+  []
   {;; existing user
    "login"        {:post user/login
                    :get  user/login-page}
@@ -31,7 +33,8 @@
    "signup"       {:post user/signup
                    :get  user/signup-page}})
 
-(def bookmarks-routes
+(defn bookmarks-routes
+  []
   {"bookmarks" {"" (with-auth-middlewares {:get  bookmarks/all-bookmarks-view
                                            :post bookmarks/create})
                 ["/page/" :page] (with-auth-middlewares
@@ -44,10 +47,18 @@
                                           {:get bookmarks/search-bookmarks-view})
                 "/add" (with-auth-middlewares {:get bookmarks/create-view})}})
 
-(def home-routes
+(defn tags-routes
+  []
+  {"tags" {"" (with-auth-middlewares {:get tags/tags-list})}})
+
+(defn home-routes
+  []
   {""        {:get home}
    "welcome" (with-auth-middlewares {:get welcome})})
 
-(def app-routes ["/" (merge home-routes
-                            user-routes
-                            bookmarks-routes)])
+(defn app-routes
+  []
+  ["/" (merge (home-routes)
+              (user-routes)
+              (bookmarks-routes)
+              (tags-routes))])

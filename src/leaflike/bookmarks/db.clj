@@ -4,6 +4,7 @@
             [honeysql.helpers  :as helpers]
             [honeysql.types  :as types]
             [honeysql.format :as fmt]
+            [honeysql-postgres.helpers :as pg-helpers]
             [clojure.string    :as str]
             [leaflike.config   :refer [db-spec]]))
 
@@ -32,19 +33,39 @@
   [s]
   (when s (types/array s)))
 
+
+(defn tag-bookmark
+  [bookmark-id tags]
+  (jdbc/execute! (db-spec)
+                 (-> (helpers/insert-into :bookmark_tag)
+                     (helpers/columns :bookmark_id :tag_id)
+                     (helpers/query-values
+                      (-> (helpers/select :bookmark_id :tag_id)
+                          (helpers/from
+                           [(helpers/select [bookmark-id :bookmark_id]) :_bookmark_id]
+                           [(-> (helpers/select [:id :tag_id])
+                                (helpers/from :tags)
+                                (helpers/where [:in :name tags]))
+                            :_tag_id])))
+                     sql/format)))
+
+(defn remove-all-tags
+  "Remove all tags from bookmark"
+  [bookmark-id]
+  (jdbc/execute! (db-spec)
+                 (-> (helpers/delete-from :bookmark_tag)
+                     (helpers/where [:= :bookmark_id bookmark-id])
+                     sql/format)))
+
 (defn create
   [bookmark]
-  (let [bookmark (update bookmark :tags seq->pgarray)]
-    (jdbc/execute! (db-spec) (-> (helpers/insert-into :bookmarks)
-                                 (helpers/values [bookmark])
-                                 sql/format))))
-
-(defn list-all
-  [{:keys [member-id]}]
-  (jdbc/query (db-spec) (-> (helpers/select :*)
-                            (helpers/from :bookmarks)
-                            (helpers/where [:= :member_id member-id])
-                            sql/format)))
+  (-> (jdbc/query (db-spec)
+                  (-> (pg-helpers/insert-into-as :bookmarks :b)
+                      (helpers/values [bookmark])
+                      (pg-helpers/returning :b.id)
+                      sql/format))
+      first
+      :id))
 
 (defn- build-where-clause
   [{:keys [member-id tag search-terms]}]
@@ -60,29 +81,45 @@
                        where-clause)]
     where-clause))
 
+
+(defn all-bookmarks-map
+  [member-id]
+  (-> (helpers/select :b.id :b.title :b.url :b.created_at
+                      :b.member_id
+                      [(sql/call :array_remove :%array_agg.t.name :null) :tags])
+      (helpers/from [:bookmarks :b])
+      (helpers/left-join [:bookmark_tag :bt] [:= :b.id :bt.bookmark_id]
+                         [:tags :t] [:= :bt.tag_id :t.id])
+      (helpers/where [:= :b.member_id member-id])
+      (helpers/group :b.id)))
+
+
 (defn count-bookmarks
   "Return number of bookmarks the user has."
   [{:keys [member-id tag] :as query}]
   (let [where-clause (build-where-clause (select-keys query [:member-id :tag :search-terms]))]
     (->> (jdbc/query (db-spec) (-> (helpers/select :%count.*)
-                                   (helpers/from :bookmarks)
+                                   (helpers/from [(all-bookmarks-map member-id) :member-bookmarks])
                                    (helpers/where where-clause)
                                    sql/format))
          first
          :count)))
 
+
 (defn fetch-bookmarks
-  "Fetch a `limit` number of bookmarks starting from `offset`."
   [{:keys [member-id limit offset tag search-terms] :or {offset 0} :as query}]
-  (println query)
-  (let [where-clause (build-where-clause (select-keys query [:member-id :tag :search-terms]))]
-    (jdbc/query (db-spec) (-> (helpers/select :*)
-                              (helpers/from :bookmarks)
-                              (helpers/where where-clause)
-                              (helpers/limit limit)
-                              (helpers/offset offset)
-                              (helpers/order-by [:created_at :desc])
-                              sql/format))))
+  (let [where-clause (build-where-clause (select-keys query [:member-id
+                                                             :tag
+                                                             :search-terms]))]
+    (jdbc/query (db-spec)
+                (-> (helpers/select :*)
+                    ;; sub-query gets all of member's bookmarks joined with tags
+                    (helpers/from [(all-bookmarks-map member-id) :member-bookmarks])
+                    (helpers/where where-clause)
+                    (helpers/limit limit)
+                    (helpers/offset offset)
+                    (helpers/order-by [:created_at :desc])
+                    sql/format))))
 
 (defn list-by-id
   [{:keys [id member-id]}]
@@ -95,6 +132,6 @@
 (defn delete
   [{:keys [id member-id]}]
   (jdbc/execute! (db-spec) (-> (helpers/delete-from :bookmarks)
-                               (helpers/where [:and [:= :id (Integer/parseInt id)]
+                               (helpers/where [:and [:= :id id]
                                                [:= :member_id member-id]])
                                sql/format)))

@@ -17,7 +17,7 @@
 
 (defonce ^:private all-sessions (mem/memory-store))
 
-(def app-handler (bidi-ring/make-handler app-routes))
+(def app-handler (bidi-ring/make-handler (app-routes)))
 
 (defn app
   []

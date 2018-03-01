@@ -35,7 +35,7 @@
     (testing "valid bookmark"
       (is (valid-bookmark? good-bookmark))
       (is (valid-bookmark? (assoc good-bookmark
-                                  :tags ["search" "google"])))
+                                  :tags "search,google")))
       (is (valid-bookmark? (assoc good-bookmark
                                   :id "12"))))
 

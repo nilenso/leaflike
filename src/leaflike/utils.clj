@@ -1,6 +1,6 @@
 (ns leaflike.utils
-  (:require [clj-time.coerce]
-            [clj-time.core]))
+  (:require [clj-time.coerce :as time-coerce]
+            [clj-time.core :as time]))
 
 (def email-pattern #"[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*@(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?")
 
@@ -8,7 +8,7 @@
 
 (defn get-timestamp
   []
-  (clj-time.coerce/to-sql-time (clj-time.core/now)))
+  (time-coerce/to-sql-time (time/now)))
 
 (defn required
   [value]

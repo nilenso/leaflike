@@ -16,11 +16,7 @@
 
 (defn get-member-auth-data
   ([identifier]
-   (jdbc/query (db-spec) (-> (helpers/select :*)
-                             (helpers/from :members)
-                             (helpers/where [:= :username identifier])
-                             sql/format)))
-
+   (get-member-auth-data identifier :*))
   ([identifier coll]
    (jdbc/query (db-spec) (-> (helpers/select coll)
                              (helpers/from :members)

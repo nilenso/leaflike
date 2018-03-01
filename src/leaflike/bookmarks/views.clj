@@ -53,7 +53,9 @@
     [:tbody
      (for [bookmark bookmarks]
        [:tr
-        [:td [:a {:href (:url bookmark)} (:title bookmark)]]
+        [:td [:a {:href (:url bookmark)
+                  :target "_blank"
+                  :bookmark_id (str (:id bookmark))} (:title bookmark)]]
         [:td (for [tag (:tags bookmark)]
                [:a {:href (format "/bookmarks/tag/%s/page/1" tag)}
                 [:button.btn.btn-outline-primary.btn-sm tag]])]
