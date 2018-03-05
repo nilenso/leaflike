@@ -22,20 +22,37 @@
 
 (defn create
   [{:keys [params] :as request}]
-  (let [user    (hutils/get-user request)]
-    (if (valid-bookmark? params)
-      (let [bookmark (-> (select-keys params [:title :url])
-                         (assoc :member_id (:id user)
-                                :created_at (utils/get-timestamp)))
-            tags (split-tags (:tags params))
-            bookmark-id (bm-db/create bookmark)]
-        (when (not-empty tags)
-          (tags-db/create tags)
-          (bm-db/tag-bookmark bookmark-id tags))
-        (-> (res/redirect "/bookmarks")
-            (assoc-in [:headers "Content-Type"] "text/html")))
-      (assoc (res/redirect "/bookmarks/add")
-             :flash {:error-msg "Invalid bookmark"}))))
+  (if (valid-bookmark? params)
+    (let [user (hutils/get-user request)
+          bookmark (-> (select-keys params [:title :url])
+                       (assoc :member_id (:id user)
+                              :created_at (utils/get-timestamp)))
+          tags (split-tags (:tags params))
+          bookmark-id (bm-db/create bookmark)]
+      (when (not-empty tags)
+        (tags-db/create tags)
+        (bm-db/tag-bookmark bookmark-id tags))
+      (-> (res/redirect "/bookmarks")
+          (assoc-in [:headers "Content-Type"] "text/html")))
+    (assoc (res/redirect "/bookmarks/add")
+           :flash {:error-msg "Invalid bookmark"})))
+
+(defn edit
+  [{:keys [params] :as request}]
+  (if (valid-bookmark? params)
+    (let [user (hutils/get-user request)
+          bookmark-id (Integer/parseInt (:id params))
+          updated-keys (select-keys params [:title :url])
+          tags (split-tags (:tags params))]
+      (bm-db/update-bookmark bookmark-id (:id user) updated-keys)
+      (bm-db/remove-all-tags bookmark-id)
+      (when (not-empty tags)
+        (tags-db/create tags)
+        (bm-db/tag-bookmark bookmark-id tags))
+      (-> (res/redirect "/bookmarks")
+          (assoc-in [:headers "Content-Type"] "text/html")))
+    (assoc (res/redirect (str "/bookmarks/edit/" (:id params)))
+           :flash {:error-msg "Invalid bookmark"})))
 
 (def items-per-page 10)
 
@@ -134,7 +151,25 @@
         error-msg (get-in request [:flash :error-msg])]
     (-> (res/response (layout/user-view "Add Bookmark"
                                         username
-                                        (views/add-bookmark
-                                         anti-forgery/*anti-forgery-token*)
+                                        (views/add-bookmark anti-forgery/*anti-forgery-token*
+                                                            "/bookmarks/add"
+                                                            {})
+                                        :error-msg error-msg))
+        (assoc-in [:headers "Content-Type"] "text/html"))))
+
+(defn edit-view
+  [{:keys [params] :as request}]
+  (let [username (get-in request [:session :username])
+        user      (hutils/get-user request)
+        bookmark-id (Integer/parseInt (:bookmark-id params))
+        bookmark (bm-db/fetch-bookmark bookmark-id (:id user))
+        error-msg (if bookmark
+                    (get-in request [:flash :error-msg])
+                    "The bookmark you're trying to edit does not exist.")]
+    (-> (res/response (layout/user-view "Edit Bookmark"
+                                        username
+                                        (views/add-bookmark anti-forgery/*anti-forgery-token*
+                                                            "/bookmarks/edit"
+                                                            bookmark)
                                         :error-msg error-msg))
         (assoc-in [:headers "Content-Type"] "text/html"))))

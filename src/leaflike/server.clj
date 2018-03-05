@@ -17,11 +17,13 @@
 
 (defonce ^:private all-sessions (mem/memory-store))
 
-(def app-handler (bidi-ring/make-handler (app-routes)))
+(defn app-handler
+  []
+  (bidi-ring/make-handler (app-routes)))
 
 (defn app
   []
-  (-> app-handler
+  (-> (app-handler)
       middlewares/wrap-exception-handling
       wrap-anti-forgery
       (wrap-resource "public")
@@ -38,8 +40,7 @@
 (defn start!
   []
   (let [server-spec (server-spec)]
-    (reset! server (httpkit/run-server
-                    (app) server-spec))
+    (reset! server (httpkit/run-server (app) server-spec))
     (log/info (format "Server started at: %s:%d" (:ip server-spec) (:port server-spec)))))
 
 (defn stop!
