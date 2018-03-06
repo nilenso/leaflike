@@ -146,6 +146,13 @@
                     (helpers/order-by [:created_at :desc])
                     sql/format))))
 
+(defn fetch-bookmarks-for-user [member-id]
+  (jdbc/query (db-spec)
+              (-> (helpers/select :*)
+                  (helpers/from :bookmarks)
+                  (helpers/where [:= :member_id member-id])
+                  sql/format)))
+
 (defn list-by-id
   [{:keys [id member-id]}]
   (jdbc/query (db-spec) (-> (helpers/select :*)

@@ -99,13 +99,15 @@
    (when (> num-pages 1)
      (pagination num-pages current-page path-format-fn))])
 
-(defn add-bookmark
-  [anti-forgery-token form-post-url {:keys [id url title tags]
-                                     :or {id ""
-                                          url ""
+(defn bookmark-form
+  [anti-forgery-token form-post-url {:keys [id url title tags all-tags]
+                                     :or {url ""
                                           title ""
                                           tags ""}}]
   [:div {:class "well"}
+   [:script "$(document).ready(function() {
+    $('.tags-multi-select').select2();
+});"]
    (f/form-to {:role "form"}
               [:post form-post-url]
               [:div {:class "form-group"}
@@ -118,13 +120,16 @@
                (f/text-field {:class "form-control" :placeholder "Title"
                               :value title
                               :required ""} "title")]
+
               [:div {:class "form-group"}
                (f/label {:class "control-label"} "tags" "Tags")
-               (f/text-field {:class "form-control" :placeholder "Tags"
-                              :value (string/join "," tags)} "tags")]
-
+               [:select.tags-multi-select {:name "tags" :multiple "multiple"}
+                ;; TODO: Add existing tags
+                (for [tag all-tags]
+                  [:option {:value tag} tag])]]
               [:div {:class "form-group"}
                (f/submit-button {:class "btn btn-primary"} "Submit")]
 
-              (f/hidden-field {:value id} "id")
+              (when id
+                (f/hidden-field {:value id} "id"))
               (f/hidden-field {:value anti-forgery-token} "__anti-forgery-token"))])

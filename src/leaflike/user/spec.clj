@@ -31,7 +31,7 @@
 (defn valid-signup-details?
   [{:keys [email username] :as user}]
   (and (s/valid? ::signup-details user)
-       (empty? (get-member-if-exists email username))))
+       (nil? (get-member-if-exists email username))))
 
 (s/def ::login-details (s/keys :req-un [::username ::password]))
 

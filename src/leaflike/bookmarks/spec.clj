@@ -27,11 +27,12 @@
 
 (s/def ::url url?)
 
-(s/def ::tags string?)
+(s/def ::string string?)
+
+(s/def ::tags (s/or
+               :nil nil?
+               :string string?
+               :coll-of-strings (s/coll-of string?)))
 
 (s/def ::bookmark (s/keys :req-un [::title ::url]
                           :opt-un [::id ::tags]))
-
-(defn valid-bookmark?
-  [bookmark]
-  (s/valid? ::bookmark bookmark))
