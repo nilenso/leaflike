@@ -4,6 +4,32 @@
             [clj-time.coerce :as time-coerce]
             [clj-time.format :as time-format]))
 
+(defn truncated-page-list
+  [num-pages current-page]
+  (let [window-size (min 4 num-pages)
+        half-window-size (int (/ window-size 2))
+        low-window-max window-size
+        high-window-min (- num-pages (dec window-size))
+
+        first-window (range 1 (inc low-window-max))
+        last-window (when (> high-window-min low-window-max)
+                      (range high-window-min (inc num-pages)))
+        middle-window (remove #(or (< % low-window-max)
+                                   (>= % high-window-min))
+                              (map #(+ current-page %)
+                                   (range (- half-window-size)
+                                          (inc half-window-size))))
+        windows (remove empty? [first-window middle-window last-window])]
+    (reduce (fn [all-pages window]
+              (concat all-pages
+                      (if (> (- (first window) (last all-pages)) 1)
+                        [:ellipsis]
+                        [])
+                      window))
+            (first windows)
+            (rest windows))))
+
+
 (defn pagination
   [num-pages current-page path-format-fn]
   [:ul.pagination
@@ -16,16 +42,20 @@
       [:a {:class "page-link"
            :href (path-format-fn (dec current-page))}
        "Previous"]])
+
    ;; List of pages
-   (for [page-num (range 1 (inc num-pages))]
-     (let [active? (= page-num current-page)
-           li-class "page-item"
-           li-class (if active?
-                      (str li-class " active")
-                      li-class)]
-       [:li {:class li-class}
-        [:a {:class "page-link"
-             :href (path-format-fn page-num)} page-num]]))
+   (let [visible-pages (truncated-page-list num-pages current-page)]
+     (for [page-num visible-pages]
+       (if (= page-num :ellipsis)
+         [:li {:class "page-item disabled"} [:span.page-link "..."]]
+         (let [active? (= page-num current-page)
+               li-class "page-item"
+               li-class (if active?
+                          (str li-class " active")
+                          li-class)]
+           [:li {:class li-class}
+            [:a {:class "page-link"
+                 :href (path-format-fn page-num)} page-num]]))))
 
    ;; "Next" button
    (let [disabled-next? (= current-page num-pages)
