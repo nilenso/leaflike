@@ -32,10 +32,17 @@
                                     (range (- half-window-size)
                                            (inc half-window-size))))
          windows (remove empty? [first-window middle-window last-window])
-         visible-pages (flatten (interpose :ellipsis windows))]
+         visible-pages (reduce (fn [all-pages window]
+                                 (concat all-pages
+                                         (if (> (- (first window) (last all-pages)) 1)
+                                           [:ellipsis]
+                                           [])
+                                         window))
+                               (first windows)
+                               (rest windows))]
      (for [page-num visible-pages]
        (if (= page-num :ellipsis)
-         [:li {:class "page-item"} [:span.page-link "..."]]
+         [:li {:class "page-item disabled"} [:span.page-link "..."]]
          (let [active? (= page-num current-page)
                li-class "page-item"
                li-class (if active?
