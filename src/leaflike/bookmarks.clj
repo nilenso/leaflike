@@ -68,7 +68,8 @@
                                                  :offset (* items-per-page page)}))
         num-bookmarks (bm-db/count-bookmarks query)]
     {:bookmarks bookmarks
-     :num-pages (int (Math/ceil (/ num-bookmarks items-per-page)))}))
+     :num-pages (max 1
+                     (int (Math/ceil (/ num-bookmarks items-per-page))))}))
 
 (defn list-by-id
   [{:keys [route-params] :as request}]
@@ -103,8 +104,9 @@
                        :path-format-fn (partial uri/search params)}))
 
 (defn current-page [page]
-  (if (string/blank? page) 1
-      (Integer/parseInt page)))
+  (if (string/blank? page)
+    1
+    (Integer/parseInt page)))
 
 (defn parse-search-terms [search-query]
   (when-not (string/blank? search-query)
