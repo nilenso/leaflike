@@ -25,12 +25,12 @@
 (defn create
   [{:keys [params] :as request}]
   (if (s/valid? ::bm-spec/bookmark params)
-    (let [user        (hutils/get-user request)
-          bookmark    (-> (select-keys params [:title :url])
-                          (assoc :member_id (:id user)
-                                 :created_at (utils/get-timestamp)))
-          bookmark-id (bm-db/create bookmark)
-          tags (parse-tags (:tags params))]
+    (let [user (hutils/get-user request)
+          bookmark (-> (select-keys params [:title :url])
+                       (assoc :user_id (:id user)
+                              :created_at (utils/get-timestamp)))
+          tags (parse-tags (:tags params))
+          bookmark-id (bm-db/create bookmark)]
       (when (not-empty tags)
         (tags-db/create tags)
         (bm-db/tag-bookmark bookmark-id tags))
@@ -62,7 +62,7 @@
   [username {:keys [tag search-terms] :as params}]
   (let [user (hutils/get-user {:session {:username username}})
         page (dec (:page params))
-        query {:member-id (:id user)
+        query {:user-id (:id user)
                :tag tag
                :search-terms search-terms}
         bookmarks (bm-db/fetch-bookmarks (merge query
@@ -77,7 +77,7 @@
   [{:keys [route-params] :as request}]
   (let [id        (:id route-params)
         user      (hutils/get-user request)
-        params    {:id id :member-id (:id user)}]
+        params    {:id id :user-id (:id user)}]
     (if (s/valid? :leaflike.bookmarks.spec/id id)
       (bm-db/list-by-id params)
       (assoc (res/redirect "/bookmarks")
@@ -91,7 +91,7 @@
       (let [id (Integer/parseInt unparsed-id)]
         (do (bm-db/remove-all-tags id)
             (bm-db/delete {:id id
-                           :member-id (:id user)})))
+                           :user-id (:id user)})))
       (assoc (res/redirect "/bookmarks")
              :flash {:error-msg "Invalid bookmark id"}))))
 

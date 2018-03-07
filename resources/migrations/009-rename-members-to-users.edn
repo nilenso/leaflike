@@ -1,0 +1,4 @@
+{:up ["ALTER TABLE members RENAME TO users;"
+      "ALTER TABLE bookmarks RENAME COLUMN member_id to user_id;"]
+ :down ["ALTER TABLE users RENAME TO members;"
+        "ALTER TABLE bookmarks RENAME COLUMN user_id to member_id;"]}

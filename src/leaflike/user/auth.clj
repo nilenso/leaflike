@@ -33,10 +33,10 @@
     (throw-unauthorized 401)))
 
 (defn login-auth
-  [request member]
-  (let [verify-password (:verify-password member)
-        user-password   (get-in member [:auth-data :password])
-        username        (get-in member [:auth-data :username])
+  [request user]
+  (let [verify-password (:verify-password user)
+        user-password   (get-in user [:auth-data :password])
+        username        (get-in user [:auth-data :username])
         next-url        (get-in request [:params :next] "/bookmarks")]
     (if (hashers/check verify-password user-password)
       ;; login
