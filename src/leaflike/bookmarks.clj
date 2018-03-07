@@ -115,17 +115,19 @@
   [username
    {:keys [page] :as params}
    {:keys [bookmarks num-pages] :as paginated-bookmarks}
-   view-type]
+   view-type
+   & {:keys [error-msg]}]
   (let [{:keys [page-title path-format-fn]} (view-type-info view-type params)]
     (layout/user-view page-title
                       username
                       (views/list-all bookmarks
                                       num-pages
                                       page
-                                      path-format-fn))))
+                                      path-format-fn)
+                      :error-msg error-msg)))
 
-(defn valid-page-number? [{:keys [page] :as params}]
-  (pos? page))
+(defn valid-page-number? [{:keys [current-page num-pages]}]
+  (< 0 current-page (inc num-pages)))
 
 (defn- bookmarks-list
   [view-type {:keys [session] :as request}]
@@ -133,13 +135,24 @@
         search-terms (parse-search-terms (get-in request [:params :search-query]))
         params (-> (:params request)
                    (update :page current-page)
-                   (assoc :search-terms search-terms))]
-    (if (valid-page-number? params)
-      (let [paginated-bookmarks (fetch-bookmarks username params)]
-        (-> (res/response (list-view username params paginated-bookmarks view-type))
-            (assoc :headers {"Content-Type" "text/html"})))
-      (assoc (res/redirect "/bookmarks")
-             :flash {:error-msg "Invalid page number"}))))
+                   (assoc :search-terms search-terms))
+        error-msg (get-in request [:flash :error-msg])
+        current-page (:page params)
+        invalid-page-response (assoc (res/redirect "/bookmarks")
+                                     :flash {:error-msg "Invalid page number"})]
+    (if (pos? current-page)
+      (let [{:keys [bookmarks
+                    num-pages] :as paginated-bookmarks} (fetch-bookmarks username params)]
+        (if (valid-page-number? {:current-page (:page params)
+                                 :num-pages num-pages})
+          (-> (res/response (list-view username
+                                       params
+                                       paginated-bookmarks
+                                       view-type
+                                       :error-msg error-msg))
+              (assoc :headers {"Content-Type" "text/html"}))
+          invalid-page-response))
+      invalid-page-response)))
 
 (def all-bookmarks-view (partial bookmarks-list :all-bookmarks))
 (def tag-bookmarks-view (partial bookmarks-list :tag-bookmarks))
