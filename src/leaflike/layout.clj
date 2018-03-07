@@ -12,7 +12,7 @@
                              :required ""} "search_query")]))
 
 (defn application
-  [title content & {:keys [username error-msg]}]
+  [title content & {:keys [username error-msg success-msg]}]
   (html5 [:head
           [:title title]
           (include-css "//maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css")
@@ -38,13 +38,16 @@
              [:h3 {:class "text-success"} title]
              (when error-msg
                [:div {:class "alert alert-danger"} error-msg])
+             (when success-msg
+               [:div {:class "alert alert-success"} success-msg])
              content]]]]))
 
 (defn user-view
-  [title username content & {:keys [error-msg]}]
+  [title username content & {:keys [error-msg success-msg]}]
   (application title content
                :username username
-               :error-msg error-msg))
+               :error-msg error-msg
+               :success-msg success-msg))
 
 (defn index
   []

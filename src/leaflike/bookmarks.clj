@@ -120,7 +120,7 @@
    {:keys [page] :as params}
    {:keys [bookmarks num-pages] :as paginated-bookmarks}
    view-type
-   & {:keys [error-msg]}]
+   & {:keys [error-msg success-msg]}]
   (let [{:keys [page-title path-format-fn]} (view-type-info view-type params)]
     (layout/user-view page-title
                       username
@@ -128,7 +128,8 @@
                                       num-pages
                                       page
                                       path-format-fn)
-                      :error-msg error-msg)))
+                      :error-msg error-msg
+                      :success-msg success-msg)))
 
 (defn valid-page-number? [{:keys [current-page num-pages]}]
   (< 0 current-page (inc num-pages)))
@@ -141,6 +142,7 @@
                    (update :page current-page)
                    (assoc :search-terms search-terms))
         error-msg (get-in request [:flash :error-msg])
+        success-msg (get-in request [:flash :success-msg])
         current-page (:page params)
         invalid-page-response (assoc (res/redirect "/bookmarks")
                                      :flash {:error-msg "Invalid page number"})]
@@ -153,7 +155,8 @@
                                        params
                                        paginated-bookmarks
                                        view-type
-                                       :error-msg error-msg))
+                                       :error-msg error-msg
+                                       :success-msg success-msg))
               (assoc :headers {"Content-Type" "text/html"}))
           invalid-page-response))
       invalid-page-response)))
