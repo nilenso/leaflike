@@ -49,4 +49,5 @@
   [request username]
   (let [next-url (get-in request [:query-params :next] "/bookmarks")]
     (-> (res/redirect next-url)
-        (assoc-in [:session :username] username))))
+        (assoc-in [:session :username] username)
+        (assoc :flash {:success-msg "Signup Successful"}))))
