@@ -2,18 +2,17 @@
   "Functions to generate and add dummy bookmarks. To be used for testing
   and demoing."
   (:require [leaflike.bookmarks :as bm]
-            [faker.internet :refer [domain-word]]
-            [faker.lorem :refer [sentences]]
+            [faker.generate :as gen]
             [clojure.string :as str]))
 
 (defn- gen-bookmark
   "Generates a bookmark filled with a random title, URL and tags."
   [& {:keys [word-in-title tags num-tags] :or {num-tags 3}}]
-  (let [domain (domain-word)
-        rand-sentence (first (sentences))
+  (let [domain (gen/word)
+        rand-sentence (gen/sentence)
         title (str word-in-title " " domain " - " rand-sentence)
         tags (or tags
-                 (take num-tags (repeatedly domain-word)))
+                 (gen/words {:n num-tags}))
         tags-str (str/join "," tags)]
     {:title title
      :url (str "http://" domain ".com")
