@@ -129,7 +129,6 @@
                  [:select#tags-multi-select
                   {:name "tags" :multiple "multiple" :class "form-control"}
 
-                  ;; TODO: Add existing tags
                   (for [tag all-tags]
                     [:option {:value tag
                               :selected (if (existing-tag? tag)
