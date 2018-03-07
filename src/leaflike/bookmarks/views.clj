@@ -104,32 +104,40 @@
                                      :or {url ""
                                           title ""
                                           tags ""}}]
-  [:div {:class "well"}
-   [:script "$(document).ready(function() {
-    $('.tags-multi-select').select2();
+  (let [existing-tag? (set tags)]
+    [:div {:class "well"}
+     [:script "$(document).ready(function() {
+    $('#tags-multi-select').select2({
+       tags: true
+      });
 });"]
-   (f/form-to {:role "form"}
-              [:post form-post-url]
-              [:div {:class "form-group"}
-               (f/label {:class "control-label"} "url" "URL")
-               (f/text-field {:class "form-control" :placeholder "URL"
-                              :value url
-                              :required ""} "url")]
-              [:div {:class "form-group"}
-               (f/label {:class "control-label"} "title" "Title")
-               (f/text-field {:class "form-control" :placeholder "Title"
-                              :value title
-                              :required ""} "title")]
+     (f/form-to {:role "form"}
+                [:post form-post-url]
+                [:div {:class "form-group"}
+                 (f/label {:class "control-label"} "url" "URL")
+                 (f/text-field {:class "form-control" :placeholder "URL"
+                                :value url
+                                :required ""} "url")]
+                [:div {:class "form-group"}
+                 (f/label {:class "control-label"} "title" "Title")
+                 (f/text-field {:class "form-control" :placeholder "Title"
+                                :value title
+                                :required ""} "title")]
 
-              [:div {:class "form-group"}
-               (f/label {:class "control-label"} "tags" "Tags")
-               [:select.tags-multi-select {:name "tags" :multiple "multiple"}
-                ;; TODO: Add existing tags
-                (for [tag all-tags]
-                  [:option {:value tag} tag])]]
-              [:div {:class "form-group"}
-               (f/submit-button {:class "btn btn-primary"} "Submit")]
+                [:div {:class "form-group"}
+                 (f/label {:class "control-label"} "tags" "Tags")
+                 [:select#tags-multi-select
+                  {:name "tags" :multiple "multiple" :class "form-control"}
 
-              (when id
-                (f/hidden-field {:value id} "id"))
-              (f/hidden-field {:value anti-forgery-token} "__anti-forgery-token"))])
+                  ;; TODO: Add existing tags
+                  (for [tag all-tags]
+                    [:option {:value tag
+                              :selected (if (existing-tag? tag)
+                                          "selected"
+                                          nil)} tag])]]
+                [:div {:class "form-group"}
+                 (f/submit-button {:class "btn btn-primary"} "Submit")]
+
+                (when id
+                  (f/hidden-field {:value id} "id"))
+                (f/hidden-field {:value anti-forgery-token} "__anti-forgery-token"))]))
