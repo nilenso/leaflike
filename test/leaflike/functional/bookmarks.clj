@@ -42,7 +42,7 @@
       (let [{:keys [status flash]} (bm/create {:params (dissoc bookmark :url)
                                                :session {:username (:username user)}})]
         (is (= status 302))
-        (is (= (:error-msg flash) "Invalid bookmark"))))
+        (is (= (:error-msg flash) "Invalid fields: url"))))
 
     (testing "creation succeeds when tag is a string"
       (let [{:keys [status flash]} (bm/create {:params (assoc bookmark :tags "boo")
