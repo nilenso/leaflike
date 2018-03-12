@@ -170,7 +170,7 @@
   (let [username (get-in request [:session :username])
         error-msg (get-in request [:flash :error-msg])
         user      (hutils/get-user request)
-        all-tags (map :name (tags-db/fetch-tags {:member-id (:id user)}))]
+        all-tags (map :name (tags-db/fetch-tags {:user-id (:id user)}))]
     (-> (res/response (layout/user-view "Add Bookmark"
                                         username
                                         (views/bookmark-form anti-forgery/*anti-forgery-token*
@@ -188,7 +188,7 @@
         error-msg (if bookmark
                     (get-in request [:flash :error-msg])
                     "The bookmark you're trying to edit does not exist.")
-        all-tags (map :name (tags-db/fetch-tags {:member-id (:id user)}))]
+        all-tags (map :name (tags-db/fetch-tags {:user-id (:id user)}))]
     (-> (res/response (layout/user-view "Edit Bookmark"
                                         username
                                         (views/bookmark-form anti-forgery/*anti-forgery-token*

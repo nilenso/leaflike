@@ -14,7 +14,7 @@
                :tags  ["abc" "random" "test" "music" "something"]})
 
 (defn user-id [{:keys [email username]}]
-  (:id (user-db/get-member-if-exists email username)))
+  (:id (user-db/get-user-if-exists email username)))
 
 (deftest bookmark-creation-test
   (let [user {:username "creationtest"
