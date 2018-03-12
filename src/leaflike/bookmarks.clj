@@ -1,5 +1,5 @@
 (ns leaflike.bookmarks
-  (:require [leaflike.bookmarks.spec :refer [valid-bookmark?]]
+  (:require [leaflike.bookmarks.spec :as spec]
             [leaflike.bookmarks.db :as bm-db]
             [leaflike.bookmarks.uri :as uri]
             [leaflike.tags.db :as tags-db]
@@ -14,21 +14,22 @@
             [clojure.string :as string]
             [ring.util.response :as res]))
 
-(defn- split-tags
-  [tags]
-  (if (string/blank? tags)
-    nil
-    (remove string/blank? (map string/trim (string/split tags #",")))))
+(defn parse-tags [tags]
+  (let [[tag-type tag-value] (s/conform ::spec/tags tags)]
+    (case tag-type
+      :nil             []
+      :string          [tag-value]
+      :coll-of-strings tag-value)))
 
 (defn create
   [{:keys [params] :as request}]
-  (if (valid-bookmark? params)
-    (let [user (hutils/get-user request)
-          bookmark (-> (select-keys params [:title :url])
-                       (assoc :member_id (:id user)
-                              :created_at (utils/get-timestamp)))
-          tags (split-tags (:tags params))
-          bookmark-id (bm-db/create bookmark)]
+  (if (s/valid? ::spec/bookmark params)
+    (let [user        (hutils/get-user request)
+          bookmark    (-> (select-keys params [:title :url])
+                          (assoc :member_id (:id user)
+                                 :created_at (utils/get-timestamp)))
+          bookmark-id (bm-db/create bookmark)
+          tags (parse-tags (:tags params))]
       (when (not-empty tags)
         (tags-db/create tags)
         (bm-db/tag-bookmark bookmark-id tags))
@@ -39,11 +40,11 @@
 
 (defn edit
   [{:keys [params] :as request}]
-  (if (valid-bookmark? params)
-    (let [user (hutils/get-user request)
-          bookmark-id (Integer/parseInt (:id params))
+  (if (s/valid? ::spec/bookmark params)
+    (let [user         (hutils/get-user request)
+          bookmark-id  (Integer/parseInt (:id params))
           updated-keys (select-keys params [:title :url])
-          tags (split-tags (:tags params))]
+          tags         (parse-tags (:tags params))]
       (bm-db/update-bookmark bookmark-id (:id user) updated-keys)
       (bm-db/remove-all-tags bookmark-id)
       (when (not-empty tags)
@@ -163,12 +164,14 @@
 (defn create-view
   [request]
   (let [username (get-in request [:session :username])
-        error-msg (get-in request [:flash :error-msg])]
+        error-msg (get-in request [:flash :error-msg])
+        user      (hutils/get-user request)
+        all-tags (map :name (tags-db/fetch-tags {:member-id (:id user)}))]
     (-> (res/response (layout/user-view "Add Bookmark"
                                         username
-                                        (views/add-bookmark anti-forgery/*anti-forgery-token*
-                                                            "/bookmarks/add"
-                                                            {})
+                                        (views/bookmark-form anti-forgery/*anti-forgery-token*
+                                                             "/bookmarks/add"
+                                                             {:all-tags all-tags})
                                         :error-msg error-msg))
         (assoc-in [:headers "Content-Type"] "text/html"))))
 
@@ -180,11 +183,13 @@
         bookmark (bm-db/fetch-bookmark bookmark-id (:id user))
         error-msg (if bookmark
                     (get-in request [:flash :error-msg])
-                    "The bookmark you're trying to edit does not exist.")]
+                    "The bookmark you're trying to edit does not exist.")
+        all-tags (map :name (tags-db/fetch-tags {:member-id (:id user)}))]
     (-> (res/response (layout/user-view "Edit Bookmark"
                                         username
-                                        (views/add-bookmark anti-forgery/*anti-forgery-token*
-                                                            "/bookmarks/edit"
-                                                            bookmark)
+                                        (views/bookmark-form anti-forgery/*anti-forgery-token*
+                                                             "/bookmarks/edit"
+                                                             (assoc bookmark
+                                                                    :all-tags all-tags))
                                         :error-msg error-msg))
         (assoc-in [:headers "Content-Type"] "text/html"))))

@@ -1,6 +1,7 @@
 (ns leaflike.unit.bookmarks-validation
   (:require  [clojure.test :refer :all]
-             [leaflike.bookmarks.spec :refer :all]))
+             [clojure.spec.alpha :as s]
+             [leaflike.bookmarks.spec :as spec :refer :all]))
 
 (deftest id-test
   (testing "valid id"
@@ -33,13 +34,13 @@
   (let [good-bookmark {:title "google"
                        :url "http://google.com"}]
     (testing "valid bookmark"
-      (is (valid-bookmark? good-bookmark))
-      (is (valid-bookmark? (assoc good-bookmark
-                                  :tags "search,google")))
-      (is (valid-bookmark? (assoc good-bookmark
-                                  :id "12"))))
+      (is (s/valid? ::spec/bookmark good-bookmark))
+      (is (s/valid? ::spec/bookmark (assoc good-bookmark
+                                           :tags ["search" "google"])))
+      (is (s/valid? ::spec/bookmark (assoc good-bookmark
+                                           :id "12"))))
 
 
     (testing "invalid bookmarks"
-      (is (not (valid-bookmark? (dissoc good-bookmark :url))))
-      (is (not (valid-bookmark? (dissoc good-bookmark :title)))))))
+      (is (not (s/valid? ::spec/bookmark (dissoc good-bookmark :url))))
+      (is (not (s/valid? ::spec/bookmark (dissoc good-bookmark :title)))))))
