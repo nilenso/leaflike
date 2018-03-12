@@ -1,5 +1,6 @@
 (ns leaflike.bookmarks
-  (:require [leaflike.bookmarks.spec :as spec]
+  (:require [leaflike.bookmarks.spec :refer [valid-bookmark?]
+             :as bm-spec]
             [leaflike.bookmarks.db :as bm-db]
             [leaflike.bookmarks.uri :as uri]
             [leaflike.tags.db :as tags-db]
@@ -15,7 +16,7 @@
             [ring.util.response :as res]))
 
 (defn parse-tags [tags]
-  (let [[tag-type tag-value] (s/conform ::spec/tags tags)]
+  (let [[tag-type tag-value] (s/conform ::bm-spec/tags tags)]
     (case tag-type
       :nil             []
       :string          [tag-value]
@@ -23,7 +24,7 @@
 
 (defn create
   [{:keys [params] :as request}]
-  (if (s/valid? ::spec/bookmark params)
+  (if (s/valid? ::bm-spec/bookmark params)
     (let [user        (hutils/get-user request)
           bookmark    (-> (select-keys params [:title :url])
                           (assoc :member_id (:id user)
@@ -36,11 +37,11 @@
       (-> (res/redirect "/bookmarks")
           (assoc-in [:headers "Content-Type"] "text/html")))
     (assoc (res/redirect "/bookmarks/add")
-           :flash {:error-msg "Invalid bookmark"})))
+           :flash {:error-msg (bm-spec/describe-errors params)})))
 
 (defn edit
   [{:keys [params] :as request}]
-  (if (s/valid? ::spec/bookmark params)
+  (if (s/valid? ::bm-spec/bookmark params)
     (let [user         (hutils/get-user request)
           bookmark-id  (Integer/parseInt (:id params))
           updated-keys (select-keys params [:title :url])
@@ -53,7 +54,7 @@
       (-> (res/redirect "/bookmarks")
           (assoc-in [:headers "Content-Type"] "text/html")))
     (assoc (res/redirect (str "/bookmarks/edit/" (:id params)))
-           :flash {:error-msg "Invalid bookmark"})))
+           :flash {:error-msg (bm-spec/describe-errors params)})))
 
 (def items-per-page 10)
 

@@ -36,3 +36,27 @@
 
 (s/def ::bookmark (s/keys :req-un [::title ::url]
                           :opt-un [::id ::tags]))
+
+(defn valid-bookmark?
+  [bookmark]
+  (s/valid? ::bookmark bookmark))
+
+(defn collect-validation-error-paths
+  [bookmark]
+  (let [required-keys [:title :url]
+        bookmark (reduce (fn [final-bookmark k]
+                           (if (get bookmark k)
+                             final-bookmark
+                             (assoc final-bookmark k nil)))
+                         bookmark
+                         required-keys)
+        problems (:clojure.spec.alpha/problems (s/explain-data ::bookmark bookmark))]
+    (reduce (fn [problem-keys problem]
+              (concat problem-keys (:path problem)))
+            []
+            problems)))
+
+(defn describe-errors
+  [bookmark]
+  (let [error-keys (collect-validation-error-paths bookmark)]
+    (str "Invalid fields: " (string/join ", " (map name error-keys)))))
