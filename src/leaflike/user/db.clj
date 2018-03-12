@@ -8,11 +8,12 @@
 
 (defn get-member-if-exists
   [email username]
-  (jdbc/query (db-spec) (-> (helpers/select :*)
-                            (helpers/from :members)
-                            (helpers/where [:or [:= :username username]
+  (-> (jdbc/query (db-spec) (-> (helpers/select :*)
+                                (helpers/from :members)
+                                (helpers/where [:or [:= :username username]
                                                 [:= :email email]])
-                            sql/format)))
+                                sql/format))
+      first))
 
 (defn get-member-auth-data
   ([identifier]

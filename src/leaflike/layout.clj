@@ -1,5 +1,5 @@
 (ns leaflike.layout
-  (:require [hiccup.page :refer [html5 include-css]]
+  (:require [hiccup.page :refer [html5 include-css include-js]]
             [hiccup.element :refer [link-to]]
             [hiccup.form :as f]))
 
@@ -17,6 +17,9 @@
           [:title title]
           (include-css "//maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css")
           (include-css "/css/styles.css")
+          (include-css "/css/select2.min.css")
+          (include-js "/js/jquery.min.js")
+          (include-js "/js/select2.min.js")
           [:body
            [:nav.navbar.navbar-expand-lg.navbar-light.bg-light
             [:a.navbar-brand {:href "/"} "Leaflike"]
