@@ -8,14 +8,14 @@
   [num-pages current-page]
   (let [window-size (min 4 num-pages)
         half-window-size (int (/ window-size 2))
-        low-window-max window-size
-        high-window-min (- num-pages (dec window-size))
+        first-window-max window-size
+        last-window-min (- num-pages (dec window-size))
 
-        first-window (range 1 (inc low-window-max))
-        last-window (when (> high-window-min low-window-max)
-                      (range high-window-min (inc num-pages)))
-        middle-window (remove #(or (< % low-window-max)
-                                   (>= % high-window-min))
+        first-window (range 1 (inc first-window-max))
+        last-window (when (> last-window-min first-window-max)
+                      (range last-window-min (inc num-pages)))
+        middle-window (remove #(or (<= % first-window-max)
+                                   (>= % last-window-min))
                               (map #(+ current-page %)
                                    (range (- half-window-size)
                                           (inc half-window-size))))
