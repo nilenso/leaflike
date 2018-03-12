@@ -108,7 +108,8 @@
     [:div {:class "well"}
      [:script "$(document).ready(function() {
     $('#tags-multi-select').select2({
-       tags: true
+       tags: true,
+       tokenSeparators: [',', ' ']
       });
 });"]
      (f/form-to {:role "form"}
