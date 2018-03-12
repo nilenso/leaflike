@@ -24,9 +24,9 @@
 (defn login
   [{:keys [params] :as request}]
   (let [login-details   (select-keys params [:username :password])
-        member (user-spec/valid-login-details? params)]
-    (if member
-      (let [data {:auth-data (select-keys member [:username :password :verify-password])
+        user (user-spec/valid-login-details? params)]
+    (if user
+      (let [data {:auth-data (select-keys user [:username :password :verify-password])
                   :verify-password  (:password login-details)}]
         (auth/login-auth request data))
       (assoc (res/redirect "/login")

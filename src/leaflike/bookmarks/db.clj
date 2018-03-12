@@ -69,18 +69,18 @@
 
 ;;; NOTE: Named `update-bookmark` to avoid shadowing `update`
 (defn update-bookmark
-  [bookmark-id member-id updated-keys]
+  [bookmark-id user-id updated-keys]
   (let [updated-keys (select-keys updated-keys [:title :url])]
     (jdbc/execute! (db-spec)
                    (-> (helpers/update :bookmarks)
                        (helpers/sset updated-keys)
                        (helpers/where [:and [:= :id bookmark-id]
-                                       [:= :member_id member-id]])
+                                       [:= :user_id user-id]])
                        sql/format))))
 
 (defn- build-where-clause
-  [{:keys [member-id tag search-terms]}]
-  (let [where-clause [:and [:= :member_id member-id]]
+  [{:keys [user-id tag search-terms]}]
+  (let [where-clause [:and [:= :user_id user-id]]
         where-clause (if tag
                        (conj where-clause [:= tag :%any.tags])
                        where-clause)
@@ -94,76 +94,76 @@
 
 
 (defn all-bookmarks-map
-  [member-id]
+  [user-id]
   (-> (helpers/select :b.id :b.title :b.url :b.created_at
-                      :b.member_id
+                      :b.user_id
                       [(sql/call :array_remove :%array_agg.t.name :null) :tags])
       (helpers/from [:bookmarks :b])
       (helpers/left-join [:bookmark_tag :bt] [:= :b.id :bt.bookmark_id]
                          [:tags :t] [:= :bt.tag_id :t.id])
-      (helpers/where [:= :b.member_id member-id])
+      (helpers/where [:= :b.user_id user-id])
       (helpers/group :b.id)))
 
 
 (defn count-bookmarks
   "Return number of bookmarks the user has."
-  [{:keys [member-id tag] :as query}]
-  (let [where-clause (build-where-clause (select-keys query [:member-id :tag :search-terms]))]
+  [{:keys [user-id tag] :as query}]
+  (let [where-clause (build-where-clause (select-keys query [:user-id :tag :search-terms]))]
     (->> (jdbc/query (db-spec) (-> (helpers/select :%count.*)
-                                   (helpers/from [(all-bookmarks-map member-id) :member-bookmarks])
+                                   (helpers/from [(all-bookmarks-map user-id) :user-bookmarks])
                                    (helpers/where where-clause)
                                    sql/format))
          first
          :count)))
 
 (defn fetch-bookmark
-  [bookmark-id member-id]
+  [bookmark-id user-id]
   (-> (jdbc/query (db-spec)
-                  (-> (helpers/select :b.url :b.title :b.created_at :b.id :b.member_id
+                  (-> (helpers/select :b.url :b.title :b.created_at :b.id :b.user_id
                                       [(sql/call :array_remove :%array_agg.t.name :null) :tags])
                       (helpers/from [:bookmarks :b])
                       (helpers/left-join [:bookmark_tag :bt] [:= :b.id :bt.bookmark_id]
                                          [:tags :t] [:= :bt.tag_id :t.id])
                       (helpers/where [:and [:= :b.id bookmark-id]
-                                      [:= :b.member_id member-id]])
+                                      [:= :b.user_id user-id]])
                       (helpers/group :b.id)
                       sql/format))
       first))
 
 
 (defn fetch-bookmarks
-  [{:keys [member-id limit offset tag search-terms] :or {offset 0} :as query}]
-  (let [where-clause (build-where-clause (select-keys query [:member-id
+  [{:keys [user-id limit offset tag search-terms] :or {offset 0} :as query}]
+  (let [where-clause (build-where-clause (select-keys query [:user-id
                                                              :tag
                                                              :search-terms]))]
     (jdbc/query (db-spec)
                 (-> (helpers/select :*)
-                    ;; sub-query gets all of member's bookmarks joined with tags
-                    (helpers/from [(all-bookmarks-map member-id) :member-bookmarks])
+                    ;; sub-query gets all of user's bookmarks joined with tags
+                    (helpers/from [(all-bookmarks-map user-id) :user-bookmarks])
                     (helpers/where where-clause)
                     (helpers/limit limit)
                     (helpers/offset offset)
                     (helpers/order-by [:created_at :desc])
                     sql/format))))
 
-(defn fetch-bookmarks-for-user [member-id]
+(defn fetch-bookmarks-for-user [user-id]
   (jdbc/query (db-spec)
               (-> (helpers/select :*)
                   (helpers/from :bookmarks)
-                  (helpers/where [:= :member_id member-id])
+                  (helpers/where [:= :user_id user-id])
                   sql/format)))
 
 (defn list-by-id
-  [{:keys [id member-id]}]
+  [{:keys [id user-id]}]
   (jdbc/query (db-spec) (-> (helpers/select :*)
                             (helpers/from :bookmarks)
                             (helpers/where [:and [:= :id (Integer/parseInt id)]
-                                            [:= :member_id member-id]])
+                                            [:= :user_id user-id]])
                             sql/format)))
 
 (defn delete
-  [{:keys [id member-id]}]
+  [{:keys [id user-id]}]
   (jdbc/execute! (db-spec) (-> (helpers/delete-from :bookmarks)
                                (helpers/where [:and [:= :id id]
-                                               [:= :member_id member-id]])
+                                               [:= :user_id user-id]])
                                sql/format)))

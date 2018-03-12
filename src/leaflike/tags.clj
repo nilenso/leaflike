@@ -8,7 +8,7 @@
 (defn fetch-tags
   [username]
   (let [user (hutils/get-user {:session {:username username}})]
-    (tags-db/fetch-tags {:member-id (:id user)})))
+    (tags-db/fetch-tags {:user-id (:id user)})))
 
 (defn all-tags-view
   [username tags]

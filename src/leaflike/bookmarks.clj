@@ -25,12 +25,12 @@
 (defn create
   [{:keys [params] :as request}]
   (if (s/valid? ::bm-spec/bookmark params)
-    (let [user        (hutils/get-user request)
-          bookmark    (-> (select-keys params [:title :url])
-                          (assoc :member_id (:id user)
-                                 :created_at (utils/get-timestamp)))
-          bookmark-id (bm-db/create bookmark)
-          tags (parse-tags (:tags params))]
+    (let [user (hutils/get-user request)
+          bookmark (-> (select-keys params [:title :url])
+                       (assoc :user_id (:id user)
+                              :created_at (utils/get-timestamp)))
+          tags (parse-tags (:tags params))
+          bookmark-id (bm-db/create bookmark)]
       (when (not-empty tags)
         (tags-db/create tags)
         (bm-db/tag-bookmark bookmark-id tags))
@@ -62,7 +62,7 @@
   [username {:keys [tag search-terms] :as params}]
   (let [user (hutils/get-user {:session {:username username}})
         page (dec (:page params))
-        query {:member-id (:id user)
+        query {:user-id (:id user)
                :tag tag
                :search-terms search-terms}
         bookmarks (bm-db/fetch-bookmarks (merge query
@@ -77,7 +77,7 @@
   [{:keys [route-params] :as request}]
   (let [id        (:id route-params)
         user      (hutils/get-user request)
-        params    {:id id :member-id (:id user)}]
+        params    {:id id :user-id (:id user)}]
     (if (s/valid? :leaflike.bookmarks.spec/id id)
       (bm-db/list-by-id params)
       (assoc (res/redirect "/bookmarks")
@@ -91,7 +91,7 @@
       (let [id (Integer/parseInt unparsed-id)]
         (do (bm-db/remove-all-tags id)
             (bm-db/delete {:id id
-                           :member-id (:id user)})))
+                           :user-id (:id user)})))
       (assoc (res/redirect "/bookmarks")
              :flash {:error-msg "Invalid bookmark id"}))))
 
@@ -120,7 +120,7 @@
    {:keys [page] :as params}
    {:keys [bookmarks num-pages] :as paginated-bookmarks}
    view-type
-   & {:keys [error-msg]}]
+   & {:keys [error-msg success-msg]}]
   (let [{:keys [page-title path-format-fn]} (view-type-info view-type params)]
     (layout/user-view page-title
                       username
@@ -128,7 +128,8 @@
                                       num-pages
                                       page
                                       path-format-fn)
-                      :error-msg error-msg)))
+                      :error-msg error-msg
+                      :success-msg success-msg)))
 
 (defn valid-page-number? [{:keys [current-page num-pages]}]
   (< 0 current-page (inc num-pages)))
@@ -141,6 +142,7 @@
                    (update :page current-page)
                    (assoc :search-terms search-terms))
         error-msg (get-in request [:flash :error-msg])
+        success-msg (get-in request [:flash :success-msg])
         current-page (:page params)
         invalid-page-response (assoc (res/redirect "/bookmarks")
                                      :flash {:error-msg "Invalid page number"})]
@@ -153,7 +155,8 @@
                                        params
                                        paginated-bookmarks
                                        view-type
-                                       :error-msg error-msg))
+                                       :error-msg error-msg
+                                       :success-msg success-msg))
               (assoc :headers {"Content-Type" "text/html"}))
           invalid-page-response))
       invalid-page-response)))
@@ -167,7 +170,7 @@
   (let [username (get-in request [:session :username])
         error-msg (get-in request [:flash :error-msg])
         user      (hutils/get-user request)
-        all-tags (map :name (tags-db/fetch-tags {:member-id (:id user)}))]
+        all-tags (map :name (tags-db/fetch-tags {:user-id (:id user)}))]
     (-> (res/response (layout/user-view "Add Bookmark"
                                         username
                                         (views/bookmark-form anti-forgery/*anti-forgery-token*
@@ -185,7 +188,7 @@
         error-msg (if bookmark
                     (get-in request [:flash :error-msg])
                     "The bookmark you're trying to edit does not exist.")
-        all-tags (map :name (tags-db/fetch-tags {:member-id (:id user)}))]
+        all-tags (map :name (tags-db/fetch-tags {:user-id (:id user)}))]
     (-> (res/response (layout/user-view "Edit Bookmark"
                                         username
                                         (views/bookmark-form anti-forgery/*anti-forgery-token*

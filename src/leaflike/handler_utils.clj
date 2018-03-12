@@ -4,4 +4,4 @@
 (defn get-user
   [request]
   (let [username (get-in request [:session :username])]
-    (first (user-db/get-member-auth-data username :id))))
+    (first (user-db/get-user-auth-data username :id))))

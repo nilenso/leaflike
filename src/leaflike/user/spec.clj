@@ -2,8 +2,8 @@
   (:require [leaflike.utils :refer [email-pattern
                                     alpha-num-pattern
                                     required]]
-            [leaflike.user.db :refer [get-member-if-exists
-                                      get-member-auth-data]]
+            [leaflike.user.db :refer [get-user-if-exists
+                                      get-user-auth-data]]
             [clojure.spec.alpha :as s]))
 
 (defn email?
@@ -31,13 +31,13 @@
 (defn valid-signup-details?
   [{:keys [email username] :as user}]
   (and (s/valid? ::signup-details user)
-       (nil? (get-member-if-exists email username))))
+       (nil? (get-user-if-exists email username))))
 
 (s/def ::login-details (s/keys :req-un [::username ::password]))
 
 (defn valid-login-details?
-  [{:keys [username password] :as user}]
-  (if (s/valid? ::login-details user)
-    (let [member (get-member-auth-data username)]
-      (first member))
+  [{:keys [username password] :as params}]
+  (if (s/valid? ::login-details params)
+    (let [user (get-user-auth-data username)]
+      (first user))
     false))

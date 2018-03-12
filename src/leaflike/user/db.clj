@@ -6,27 +6,27 @@
             [honeysql.core :as sql]
             [honeysql.helpers :as helpers]))
 
-(defn get-member-if-exists
+(defn get-user-if-exists
   [email username]
   (-> (jdbc/query (db-spec) (-> (helpers/select :*)
-                                (helpers/from :members)
+                                (helpers/from :users)
                                 (helpers/where [:or [:= :username username]
                                                 [:= :email email]])
                                 sql/format))
       first))
 
-(defn get-member-auth-data
+(defn get-user-auth-data
   ([identifier]
-   (get-member-auth-data identifier :*))
+   (get-user-auth-data identifier :*))
   ([identifier coll]
    (jdbc/query (db-spec) (-> (helpers/select coll)
-                             (helpers/from :members)
+                             (helpers/from :users)
                              (helpers/where [:= :username identifier])
                              sql/format))))
 
 (defn create-user
   [body]
-  (jdbc/execute! (db-spec) (-> (helpers/insert-into :members)
+  (jdbc/execute! (db-spec) (-> (helpers/insert-into :users)
                                (helpers/values [{:email      (:email body)
                                                  :username   (:username body)
                                                  :password   (hashers/encrypt (:password body))

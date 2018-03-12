@@ -21,7 +21,7 @@
                  [org.clojure/tools.logging "0.4.0"]
                  [camel-snake-kebab "0.4.0"]
                  [nilenso/honeysql-postgres "0.2.3"]]
-  :profiles {:dev {:dependencies [[faker "0.2.2"]]
+  :profiles {:dev {:dependencies [[helpshift/faker "0.2.0"]]
                    :plugins [[com.jakemccrary/lein-test-refresh "0.22.0"]]}}
   :main          leaflike.core
   :aot           [leaflike.core]

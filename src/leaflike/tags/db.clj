@@ -16,7 +16,7 @@
                      sql/format)))
 
 (defn fetch-tags
-  [{:keys [member-id]}]
+  [{:keys [user-id]}]
   (jdbc/query (db-spec)
               (-> (helpers/select :*)
                   (helpers/from :tags)
@@ -24,7 +24,7 @@
                                   (-> (helpers/select :tag_id)
                                       (helpers/from [:bookmark_tag :bt]
                                                     [:bookmarks :b])
-                                      (helpers/where [:and [:= :member_id member-id]
+                                      (helpers/where [:and [:= :user_id user-id]
                                                       [:= :bt.bookmark_id :b.id]])
                                       (helpers/group :bt.tag_id))])
                   (helpers/order-by :name)
