@@ -10,6 +10,7 @@
             [leaflike.handler-utils :as hutils]
             [leaflike.layout :as layout]
             [leaflike.bookmarks.views :as views]
+            [net.cgrand.enlive-html :as html]
             [ring.middleware.anti-forgery :as anti-forgery]
             [clojure.spec.alpha :as s]
             [clojure.string :as string]
@@ -197,3 +198,39 @@
                                                                     :all-tags all-tags))
                                         :error-msg error-msg))
         (assoc-in [:headers "Content-Type"] "text/html"))))
+
+(defn pocket-import-form
+  [{:keys [params] :as request}]
+  (-> (res/response (layout/user-view "Import from pocket"
+                                      (get-in request [:session :username])
+                                      (views/pocket-import-form anti-forgery/*anti-forgery-token*)))
+      (assoc-in [:headers "Content-Type"] "text/html")))
+
+(let [get-url (fn [node]
+                (-> node :attrs :href))
+      get-title (fn [node]
+                  (html/text node))
+      get-tags (fn [node] (let [tags-str (-> node :attrs :tags)]
+                   (if (string/blank? tags-str)
+                     nil
+                     (string/split tags-str #","))))]
+  (defn import-bookmarks-from-pocket
+    [html-str username]
+    (let [bookmark-nodes (->
+                          html-str
+                          html/html-snippet
+                          (html/select [:li :a]))]
+      (doseq [node bookmark-nodes]
+        (create
+         {:params {:title (get-title node)
+                   :url (get-url node)
+                   :tags (get-tags node)}
+          :session {:username username}})))))
+
+(defn pocket-import
+  [{:keys [multipart-params] :as request}]
+  (let [username (get-in request [:session :username])
+        file (get-in multipart-params ["pocket_html" :tempfile])]
+    (do (import-bookmarks-from-pocket (slurp file) username)
+        (-> (res/redirect "/bookmarks")
+            (assoc :flash {:success-msg "Successfully imported from Pocket"})))))

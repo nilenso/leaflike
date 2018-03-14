@@ -47,7 +47,9 @@
                 "/add" (with-auth-middlewares {:get bookmarks/create-view
                                                :post bookmarks/create})
                 "/edit" {"" {:post bookmarks/edit}
-                         ["/" :bookmark-id] {:get bookmarks/edit-view}}}})
+                         ["/" :bookmark-id] {:get bookmarks/edit-view}}
+                "/import" (with-auth-middlewares {:post bookmarks/pocket-import
+                                                  :get bookmarks/pocket-import-form})}})
 
 (defn tags-routes
   []
