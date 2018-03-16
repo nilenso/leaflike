@@ -53,9 +53,17 @@
   []
   {"tags" {"" (with-auth-middlewares {:get tags/tags-list})}})
 
+(defn- status-view
+  "Page to show success message, being used in leaflike browser extension"
+  [request]
+  (let [success-msg (get-in request [:flash :success-msg])]
+    (-> (res/response (layout/application nil [:div ""] :success-msg success-msg))
+        (assoc-in [:headers "Content-Type"] "text/html"))))
+
 (defn home-routes
   []
   {""        {:get home}
+   "status"  {:get status-view}
    "welcome" (with-auth-middlewares {:get welcome})})
 
 (defn app-routes

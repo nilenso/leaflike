@@ -30,12 +30,14 @@
                        (assoc :user_id (:id user)
                               :created_at (utils/get-timestamp)))
           tags (parse-tags (:tags params))
-          bookmark-id (bm-db/create bookmark)]
+          bookmark-id (bm-db/create bookmark)
+          next-url (:next params "/bookmarks")]
       (when (not-empty tags)
         (tags-db/create tags)
         (bm-db/tag-bookmark bookmark-id tags))
-      (-> (res/redirect "/bookmarks")
-          (assoc-in [:headers "Content-Type"] "text/html")))
+      (-> (res/redirect next-url)
+          (assoc-in [:headers "Content-Type"] "text/html")
+          (assoc-in [:flash :success-msg] "Bookmark added.")))
     (assoc (res/redirect "/bookmarks/add")
            :flash {:error-msg (bm-spec/describe-errors params)})))
 
@@ -166,16 +168,21 @@
 (def search-bookmarks-view (partial bookmarks-list :search-bookmarks))
 
 (defn create-view
-  [request]
+  [{:keys [params] :as request}]
   (let [username (get-in request [:session :username])
         error-msg (get-in request [:flash :error-msg])
         user      (hutils/get-user request)
+        next-url (:next params "/bookmarks")
+        prefill-url (:url params)
+        prefill-title (:title params)
         all-tags (map :name (tags-db/fetch-tags {:user-id (:id user)}))]
     (-> (res/response (layout/user-view "Add Bookmark"
                                         username
                                         (views/bookmark-form anti-forgery/*anti-forgery-token*
-                                                             "/bookmarks/add"
-                                                             {:all-tags all-tags})
+                                                             (str "/bookmarks/add?next=" next-url)
+                                                             {:all-tags all-tags
+                                                              :url prefill-url
+                                                              :title prefill-title})
                                         :error-msg error-msg))
         (assoc-in [:headers "Content-Type"] "text/html"))))
 
