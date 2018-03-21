@@ -173,16 +173,14 @@
         error-msg (get-in request [:flash :error-msg])
         user      (hutils/get-user request)
         next-url (:next params "/bookmarks")
-        prefill-url (:url params)
-        prefill-title (:title params)
-        all-tags (map :name (tags-db/fetch-tags {:user-id (:id user)}))]
+        all-tags (map :name (tags-db/fetch-tags {:user-id (:id user)}))
+        bookmark (assoc (select-keys params [:title :url])
+                        :all-tags all-tags)]
     (-> (res/response (layout/user-view "Add Bookmark"
                                         username
                                         (views/bookmark-form anti-forgery/*anti-forgery-token*
                                                              (str "/bookmarks/add?next=" next-url)
-                                                             {:all-tags all-tags
-                                                              :url prefill-url
-                                                              :title prefill-title})
+                                                             bookmark)
                                         :error-msg error-msg))
         (assoc-in [:headers "Content-Type"] "text/html"))))
 
