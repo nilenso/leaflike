@@ -14,15 +14,21 @@
 (defn application
   [title content & {:keys [username error-msg success-msg]}]
   (html5 [:head
+          [:meta {:charset "utf-8"}]
           [:title title]
           (include-css "//maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css")
           (include-css "/css/styles.css")
           (include-css "/css/select2.min.css")
           (include-js "/js/jquery.min.js")
           (include-js "/js/select2.min.js")
-          [:body
+          [:link {:rel "shortcut icon"
+                  :href "/favicon.ico?"
+                  :type "image/x-icon"}]]
+         [:body
            [:nav.navbar.navbar-expand-lg.navbar-light.bg-light
-            [:a.navbar-brand {:href "/"} "Leaflike"]
+            [:a.navbar-brand {:href "/"} [:img {:src "logo.png"
+                                                :width "150px"
+                                                :alt "Leaflike"}]]
             (when username
               [:div.collapse.navbar-collapse
                [:ul.navbar-nav.mr-auto.mt-2.mt-lg-0
@@ -40,7 +46,7 @@
                [:div {:class "alert alert-danger"} error-msg])
              (when success-msg
                [:div {:class "alert alert-success"} success-msg])
-             content]]]]))
+             content]]]))
 
 (defn user-view
   [title username content & {:keys [error-msg success-msg]}]
