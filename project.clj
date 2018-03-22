@@ -22,8 +22,7 @@
                  [camel-snake-kebab "0.4.0"]
                  [enlive "1.1.6"]
                  [nilenso/honeysql-postgres "0.2.3"]]
-  :profiles {:dev {:dependencies [[helpshift/faker "0.2.0"]]
-                   :plugins [[com.jakemccrary/lein-test-refresh "0.22.0"]]}}
+  :profiles {:dev {:dependencies [[helpshift/faker "0.2.0"]]}}
   :main          leaflike.core
   :aot           [leaflike.core]
   :target-path   "target/%s")
