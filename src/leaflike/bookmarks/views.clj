@@ -146,3 +146,20 @@
                 (when id
                   (f/hidden-field {:value id} "id"))
                 (f/hidden-field {:value anti-forgery-token} "__anti-forgery-token"))]))
+
+
+(defn pocket-import-form
+  [anti-forgery-token]
+  [:form {:method "post"
+          :action "/bookmarks/import"
+          :enctype "multipart/form-data"}
+   [:div
+    [:label {:for "pocket_html"} "You can export your bookmarks from pocket from "
+     [:a {:href "https://getpocket.com/export"} "here"]
+     ". Choose exported html file and submit."]
+    [:div
+     [:input {:id "pocket_html", :name "pocket_html", :accept ".txt, .html", :multiple "", :type "file" :required ""}]
+     [:input {:id "__anti-forgery-token", :name "__anti-forgery-token", :value anti-forgery-token, :type "hidden"}]]]
+
+   [:div
+    [:button.btn.btn-primary "Submit"]]])

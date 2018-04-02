@@ -13,6 +13,7 @@
             [ring.middleware.session        :refer [wrap-session]]
             [ring.middleware.session.memory :as    mem]
             [ring.middleware.anti-forgery   :refer [wrap-anti-forgery]]
+            [ring.middleware.multipart-params :refer [wrap-multipart-params]]
             [clojure.tools.logging :as log]))
 
 (defonce ^:private all-sessions (mem/memory-store))
@@ -29,6 +30,7 @@
       (wrap-resource "public")
       (wrap-json-params {:keywords? true :bigdecimals? true})
       wrap-json-response
+      wrap-multipart-params
       middlewares/wrap-kebab-case
       wrap-keyword-params
       wrap-params
