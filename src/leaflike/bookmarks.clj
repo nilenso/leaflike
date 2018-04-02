@@ -86,14 +86,16 @@
              :flash {:error-msg "Invalid bookmark id"}))))
 
 (defn delete
-  [{:keys [route-params] :as request}]
+  [{:keys [params] :as request}]
   (let [user      (hutils/get-user request)
-        unparsed-id (get-in request [:route-params :id])]
+        unparsed-id (:id params)]
     (if (s/valid? :leaflike.bookmarks.spec/id unparsed-id)
       (let [id (Integer/parseInt unparsed-id)]
         (do (bm-db/remove-all-tags id)
             (bm-db/delete {:id id
-                           :user-id (:id user)})))
+                           :user-id (:id user)})
+            (assoc (res/redirect "/bookmarks")
+                   :flash {:success-msg "Successfully deleted bookmark"})))
       (assoc (res/redirect "/bookmarks")
              :flash {:error-msg "Invalid bookmark id"}))))
 
@@ -126,7 +128,8 @@
   (let [{:keys [page-title path-format-fn]} (view-type-info view-type params)]
     (layout/user-view page-title
                       username
-                      (views/list-all bookmarks
+                      (views/list-all anti-forgery/*anti-forgery-token*
+                                      bookmarks
                                       num-pages
                                       page
                                       path-format-fn)
