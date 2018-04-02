@@ -214,26 +214,26 @@
                                       (views/pocket-import-form anti-forgery/*anti-forgery-token*)))
       (assoc-in [:headers "Content-Type"] "text/html")))
 
-(let [get-url (fn [node]
-                (-> node :attrs :href))
-      get-title (fn [node]
-                  (html/text node))
-      get-tags (fn [node] (let [tags-str (-> node :attrs :tags)]
-                   (if (string/blank? tags-str)
-                     nil
-                     (string/split tags-str #","))))]
-  (defn import-bookmarks-from-pocket
-    [html-str username]
-    (let [bookmark-nodes (->
-                          html-str
-                          html/html-snippet
-                          (html/select [:li :a]))]
-      (doseq [node bookmark-nodes]
-        (create
-         {:params {:title (get-title node)
-                   :url (get-url node)
-                   :tags (get-tags node)}
-          :session {:username username}})))))
+(defn import-bookmarks-from-pocket
+  [html-str username]
+  (let [bookmark-nodes (->
+                        html-str
+                        html/html-snippet
+                        (html/select [:li :a]))
+        get-url (fn [node]
+                  (-> node :attrs :href))
+        get-title (fn [node]
+                    (html/text node))
+        get-tags (fn [node] (let [tags-str (-> node :attrs :tags)]
+                              (if (string/blank? tags-str)
+                                nil
+                                (string/split tags-str #","))))]
+    (doseq [node bookmark-nodes]
+      (create
+       {:params {:title (get-title node)
+                 :url (get-url node)
+                 :tags (get-tags node)}
+        :session {:username username}}))))
 
 (defn pocket-import
   [{:keys [multipart-params] :as request}]
