@@ -86,9 +86,10 @@
 
     (testing "delete bookmark"
       (let [bookmark-id (:id (first (bm-db/fetch-bookmarks-for-user (user-id user))))
-            response (bm/delete {:route-params {:id (str bookmark-id)}
-                                 :session {:username (:username user)}})]
-        (is (= '(1) response))))
+            {:keys [status flash]} (bm/delete {:route-params {:id (str bookmark-id)}
+                                               :session {:username (:username user)}})]
+        (is (= status 302))
+        (is (= (:error-msg flash) "Invalid bookmark id"))))
 
     (testing "delete bookmark failed, invalid input"
       (let [{:keys [status flash]} (bm/delete {:route-params {:id "1jgk"}
@@ -97,6 +98,11 @@
         (is (= (:error-msg flash) "Invalid bookmark id"))))
 
     (testing "delete bookmark"
-      (let [response (bm/delete {:route-params {:id "31"}
-                                 :session {:username (:username user)}})]
-        (is (= '(0) response))))))
+      (let [bookmark-id (-> (bm-db/fetch-bookmarks-for-user (user-id user))
+                            first
+                            :id
+                            str)
+            {:keys [status flash]} (bm/delete {:params {:id bookmark-id}
+                                               :session {:username (:username user)}})]
+        (is (= 302 status))
+        (is (empty? (:error-msg flash)))))))

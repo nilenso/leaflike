@@ -46,8 +46,9 @@
                                           {:get bookmarks/search-bookmarks-view})
                 "/add" (with-auth-middlewares {:get bookmarks/create-view
                                                :post bookmarks/create})
-                "/edit" {"" {:post bookmarks/edit}
-                         ["/" :bookmark-id] {:get bookmarks/edit-view}}
+                "/edit" {"" (with-auth-middlewares {:post bookmarks/edit})
+                         ["/" :bookmark-id] (with-auth-middlewares {:get bookmarks/edit-view})}
+                ["/delete/" :id] (with-auth-middlewares {:post bookmarks/delete})
                 "/import" (with-auth-middlewares {:post bookmarks/pocket-import
                                                   :get bookmarks/pocket-import-form})}})
 
@@ -55,9 +56,17 @@
   []
   {"tags" {"" (with-auth-middlewares {:get tags/tags-list})}})
 
+(defn- status-view
+  "Page to show success message, being used in leaflike browser extension"
+  [request]
+  (let [success-msg (get-in request [:flash :success-msg])]
+    (-> (res/response (layout/application nil [:div ""] :success-msg success-msg))
+        (assoc-in [:headers "Content-Type"] "text/html"))))
+
 (defn home-routes
   []
   {""        {:get home}
+   "status"  {:get status-view}
    "welcome" (with-auth-middlewares {:get welcome})})
 
 (defn app-routes

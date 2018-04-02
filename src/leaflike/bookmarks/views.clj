@@ -68,7 +68,7 @@
        "Next"]])])
 
 (defn list-all
-  [bookmarks num-pages current-page path-format-fn]
+  [anti-forgery-token bookmarks num-pages current-page path-format-fn]
   [:div {:id "content"}
    [:div {:class "row"}
     [:div {:class "col"}
@@ -78,6 +78,7 @@
     [:thead {:class "thead-dark"}
      [:tr
       [:th {:scope "col"} "Title"]
+      [:th {:scope "col"} ""]
       [:th {:scope "col"} ""]
       [:th {:scope "col"} "Tags"]
       [:th {:scope "col"} "Date"]]]
@@ -90,6 +91,10 @@
         [:td [:a {:href (str "/bookmarks/edit/" (:id bookmark))
                   :bookmark_id (str (:id bookmark))}
               [:button.btn.btn-sm.btn-outline-secondary "Edit"]]]
+        [:td (f/form-to {:role "form"}
+                        [:post (str "/bookmarks/delete/" (:id bookmark))]
+                        (f/submit-button {:class "btn btn-sm btn-outline-secondary"} "Delete")
+                        (f/hidden-field {:value anti-forgery-token} "__anti-forgery-token"))]
         [:td (for [tag (:tags bookmark)]
                [:a {:href (format "/bookmarks/tag/%s/page/1" tag)}
                 [:button.btn.btn-outline-primary.btn-sm tag]])]

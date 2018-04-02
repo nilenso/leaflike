@@ -31,12 +31,14 @@
                        (assoc :user_id (:id user)
                               :created_at (utils/get-timestamp)))
           tags (parse-tags (:tags params))
-          bookmark-id (bm-db/create bookmark)]
+          bookmark-id (bm-db/create bookmark)
+          next-url (:next params "/bookmarks")]
       (when (not-empty tags)
         (tags-db/create tags)
         (bm-db/tag-bookmark bookmark-id tags))
-      (-> (res/redirect "/bookmarks")
-          (assoc-in [:headers "Content-Type"] "text/html")))
+      (-> (res/redirect next-url)
+          (assoc-in [:headers "Content-Type"] "text/html")
+          (assoc-in [:flash :success-msg] "Bookmark added.")))
     (assoc (res/redirect "/bookmarks/add")
            :flash {:error-msg (bm-spec/describe-errors params)})))
 
@@ -85,14 +87,16 @@
              :flash {:error-msg "Invalid bookmark id"}))))
 
 (defn delete
-  [{:keys [route-params] :as request}]
+  [{:keys [params] :as request}]
   (let [user      (hutils/get-user request)
-        unparsed-id (get-in request [:route-params :id])]
+        unparsed-id (:id params)]
     (if (s/valid? :leaflike.bookmarks.spec/id unparsed-id)
       (let [id (Integer/parseInt unparsed-id)]
         (do (bm-db/remove-all-tags id)
             (bm-db/delete {:id id
-                           :user-id (:id user)})))
+                           :user-id (:id user)})
+            (assoc (res/redirect "/bookmarks")
+                   :flash {:success-msg "Successfully deleted bookmark"})))
       (assoc (res/redirect "/bookmarks")
              :flash {:error-msg "Invalid bookmark id"}))))
 
@@ -125,7 +129,8 @@
   (let [{:keys [page-title path-format-fn]} (view-type-info view-type params)]
     (layout/user-view page-title
                       username
-                      (views/list-all bookmarks
+                      (views/list-all anti-forgery/*anti-forgery-token*
+                                      bookmarks
                                       num-pages
                                       page
                                       path-format-fn)
@@ -167,16 +172,19 @@
 (def search-bookmarks-view (partial bookmarks-list :search-bookmarks))
 
 (defn create-view
-  [request]
+  [{:keys [params] :as request}]
   (let [username (get-in request [:session :username])
         error-msg (get-in request [:flash :error-msg])
         user      (hutils/get-user request)
-        all-tags (map :name (tags-db/fetch-tags {:user-id (:id user)}))]
+        next-url (:next params "/bookmarks")
+        all-tags (map :name (tags-db/fetch-tags {:user-id (:id user)}))
+        bookmark (assoc (select-keys params [:title :url])
+                        :all-tags all-tags)]
     (-> (res/response (layout/user-view "Add Bookmark"
                                         username
                                         (views/bookmark-form anti-forgery/*anti-forgery-token*
-                                                             "/bookmarks/add"
-                                                             {:all-tags all-tags})
+                                                             (str "/bookmarks/add?next=" next-url)
+                                                             bookmark)
                                         :error-msg error-msg))
         (assoc-in [:headers "Content-Type"] "text/html"))))
 
