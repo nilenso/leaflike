@@ -26,7 +26,7 @@
                   :type "image/x-icon"}]]
          [:body
            [:nav.navbar.navbar-expand-lg.navbar-light.bg-light
-            [:a.navbar-brand {:href "/"} [:img {:src "logo.png"
+            [:a.navbar-brand {:href "/"} [:img {:src "/logo.png"
                                                 :width "150px"
                                                 :alt "Leaflike"}]]
             (when username
