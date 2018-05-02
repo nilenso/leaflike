@@ -31,11 +31,21 @@
              (bm-db/fetch-bookmarks-for-user (user-id user))))
         (is (empty? (:error-msg flash)))))
 
+    (testing "create bookmark with double slash in url"
+      (let [url "https://web.archive.org/web/http://example.com"
+            {:keys [status flash]} (bm/create {:params (assoc bookmark :url url)
+                                               :session {:username (:username user)}})]
+        (is (= 302 status))
+        (is (some
+             #(= (:url %) url)
+             (bm-db/fetch-bookmarks-for-user (user-id user))))
+        (is (empty? (:error-msg flash)))))
+
     (testing "create bookmark success without tags"
       (let [{:keys [status flash]} (bm/create {:params (dissoc bookmark :tags)
                                                :session {:username (:username user)}})]
         (is (= 302 status))
-        (is (= 2 (count (bm-db/fetch-bookmarks-for-user (user-id user)))))
+        (is (= 3 (count (bm-db/fetch-bookmarks-for-user (user-id user)))))
         (is (empty? (:error-msg flash)))))
 
     (testing "create bookmark failed"
