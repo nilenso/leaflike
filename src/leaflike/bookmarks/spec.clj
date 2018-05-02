@@ -21,7 +21,7 @@
 
 (defn url?
   [url]
-  (let [validator (UrlValidator.)]
+  (let [validator (UrlValidator. UrlValidator/ALLOW_2_SLASHES)]
     (and (some? url)
          (.isValid validator url))))
 
