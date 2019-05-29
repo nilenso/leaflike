@@ -34,8 +34,10 @@
                :string string?
                :coll-of-strings (s/coll-of string?)))
 
+(s/def ::read boolean?)
+
 (s/def ::bookmark (s/keys :req-un [::title ::url]
-                          :opt-un [::id ::tags]))
+                          :opt-un [::id ::tags ::read]))
 
 (defn valid-bookmark?
   [bookmark]

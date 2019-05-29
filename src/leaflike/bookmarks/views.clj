@@ -70,37 +70,57 @@
 (defn list-all
   [anti-forgery-token bookmarks num-pages current-page path-format-fn]
   [:div {:id "content"}
-   [:div {:class "row"}
-    [:div {:class "col"}
-     [:a {:href "/bookmarks/add"}
-      [:button {:class "btn btn-large btn-primary"} "Add bookmark"]]]]
    [:table {:class "table"}
-    [:thead {:class "thead-dark"}
-     [:tr
-      [:th {:scope "col"} "Title"]
-      [:th {:scope "col"} ""]
-      [:th {:scope "col"} ""]
-      [:th {:scope "col"} "Tags"]
-      [:th {:scope "col"} "Date"]]]
     [:tbody
      (for [bookmark bookmarks]
        [:tr
-        [:td [:a.col {:href (:url bookmark)
-                      :target "_blank"
-                      :bookmark_id (str (:id bookmark))} (:title bookmark)]]
-        [:td [:a {:href (str "/bookmarks/edit/" (:id bookmark))
+        [:td
+         [:div.container
+          [:div.row
+           [:div.col [:b [:a {:href        (:url bookmark)
+                              :target      "_blank"
+                              :bookmark_id (str (:id bookmark))} (:title bookmark)]]]
+           [:div.col-4 {:style "min-width: 150px;"}
+            [:div.well.pull-right
+             [:a {:href (str "/bookmarks/edit/" (:id bookmark)
+                             "?next=" (path-format-fn current-page))
                   :bookmark_id (str (:id bookmark))}
-              [:button.btn.btn-sm.btn-outline-secondary "Edit"]]]
-        [:td (f/form-to {:role "form"}
-                        [:post (str "/bookmarks/delete/" (:id bookmark))]
-                        (f/submit-button {:class "btn btn-sm btn-outline-secondary"} "Delete")
-                        (f/hidden-field {:value anti-forgery-token} "__anti-forgery-token"))]
-        [:td (for [tag (:tags bookmark)]
-               [:a {:href (format "/bookmarks/tag/%s/page/1" tag)}
-                [:button.btn.btn-outline-primary.btn-sm tag]])]
-        [:td (->> (:created_at bookmark)
-                  time-coerce/from-sql-time
-                  (time-format/unparse (time-format/formatter :date)))]])]]
+              [:button.btn.btn-outline-secondary.btn-sm
+               {:style "border: none;" :data-toggle "tooltip" :title "Edit bookmark"}
+               [:i.fa.fa-pencil]]]
+             ; all of the url endpoint now accept `next` in the query string. This
+             ; field used for coming back to same page after any of the action
+             ; (edit, read, delete) is done (previously it used to go home page)
+             (let [[mark-read? tooltip icon] (if (:read bookmark)
+                                            [false "Add bookmark" [:i.fa.fa-plus]]
+                                            [true "Mark read" [:i.fa.fa-check]])]
+               (f/form-to {:role "form" :style "display: inline;"}
+                         [:post (str "/bookmarks/read/" (:id bookmark)
+                                     "?read=" mark-read?     ; mark unread if previously read else mark read
+                                     "&next=" (path-format-fn current-page))]
+                         [:button.btn.btn-outline-secondary.btn-sm
+                          {:type        "submit" :value "Archive" :style "border: none;"
+                           :data-toggle "tooltip" :title tooltip}
+                          icon]
+                         (f/hidden-field {:value anti-forgery-token} "__anti-forgery-token")))
+             (f/form-to {:role "form" :style "display: inline;"}
+                        [:post (str "/bookmarks/delete/" (:id bookmark)
+                                    "?next=" (path-format-fn current-page))]
+                        [:button.btn.btn-outline-secondary.btn-sm
+                         {:type        "submit" :value "Delete" :style "border: none;"
+                          :data-toggle "tooltip" :title "Delete bookmark"}
+                         [:i.fa.fa-trash]]
+                        (f/hidden-field {:value anti-forgery-token} "__anti-forgery-token"))]]]
+          [:div.row
+           ;rethink about having date in the output, what the use of date?
+           ;[:div.col-3
+           ; [:div.bookmark-card-date
+           ;  (->> (:created_at bookmark)
+           ;       time-coerce/from-sql-time
+           ;       (time-format/unparse (time-format/formatter "dd MMM yyyy")))]]
+           [:div.col
+            [:div.well.pull-right (for [tag (:tags bookmark)]
+                                    [:a.badge.btn-tag {:href (format "/bookmarks/tag/%s/page/1" tag)} tag])]]]]]])]]
    (when (> num-pages 1)
      (pagination num-pages current-page path-format-fn))])
 

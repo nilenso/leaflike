@@ -48,13 +48,14 @@
     (let [user         (hutils/get-user request)
           bookmark-id  (Integer/parseInt (:id params))
           updated-keys (select-keys params [:title :url])
-          tags         (parse-tags (:tags params))]
+          tags         (parse-tags (:tags params))
+          next-url (:next params "/bookmarks")]
       (bm-db/update-bookmark bookmark-id (:id user) updated-keys)
       (bm-db/remove-all-tags bookmark-id)
       (when (not-empty tags)
         (tags-db/create tags)
         (bm-db/tag-bookmark bookmark-id tags))
-      (-> (res/redirect "/bookmarks")
+      (-> (res/redirect next-url)
           (assoc-in [:headers "Content-Type"] "text/html")))
     (assoc (res/redirect (str "/bookmarks/edit/" (:id params)))
            :flash {:error-msg (bm-spec/describe-errors params)})))
@@ -62,12 +63,13 @@
 (def items-per-page 10)
 
 (defn fetch-bookmarks
-  [username {:keys [tag search-terms] :as params}]
+  [username {:keys [tag search-terms read?] :as params}]
   (let [user (hutils/get-user {:session {:username username}})
         page (dec (:page params))
         query {:user-id (:id user)
                :tag tag
-               :search-terms search-terms}
+               :search-terms search-terms
+               :read? read?}
         bookmarks (bm-db/fetch-bookmarks (merge query
                                                 {:limit items-per-page
                                                  :offset (* items-per-page page)}))
@@ -89,16 +91,34 @@
 (defn delete
   [{:keys [params] :as request}]
   (let [user      (hutils/get-user request)
-        unparsed-id (:id params)]
+        unparsed-id (:id params)
+        next-link (:next params "/bookmarks")]
     (if (s/valid? :leaflike.bookmarks.spec/id unparsed-id)
       (let [id (Integer/parseInt unparsed-id)]
         (do (bm-db/remove-all-tags id)
             (bm-db/delete {:id id
                            :user-id (:id user)})
-            (assoc (res/redirect "/bookmarks")
+            (assoc (res/redirect next-link)
                    :flash {:success-msg "Successfully deleted bookmark"})))
-      (assoc (res/redirect "/bookmarks")
+      (assoc (res/redirect next-link)
              :flash {:error-msg "Invalid bookmark id"}))))
+
+(defn mark-read
+  "Mark bookmark read/unread in the database and redirect to last page"
+  [{:keys [params] :as request}]
+  (let [unparsed-id (:id params)
+        next-link (:next params "/bookmarks")]
+    (if (s/valid? :leaflike.bookmarks.spec/id unparsed-id)
+      (let [user         (hutils/get-user request)
+            bookmark-id  (Integer/parseInt unparsed-id)
+            read         (Boolean/parseBoolean (:read params))
+            read-at      (utils/get-timestamp)]
+        (bm-db/update-mark-read bookmark-id (:id user) {:read read :read_at read-at})
+        (-> (res/redirect next-link)
+            (assoc-in [:headers "Content-Type"] "text/html")))
+      (assoc (res/redirect next-link)
+        :flash {:error-msg "Invalid bookmark id"}))))
+
 
 (defn- view-type-info
   [view-type {:keys [search-query tag] :as params}]
@@ -108,7 +128,9 @@
     :tag-bookmarks {:page-title (str "Bookmarks with tag: " tag)
                     :path-format-fn (partial uri/tag-page params)}
     :search-bookmarks {:page-title (str "Search results for: " search-query)
-                       :path-format-fn (partial uri/search params)}))
+                       :path-format-fn (partial uri/search params)}
+    :read-bookmarks {:page-title "Read bookmarks"
+                       :path-format-fn (partial uri/read-page params)}))
 
 (defn current-page [page]
   (if (string/blank? page)
@@ -144,9 +166,14 @@
   [view-type {:keys [session] :as request}]
   (let [username (:username session)
         search-terms (parse-search-terms (get-in request [:params :search-query]))
+        read? (or (= view-type :read-bookmarks)             ; if read-bookmarks page then show read bookmarks
+                (if (= view-type :all-bookmarks)
+                    false                                   ; if all-bookmarks then don't show read bookmarks
+                    nil))                                   ; if tag, search, favorite bookmarks then include both read/unread bookmarks
         params (-> (:params request)
                    (update :page current-page)
-                   (assoc :search-terms search-terms))
+                   (assoc :search-terms search-terms)
+                   (assoc :read? read?))
         error-msg (get-in request [:flash :error-msg])
         success-msg (get-in request [:flash :success-msg])
         current-page (:page params)
@@ -170,6 +197,7 @@
 (def all-bookmarks-view (partial bookmarks-list :all-bookmarks))
 (def tag-bookmarks-view (partial bookmarks-list :tag-bookmarks))
 (def search-bookmarks-view (partial bookmarks-list :search-bookmarks))
+(def read-bookmarks-view (partial bookmarks-list :read-bookmarks))
 
 (defn create-view
   [{:keys [params] :as request}]
@@ -197,11 +225,12 @@
         error-msg (if bookmark
                     (get-in request [:flash :error-msg])
                     "The bookmark you're trying to edit does not exist.")
-        all-tags (map :name (tags-db/fetch-tags {:user-id (:id user)}))]
+        all-tags (map :name (tags-db/fetch-tags {:user-id (:id user)}))
+        next-link (:next params "/bookmarks")]
     (-> (res/response (layout/user-view "Edit Bookmark"
                                         username
                                         (views/bookmark-form anti-forgery/*anti-forgery-token*
-                                                             "/bookmarks/edit"
+                                                             (str "/bookmarks/edit?next=" next-link)
                                                              (assoc bookmark
                                                                     :all-tags all-tags))
                                         :error-msg error-msg))

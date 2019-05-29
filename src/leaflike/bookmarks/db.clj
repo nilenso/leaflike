@@ -78,9 +78,26 @@
                                        [:= :user_id user-id]])
                        sql/format))))
 
+(defn update-mark-read
+  [bookmark-id user-id updated-keys]
+  (let [updated-keys (select-keys updated-keys [:read :read_at])]
+    (jdbc/execute! (db-spec)
+                   (-> (helpers/update :bookmarks)
+                       (helpers/sset updated-keys)
+                       (helpers/where [:and [:= :id bookmark-id]
+                                       [:= :user_id user-id]])
+                       sql/format))))
+
 (defn- build-where-clause
-  [{:keys [user-id tag search-terms]}]
+  [{:keys [user-id tag search-terms read?]}]
   (let [where-clause [:and [:= :user_id user-id]]
+        where-clause (if (nil? read?)
+                       where-clause
+                       (if read?
+                        (conj where-clause [:= true :read])
+                        (conj where-clause [:or
+                                            [:= nil :read]
+                                            [:= false :read]])))
         where-clause (if tag
                        (conj where-clause [:= tag :%any.tags])
                        where-clause)
@@ -96,7 +113,7 @@
 (defn all-bookmarks-map
   [user-id]
   (-> (helpers/select :b.id :b.title :b.url :b.created_at
-                      :b.user_id
+                      :b.user_id :b.read :b.read_at
                       [(sql/call :array_remove :%array_agg.t.name :null) :tags])
       (helpers/from [:bookmarks :b])
       (helpers/left-join [:bookmark_tag :bt] [:= :b.id :bt.bookmark_id]
@@ -108,7 +125,7 @@
 (defn count-bookmarks
   "Return number of bookmarks the user has."
   [{:keys [user-id tag] :as query}]
-  (let [where-clause (build-where-clause (select-keys query [:user-id :tag :search-terms]))]
+  (let [where-clause (build-where-clause (select-keys query [:user-id :tag :search-terms :read?]))]
     (->> (jdbc/query (db-spec) (-> (helpers/select :%count.*)
                                    (helpers/from [(all-bookmarks-map user-id) :user-bookmarks])
                                    (helpers/where where-clause)
@@ -120,6 +137,7 @@
   [bookmark-id user-id]
   (-> (jdbc/query (db-spec)
                   (-> (helpers/select :b.url :b.title :b.created_at :b.id :b.user_id
+                                      :b.read :b.read_at
                                       [(sql/call :array_remove :%array_agg.t.name :null) :tags])
                       (helpers/from [:bookmarks :b])
                       (helpers/left-join [:bookmark_tag :bt] [:= :b.id :bt.bookmark_id]
@@ -135,7 +153,8 @@
   [{:keys [user-id limit offset tag search-terms] :or {offset 0} :as query}]
   (let [where-clause (build-where-clause (select-keys query [:user-id
                                                              :tag
-                                                             :search-terms]))]
+                                                             :search-terms
+                                                             :read?]))]
     (jdbc/query (db-spec)
                 (-> (helpers/select :*)
                     ;; sub-query gets all of user's bookmarks joined with tags

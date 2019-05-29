@@ -6,6 +6,11 @@
   [_ page-num]
   (format "/bookmarks/page/%d" page-num))
 
+(defn read-page
+  "Return a path with `page` formatted in."
+  [_ page-num]
+  (format "/bookmarks/readlist/page/%d" page-num))
+
 (defn tag-page
   "Return a path with `tag` and `page` formatted in."
   [{:keys [tag] :as opts} page-num]
