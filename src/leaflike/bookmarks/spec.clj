@@ -36,8 +36,10 @@
 
 (s/def ::read boolean?)
 
+(s/def ::favourite boolean?)
+
 (s/def ::bookmark (s/keys :req-un [::title ::url]
-                          :opt-un [::id ::tags ::read]))
+                          :opt-un [::id ::tags ::read ::favorite]))
 
 (defn valid-bookmark?
   [bookmark]

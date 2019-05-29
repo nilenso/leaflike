@@ -63,13 +63,14 @@
 (def items-per-page 10)
 
 (defn fetch-bookmarks
-  [username {:keys [tag search-terms read?] :as params}]
+  [username {:keys [tag search-terms read? favorite?] :as params}]
   (let [user (hutils/get-user {:session {:username username}})
         page (dec (:page params))
         query {:user-id (:id user)
                :tag tag
                :search-terms search-terms
-               :read? read?}
+               :read? read?
+               :favorite? favorite?}
         bookmarks (bm-db/fetch-bookmarks (merge query
                                                 {:limit items-per-page
                                                  :offset (* items-per-page page)}))
@@ -119,6 +120,21 @@
       (assoc (res/redirect next-link)
         :flash {:error-msg "Invalid bookmark id"}))))
 
+(defn mark-favorite
+  "Mark bookmark favorite/unfavorite in the database and redirect to last page"
+  [{:keys [params] :as request}]
+  (let [unparsed-id (:id params)
+        next-link (:next params "/bookmarks")]
+    (if (s/valid? :leaflike.bookmarks.spec/id unparsed-id)
+      (let [user         (hutils/get-user request)
+            bookmark-id  (Integer/parseInt unparsed-id)
+            favorite     (Boolean/parseBoolean (:favorite params))
+            favorite-at  (utils/get-timestamp)]
+        (bm-db/update-mark-favorite bookmark-id (:id user) {:favorite favorite :favorite_at favorite-at})
+        (-> (res/redirect next-link)
+            (assoc-in [:headers "Content-Type"] "text/html")))
+      (assoc (res/redirect next-link)
+        :flash {:error-msg "Invalid bookmark id"}))))
 
 (defn- view-type-info
   [view-type {:keys [search-query tag] :as params}]
@@ -130,7 +146,9 @@
     :search-bookmarks {:page-title (str "Search results for: " search-query)
                        :path-format-fn (partial uri/search params)}
     :read-bookmarks {:page-title "Read bookmarks"
-                       :path-format-fn (partial uri/read-page params)}))
+                       :path-format-fn (partial uri/read-page params)}
+    :favorite-bookmarks {:page-title "Favorite bookmarks"
+                       :path-format-fn (partial uri/favorite-page params)}))
 
 (defn current-page [page]
   (if (string/blank? page)
@@ -170,10 +188,12 @@
                 (if (= view-type :all-bookmarks)
                     false                                   ; if all-bookmarks then don't show read bookmarks
                     nil))                                   ; if tag, search, favorite bookmarks then include both read/unread bookmarks
+        favorite? (= view-type :favorite-bookmarks)
         params (-> (:params request)
                    (update :page current-page)
                    (assoc :search-terms search-terms)
-                   (assoc :read? read?))
+                   (assoc :read? read?)
+                   (assoc :favorite? favorite?))
         error-msg (get-in request [:flash :error-msg])
         success-msg (get-in request [:flash :success-msg])
         current-page (:page params)
@@ -198,6 +218,7 @@
 (def tag-bookmarks-view (partial bookmarks-list :tag-bookmarks))
 (def search-bookmarks-view (partial bookmarks-list :search-bookmarks))
 (def read-bookmarks-view (partial bookmarks-list :read-bookmarks))
+(def favorite-bookmarks-view (partial bookmarks-list :favorite-bookmarks))
 
 (defn create-view
   [{:keys [params] :as request}]

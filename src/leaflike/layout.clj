@@ -38,6 +38,8 @@
                 [:li.nav-item
                  [:a.nav-link {:href "/bookmarks/readlist"} "Read"]]
                 [:li.nav-item
+                 [:a.nav-link {:href "/bookmarks/favlist"} "Favorite"]]
+                [:li.nav-item
                  [:a.nav-link {:href "/tags"} "Tags"]]]
                (search-form)
                (str "&nbsp;&nbsp;&nbsp;")

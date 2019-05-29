@@ -82,27 +82,39 @@
                               :bookmark_id (str (:id bookmark))} (:title bookmark)]]]
            [:div.col-4 {:style "min-width: 150px;"}
             [:div.well.pull-right
-             [:a {:href (str "/bookmarks/edit/" (:id bookmark)
-                             "?next=" (path-format-fn current-page))
+             [:a {:href        (str "/bookmarks/edit/" (:id bookmark)
+                                    "?next=" (path-format-fn current-page))
                   :bookmark_id (str (:id bookmark))}
               [:button.btn.btn-outline-secondary.btn-sm
                {:style "border: none;" :data-toggle "tooltip" :title "Edit bookmark"}
                [:i.fa.fa-pencil]]]
              ; all of the url endpoint now accept `next` in the query string. This
              ; field used for coming back to same page after any of the action
-             ; (edit, read, delete) is done (previously it used to go home page)
+             ; (edit, favorite, read, delete) is done (previously it used to go home page)
              (let [[mark-read? tooltip icon] (if (:read bookmark)
-                                            [false "Add bookmark" [:i.fa.fa-plus]]
-                                            [true "Mark read" [:i.fa.fa-check]])]
+                                               [false "Add bookmark" [:i.fa.fa-plus]]
+                                               [true "Mark read" [:i.fa.fa-check]])]
                (f/form-to {:role "form" :style "display: inline;"}
-                         [:post (str "/bookmarks/read/" (:id bookmark)
-                                     "?read=" mark-read?     ; mark unread if previously read else mark read
-                                     "&next=" (path-format-fn current-page))]
-                         [:button.btn.btn-outline-secondary.btn-sm
-                          {:type        "submit" :value "Archive" :style "border: none;"
-                           :data-toggle "tooltip" :title tooltip}
-                          icon]
-                         (f/hidden-field {:value anti-forgery-token} "__anti-forgery-token")))
+                          [:post (str "/bookmarks/read/" (:id bookmark)
+                                      "?read=" mark-read?   ; mark unread if previously read else mark read
+                                      "&next=" (path-format-fn current-page))]
+                          [:button.btn.btn-outline-secondary.btn-sm
+                           {:type        "submit" :value "Archive" :style "border: none;"
+                            :data-toggle "tooltip" :title tooltip}
+                           icon]
+                          (f/hidden-field {:value anti-forgery-token} "__anti-forgery-token")))
+             (let [[mark-fav? tooltip icon] (if (:favorite bookmark)
+                                              [false "Unfavorite" [:i.fa.fa-heart {:style "color:red;"}]]
+                                              [true "Mark favorite" [:i.fa.fa-heart]])]
+               (f/form-to {:role "form" :style "display: inline;"}
+                          [:post (str "/bookmarks/favorite/" (:id bookmark)
+                                      "?favorite=" mark-fav? ; mark unfavorite if previously favorite else mark favorite
+                                      "&next=" (path-format-fn current-page))]
+                          [:button.btn.btn-outline-secondary.btn-sm
+                           {:type        "submit" :value "Favorite" :style "border: none;"
+                            :data-toggle "tooltip" :title tooltip}
+                           icon]
+                          (f/hidden-field {:value anti-forgery-token} "__anti-forgery-token")))
              (f/form-to {:role "form" :style "display: inline;"}
                         [:post (str "/bookmarks/delete/" (:id bookmark)
                                     "?next=" (path-format-fn current-page))]
