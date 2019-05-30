@@ -34,12 +34,8 @@
                :string string?
                :coll-of-strings (s/coll-of string?)))
 
-(s/def ::read? boolean?)
-
-(s/def ::favourite? boolean?)
-
 (s/def ::bookmark (s/keys :req-un [::title ::url]
-                          :opt-un [::id ::tags ::read? ::favorite?]))
+                          :opt-un [::id ::tags]))
 
 (defn valid-bookmark?
   [bookmark]

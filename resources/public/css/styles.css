@@ -5,31 +5,3 @@
 .well-width {
     width: 50%;
 }
-
-/* btn-tag is for bookmark tags */
-.btn-tag {
-  color: #fff;
-  background-color: #004E64;
-  border-color: #004E64;
-  margin: 2px;
-}
-
-.btn-tag:hover,
-.btn-tag:active,
-.btn-tag:focus,
-.btn-tag.active {
-  background: #003D4F;
-  color: #ffffff;
-  border-color: #003D4F;
-}
-
-/* date formatting in the bookmark cards */
-.bookmark-card-date {
-    color:grey;
-    font-size:smaller;
-}
-
-/* center pagination in the bookmark list */
-.pagination {
-   justify-content: center;
-}

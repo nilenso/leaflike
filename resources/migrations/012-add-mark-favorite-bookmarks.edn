@@ -1,4 +1,0 @@
-{:up ["ALTER TABLE bookmarks ADD COLUMN favorite BOOLEAN"
-      "ALTER TABLE bookmarks ADD COLUMN favorite_at timestamp"]
- :down ["ALTER TABLE bookmarks DROP COLUMN favorite"
-        "ALTER TABLE bookmarks DROP COLUMN favorite_at"]}
