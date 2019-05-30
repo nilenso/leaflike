@@ -38,6 +38,14 @@
   {"bookmarks" {"" (with-auth-middlewares {:get  bookmarks/all-bookmarks-view})
                 ["/page/" :page] (with-auth-middlewares
                                    {:get bookmarks/all-bookmarks-view})
+                "/readlist" (with-auth-middlewares
+                                   {:get bookmarks/read-bookmarks-view})
+                ["/readlist/page/" :page] (with-auth-middlewares
+                                   {:get bookmarks/read-bookmarks-view})
+                "/favlist" (with-auth-middlewares
+                                   {:get bookmarks/favorite-bookmarks-view})
+                ["/favlist/page/" :page] (with-auth-middlewares
+                                   {:get bookmarks/favorite-bookmarks-view})
                 ["/tag/" :tag] (with-auth-middlewares
                                  {:get bookmarks/tag-bookmarks-view})
                 ["/tag/" :tag "/page/" :page] (with-auth-middlewares
@@ -49,6 +57,8 @@
                 "/edit" {"" (with-auth-middlewares {:post bookmarks/edit})
                          ["/" :bookmark-id] (with-auth-middlewares {:get bookmarks/edit-view})}
                 ["/delete/" :id] (with-auth-middlewares {:post bookmarks/delete})
+                ["/read/" :id] (with-auth-middlewares {:post bookmarks/mark-read})
+                ["/favorite/" :id] (with-auth-middlewares {:post bookmarks/mark-favorite})
                 "/import" (with-auth-middlewares {:post bookmarks/pocket-import
                                                   :get bookmarks/pocket-import-form})}})
 
