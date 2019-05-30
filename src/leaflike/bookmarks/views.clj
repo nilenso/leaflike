@@ -67,6 +67,15 @@
            :href (path-format-fn (inc current-page))}
        "Next"]])])
 
+(defn form-to-action [post-url tooltip icon anti-forgery-token]
+  (f/form-to {:role "form" :style "display: inline;"}
+             [:post post-url]
+             [:button.btn.btn-outline-secondary.btn-sm
+              {:type        "submit" :value "Archive" :style "border: none;"
+               :data-toggle "tooltip" :title tooltip}
+              icon]
+             (f/hidden-field {:value anti-forgery-token} "__anti-forgery-token")))
+
 (defn list-all
   [anti-forgery-token bookmarks num-pages current-page path-format-fn]
   [:div {:id "content"}
@@ -91,38 +100,23 @@
              ; all of the url endpoint now accept `next` in the query string. This
              ; field used for coming back to same page after any of the action
              ; (edit, favorite, read, delete) is done (previously it used to go home page)
-             (let [[mark-read? tooltip icon] (if (:read bookmark)
+             (let [[mark-read? tooltip icon] (if (:read bookmark) ;form for submitting read mark
                                                [false "Add bookmark" [:i.fa.fa-plus]]
-                                               [true "Mark read" [:i.fa.fa-check]])]
-               (f/form-to {:role "form" :style "display: inline;"}
-                          [:post (str "/bookmarks/read/" (:id bookmark)
-                                      "?read=" mark-read?   ; mark unread if previously read else mark read
-                                      "&next=" (path-format-fn current-page))]
-                          [:button.btn.btn-outline-secondary.btn-sm
-                           {:type        "submit" :value "Archive" :style "border: none;"
-                            :data-toggle "tooltip" :title tooltip}
-                           icon]
-                          (f/hidden-field {:value anti-forgery-token} "__anti-forgery-token")))
-             (let [[mark-fav? tooltip icon] (if (:favorite bookmark)
+                                               [true "Mark read" [:i.fa.fa-check]])
+                   post-url (str "/bookmarks/read/" (:id bookmark)
+                                 "?read=" mark-read?   ; mark unread if previously read else mark read
+                                 "&next=" (path-format-fn current-page))]
+               (form-to-action post-url tooltip icon anti-forgery-token))
+             (let [[mark-fav? tooltip icon] (if (:favorite bookmark) ;form for submitting favorite mark
                                               [false "Unfavorite" [:i.fa.fa-heart {:style "color:red;"}]]
-                                              [true "Mark favorite" [:i.fa.fa-heart]])]
-               (f/form-to {:role "form" :style "display: inline;"}
-                          [:post (str "/bookmarks/favorite/" (:id bookmark)
-                                      "?favorite=" mark-fav? ; mark unfavorite if previously favorite else mark favorite
-                                      "&next=" (path-format-fn current-page))]
-                          [:button.btn.btn-outline-secondary.btn-sm
-                           {:type        "submit" :value "Favorite" :style "border: none;"
-                            :data-toggle "tooltip" :title tooltip}
-                           icon]
-                          (f/hidden-field {:value anti-forgery-token} "__anti-forgery-token")))
-             (f/form-to {:role "form" :style "display: inline;"}
-                        [:post (str "/bookmarks/delete/" (:id bookmark)
-                                    "?next=" (path-format-fn current-page))]
-                        [:button.btn.btn-outline-secondary.btn-sm
-                         {:type        "submit" :value "Delete" :style "border: none;"
-                          :data-toggle "tooltip" :title "Delete bookmark"}
-                         [:i.fa.fa-trash]]
-                        (f/hidden-field {:value anti-forgery-token} "__anti-forgery-token"))]]]
+                                              [true "Mark favorite" [:i.fa.fa-heart]])
+                   post-url (str "/bookmarks/favorite/" (:id bookmark)
+                                 "?favorite=" mark-fav? ; mark unfavorite if previously favorite else mark favorite
+                                 "&next=" (path-format-fn current-page))]
+               (form-to-action post-url tooltip icon anti-forgery-token))
+             (let [post-url (str "/bookmarks/delete/" (:id bookmark) ;form for submitting delete action
+                                 "?next=" (path-format-fn current-page))]
+               (form-to-action post-url "Delete bookmark" [:i.fa.fa-trash] anti-forgery-token))]]]
           [:div.row
            ;rethink about having date in the output, what the use of date?
            ;[:div.col-3

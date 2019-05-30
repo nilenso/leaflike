@@ -29,7 +29,11 @@
     (let [user (hutils/get-user request)
           bookmark (-> (select-keys params [:title :url])
                        (assoc :user_id (:id user)
-                              :created_at (utils/get-timestamp)))
+                              :created_at (utils/get-timestamp)
+                              :read (:read? params)
+                              :read_at (utils/get-timestamp)
+                              :favorite (:favorite? params)
+                              :favorite_at (utils/get-timestamp)))
           tags (parse-tags (:tags params))
           bookmark-id (bm-db/create bookmark)
           next-url (:next params "/bookmarks")]
@@ -49,7 +53,7 @@
           bookmark-id  (Integer/parseInt (:id params))
           updated-keys (select-keys params [:title :url])
           tags         (parse-tags (:tags params))
-          next-url (:next params "/bookmarks")]
+          next-url     (:next params "/bookmarks")]
       (bm-db/update-bookmark bookmark-id (:id user) updated-keys)
       (bm-db/remove-all-tags bookmark-id)
       (when (not-empty tags)
@@ -112,9 +116,9 @@
     (if (s/valid? :leaflike.bookmarks.spec/id unparsed-id)
       (let [user         (hutils/get-user request)
             bookmark-id  (Integer/parseInt unparsed-id)
-            read         (Boolean/parseBoolean (:read params))
+            read?        (Boolean/parseBoolean (:read params))
             read-at      (utils/get-timestamp)]
-        (bm-db/update-mark-read bookmark-id (:id user) {:read read :read_at read-at})
+        (bm-db/update-mark-read bookmark-id (:id user) {:read read? :read_at read-at})
         (-> (res/redirect next-link)
             (assoc-in [:headers "Content-Type"] "text/html")))
       (assoc (res/redirect next-link)
@@ -139,16 +143,16 @@
 (defn- view-type-info
   [view-type {:keys [search-query tag] :as params}]
   (case view-type
-    :all-bookmarks {:page-title "Bookmarks"
+    :all-bookmarks {:page-title     "Bookmarks"
                     :path-format-fn (partial uri/page params)}
-    :tag-bookmarks {:page-title (str "Bookmarks with tag: " tag)
+    :tag-bookmarks {:page-title     (str "Bookmarks with tag: " tag)
                     :path-format-fn (partial uri/tag-page params)}
-    :search-bookmarks {:page-title (str "Search results for: " search-query)
+    :search-bookmarks {:page-title     (str "Search results for: " search-query)
                        :path-format-fn (partial uri/search params)}
-    :read-bookmarks {:page-title "Read bookmarks"
-                       :path-format-fn (partial uri/read-page params)}
-    :favorite-bookmarks {:page-title "Favorite bookmarks"
-                       :path-format-fn (partial uri/favorite-page params)}))
+    :read-bookmarks {:page-title     "Read bookmarks"
+                     :path-format-fn (partial uri/read-page params)}
+    :favorite-bookmarks {:page-title     "Favorite bookmarks"
+                         :path-format-fn (partial uri/favorite-page params)}))
 
 (defn current-page [page]
   (if (string/blank? page)
