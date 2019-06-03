@@ -4,7 +4,8 @@
             [leaflike.layout :as layout]
             [leaflike.user :as user]
             [leaflike.bookmarks :as bookmarks]
-            [leaflike.tags :as tags]))
+            [leaflike.tags :as tags]
+            [leaflike.home :as home]))
 
 (defn welcome
   [request]
@@ -13,15 +14,6 @@
                              (when username
                                (str ", " username)))]
     (res/response {:message welcome-message})))
-
-;; Home page controller (ring handler)
-(defn home
-  [request]
-  (if (get-in request [:session :username])
-    (res/redirect "/bookmarks")
-    (let [homepage (layout/application "Leaflike" (layout/index))]
-      (-> (res/response homepage)
-          (assoc :headers {"Content-Type" "text/html"})))))
 
 (defn user-routes
   []
@@ -38,6 +30,14 @@
   {"bookmarks" {"" (with-auth-middlewares {:get  bookmarks/all-bookmarks-view})
                 ["/page/" :page] (with-auth-middlewares
                                    {:get bookmarks/all-bookmarks-view})
+                "/readlist" (with-auth-middlewares
+                                   {:get bookmarks/read-bookmarks-view})
+                ["/readlist/page/" :page] (with-auth-middlewares
+                                   {:get bookmarks/read-bookmarks-view})
+                "/favlist" (with-auth-middlewares
+                                   {:get bookmarks/favorite-bookmarks-view})
+                ["/favlist/page/" :page] (with-auth-middlewares
+                                   {:get bookmarks/favorite-bookmarks-view})
                 ["/tag/" :tag] (with-auth-middlewares
                                  {:get bookmarks/tag-bookmarks-view})
                 ["/tag/" :tag "/page/" :page] (with-auth-middlewares
@@ -49,6 +49,8 @@
                 "/edit" {"" (with-auth-middlewares {:post bookmarks/edit})
                          ["/" :bookmark-id] (with-auth-middlewares {:get bookmarks/edit-view})}
                 ["/delete/" :id] (with-auth-middlewares {:post bookmarks/delete})
+                ["/read/" :id] (with-auth-middlewares {:post bookmarks/mark-read})
+                ["/favorite/" :id] (with-auth-middlewares {:post bookmarks/mark-favorite})
                 "/import" (with-auth-middlewares {:post bookmarks/pocket-import
                                                   :get bookmarks/pocket-import-form})}})
 
@@ -65,7 +67,7 @@
 
 (defn home-routes
   []
-  {""        {:get home}
+  {""        (with-auth-middlewares {:get home/home-page})
    "status"  {:get status-view}
    "welcome" (with-auth-middlewares {:get welcome})})
 
