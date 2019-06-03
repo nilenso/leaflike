@@ -14,6 +14,7 @@
 (defn application
   [title content & {:keys [username error-msg success-msg]}]
   (html5 [:head
+          [:meta {:name "viewport" :content "width=device-width,initial-scale=1"}]
           [:meta {:charset "utf-8"}]
           [:title title]
           (include-css "//maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css")
@@ -30,8 +31,12 @@
             [:a.navbar-brand {:href "/"} [:img {:src "/logo.png"
                                                 :width "150px"
                                                 :alt "Leaflike"}]]
+            [:button.navbar-toggler {:type "button" :data-toggle "collapse"
+                                     :data-target "#navBarSupportCont" :aria-controls "navBarSupportCont"
+                                     :aria-expanded "false" :aria-label "Toggle navigation"}
+             [:span.navbar-toggler-icon]]
             (when username
-              [:div.collapse.navbar-collapse
+              [:div#navBarSupportCont.collapse.navbar-collapse
                [:ul.navbar-nav.mr-auto.mt-2.mt-lg-0
                 [:li.nav-item
                  [:a.nav-link {:href "/bookmarks"} "Bookmarks"]]
@@ -43,21 +48,23 @@
                  [:a.nav-link {:href "/tags"} "Tags"]]]
                (search-form)
                (str "&nbsp;&nbsp;&nbsp;")
-               [:a {:href "/bookmarks/add" :data-toggle "tooltip" :title "Add bookmark"}
-                [:button {:class "btn btn-large btn-success"}
-                 [:i.fa.fa-plus]]]
-               (str "&nbsp;&nbsp")
-               [:a {:href "/bookmarks/import" :data-toggle "tooltip" :title "Import bookmark"}
-                [:button {:class "btn btn-large btn-primary"}
-                 [:i.fa.fa-upload]]]
-               (str "&nbsp;&nbsp;&nbsp;")
-               [:a {:herf "#" }
-                [:button.btn.btn-outline-secondary
-                 [:i.fa.fa-user]
-                 (str "&nbsp;&nbsp;" username)]]
-               [:a {:class "nav-link" :href "/logout" :data-toggle "tooltip" :title "Logout"}
-                [:button.btn.btn-outline-danger
-                 [:i.fa.fa-sign-out]]]])]
+               [:div
+                [:a {:href "/bookmarks/add" :data-toggle "tooltip" :title "Add bookmark"}
+                 [:button {:class "btn btn-large btn-success"}
+                  [:i.fa.fa-plus]]]
+                (str "&nbsp;&nbsp")
+                [:a {:href "/bookmarks/import" :data-toggle "tooltip" :title "Import bookmark"}
+                 [:button {:class "btn btn-large btn-primary"}
+                  [:i.fa.fa-upload]]]
+                (str "&nbsp;&nbsp;&nbsp;")
+                [:a {:herf "#" }
+                 [:button.btn.btn-outline-secondary
+                  [:i.fa.fa-user]
+                  (str "&nbsp;&nbsp;" username)]]
+                (str "&nbsp;&nbsp;&nbsp;")
+                [:a {:href "/logout" :data-toggle "tooltip" :title "Logout"}
+                 [:button.btn.btn-outline-danger
+                  [:i.fa.fa-sign-out]]]]])]
 
            [:div.container
             [:div.pb-2.mt-4.mb-2 [:h3 {:class "text-success"} title]]
@@ -66,7 +73,9 @@
                [:div {:class "alert alert-danger"} error-msg])
              (when success-msg
                [:div {:class "alert alert-success"} success-msg])
-             content]]]))
+             content]]
+          (include-js "//cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js")
+          (include-js "//maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js")]))
 
 (defn user-view
   [title username content & {:keys [error-msg success-msg]}]

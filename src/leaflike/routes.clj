@@ -4,7 +4,8 @@
             [leaflike.layout :as layout]
             [leaflike.user :as user]
             [leaflike.bookmarks :as bookmarks]
-            [leaflike.tags :as tags]))
+            [leaflike.tags :as tags]
+            [leaflike.home :as home]))
 
 (defn welcome
   [request]
@@ -13,15 +14,6 @@
                              (when username
                                (str ", " username)))]
     (res/response {:message welcome-message})))
-
-;; Home page controller (ring handler)
-(defn home
-  [request]
-  (if (get-in request [:session :username])
-    (res/redirect "/bookmarks")
-    (let [homepage (layout/application "Leaflike" (layout/index))]
-      (-> (res/response homepage)
-          (assoc :headers {"Content-Type" "text/html"})))))
 
 (defn user-routes
   []
@@ -75,7 +67,7 @@
 
 (defn home-routes
   []
-  {""        {:get home}
+  {""        (with-auth-middlewares {:get home/home-page})
    "status"  {:get status-view}
    "welcome" (with-auth-middlewares {:get welcome})})
 

@@ -1,8 +1,5 @@
 (ns leaflike.bookmarks.views
-  (:require [hiccup.form :as f]
-            [clojure.string :as string]
-            [clj-time.coerce :as time-coerce]
-            [clj-time.format :as time-format]))
+  (:require [hiccup.form :as f]))
 
 (defn truncated-page-list
   [num-pages current-page]

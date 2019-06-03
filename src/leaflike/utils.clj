@@ -7,8 +7,10 @@
 (def alpha-num-pattern #"^[a-zA-Z0-9]+$")
 
 (defn get-timestamp
-  []
-  (time-coerce/to-sql-time (time/now)))
+  ([]
+   (get-timestamp (time/now)))
+  ([t]
+   (time-coerce/to-sql-time t)))
 
 (defn required
   [value]

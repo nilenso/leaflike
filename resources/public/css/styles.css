@@ -33,3 +33,8 @@
 .pagination {
    justify-content: center;
 }
+
+/* For responsive scaling */
+@-ms-viewport{
+  width: device-width;
+}
