@@ -4,5 +4,6 @@
                                  user_id integer references users(id),
                                  bookmark_id integer references bookmarks(id),
                                  PRIMARY KEY (user_id, bookmark_id));"]
+
  :down ["ALTER TABLE bookmarks DROP COLUMN owner;
         DROP TABLE bookmark_user;"]}

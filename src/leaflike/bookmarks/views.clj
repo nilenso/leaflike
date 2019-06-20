@@ -40,7 +40,7 @@
                           "")]
      [:li {:class (str "page-item" disabled-class)}
       [:a {:class "page-link"
-           :href (path-format-fn (dec current-page))}
+           :href  (path-format-fn (dec current-page))}
        "Previous"]])
 
    ;; List of pages
@@ -55,7 +55,7 @@
                           li-class)]
            [:li {:class li-class}
             [:a {:class "page-link"
-                 :href (path-format-fn page-num)} page-num]]))))
+                 :href  (path-format-fn page-num)} page-num]]))))
 
    ;; "Next" button
    (let [disabled-next? (= current-page num-pages)
@@ -64,7 +64,7 @@
                           "")]
      [:li {:class (str "page-item" disabled-class)}
       [:a {:class "page-link"
-           :href (path-format-fn (inc current-page))}
+           :href  (path-format-fn (inc current-page))}
        "Next"]])])
 
 (defn list-all
@@ -85,10 +85,10 @@
     [:tbody
      (for [bookmark bookmarks]
        [:tr
-        [:td [:a.col {:href (:url bookmark)
-                      :target "_blank"
+        [:td [:a.col {:href        (:url bookmark)
+                      :target      "_blank"
                       :bookmark_id (str (:id bookmark))} (:title bookmark)]]
-        [:td [:a {:href (str "/bookmarks/edit/" (:id bookmark))
+        [:td [:a {:href        (str "/bookmarks/edit/" (:id bookmark))
                   :bookmark_id (str (:id bookmark))}
               [:button.btn.btn-sm.btn-outline-secondary "Edit"]]]
         [:td (f/form-to {:role "form"}
@@ -105,14 +105,22 @@
      (pagination num-pages current-page path-format-fn))])
 
 (defn bookmark-form
-  [anti-forgery-token form-post-url {:keys [id url title tags all-tags]
-                                     :or {url ""
-                                          title ""
-                                          tags ""}}]
-  (let [existing-tag? (set tags)]
+  [anti-forgery-token form-post-url {:keys [id url title tags all-tags collaborators]
+                                     :or   {url           ""
+                                            title         ""
+                                            tags          ""
+                                            collaborators ""}}]
+  (let [existing-tag? (set tags)
+        existing-collaborators? (set collaborators)]
     [:div {:class "well"}
      [:script "$(document).ready(function() {
     $('#tags-multi-select').select2({
+       tags: true,
+       tokenSeparators: [',', ' ']
+      });
+});"]
+     [:script "$(document).ready(function() {
+    $('#collaborators-multi-select').select2({
        tags: true,
        tokenSeparators: [',', ' ']
       });
@@ -121,13 +129,13 @@
                 [:post form-post-url]
                 [:div {:class "form-group"}
                  (f/label {:class "control-label"} "url" "URL")
-                 (f/text-field {:class "form-control" :placeholder "URL"
-                                :value url
+                 (f/text-field {:class    "form-control" :placeholder "URL"
+                                :value    url
                                 :required ""} "url")]
                 [:div {:class "form-group"}
                  (f/label {:class "control-label"} "title" "Title")
-                 (f/text-field {:class "form-control" :placeholder "Title"
-                                :value title
+                 (f/text-field {:class    "form-control" :placeholder "Title"
+                                :value    title
                                 :required ""} "title")]
 
                 [:div {:class "form-group"}
@@ -136,10 +144,20 @@
                   {:name "tags" :multiple "multiple" :class "form-control"}
 
                   (for [tag all-tags]
-                    [:option {:value tag
+                    [:option {:value    tag
                               :selected (if (existing-tag? tag)
                                           "selected"
                                           nil)} tag])]]
+
+                [:div {:class "form-group"}
+                 (f/label {:class "control-label"} "collaborators" "Collaborators")
+                 [:select#collaborators-multi-select
+                  {:name "collaborators" :multiple "multiple" :class "form-control"}
+
+                  (for [collaborator collaborators]
+                    [:option {:value    collaborator
+                              :selected "selected"} collaborator])]]
+
                 [:div {:class "form-group"}
                  (f/submit-button {:class "btn btn-primary"} "Submit")]
 
@@ -150,8 +168,8 @@
 
 (defn pocket-import-form
   [anti-forgery-token]
-  [:form {:method "post"
-          :action "/bookmarks/import"
+  [:form {:method  "post"
+          :action  "/bookmarks/import"
           :enctype "multipart/form-data"}
    [:div
     [:label {:for "pocket_html"} "You can export your bookmarks from pocket from "
