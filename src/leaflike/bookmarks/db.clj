@@ -1,12 +1,12 @@
 (ns leaflike.bookmarks.db
   (:require [clojure.java.jdbc :as jdbc]
-            [honeysql.core     :as sql]
-            [honeysql.helpers  :as helpers]
-            [honeysql.types  :as types]
+            [honeysql.core :as sql]
+            [honeysql.helpers :as helpers]
+            [honeysql.types :as types]
             [honeysql.format :as fmt]
             [honeysql-postgres.helpers :as pg-helpers]
-            [clojure.string    :as str]
-            [leaflike.config   :refer [db-spec]]))
+            [clojure.string :as str]
+            [leaflike.config :refer [db-spec]]))
 
 ;;; Parse java.sql.Array into a vector.
 (extend-protocol jdbc/IResultSetReadColumn
@@ -33,20 +33,28 @@
   [s]
   (when s (types/array s)))
 
-
 (defn tag-bookmark
   [bookmark-id tags]
   (jdbc/execute! (db-spec)
                  (-> (helpers/insert-into :bookmark_tag)
                      (helpers/columns :bookmark_id :tag_id)
                      (helpers/query-values
-                      (-> (helpers/select :bookmark_id :tag_id)
-                          (helpers/from
-                           [(helpers/select [bookmark-id :bookmark_id]) :_bookmark_id]
-                           [(-> (helpers/select [:id :tag_id])
-                                (helpers/from :tags)
-                                (helpers/where [:in :name tags]))
-                            :_tag_id])))
+                       (-> (helpers/select :bookmark_id :tag_id)
+                           (helpers/from
+                             [(helpers/select [bookmark-id :bookmark_id]) :_bookmark_id]
+                             [(-> (helpers/select [:id :tag_id])
+                                  (helpers/from :tags)
+                                  (helpers/where [:in :name tags]))
+                              :_tag_id])))
+                     sql/format)))
+
+
+(defn user-bookmark
+  [user-id bookmark-id]
+  (jdbc/execute! (db-spec)
+                 (-> (helpers/insert-into :bookmark_user)
+                     (helpers/columns :user_id :bookmark_id)
+                     (helpers/values [user-id bookmark-id])
                      sql/format)))
 
 (defn remove-all-tags

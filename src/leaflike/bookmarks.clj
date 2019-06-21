@@ -16,12 +16,12 @@
             [clojure.string :as string]
             [ring.util.response :as res]))
 
-(defn parse-tags [tags]
-  (let [[tag-type tag-value] (s/conform ::bm-spec/tags tags)]
-    (case tag-type
-      :nil             []
-      :string          [tag-value]
-      :coll-of-strings tag-value)))
+(defn parse-input [f input]
+  (let [[input-type input-value] (s/conform f input)]
+    (case input-type
+      :nil []
+      :string [input-value]
+      :coll-of-strings input-value)))
 
 (defn create
   [{:keys [params] :as request}]
@@ -30,9 +30,10 @@
           bookmark (-> (select-keys params [:title :url])
                        (assoc :user_id (:id user)
                               :created_at (utils/get-timestamp)))
-          tags (parse-tags (:tags params))
+          tags (parse-input ::bm-spec/tags (:tags params))
           bookmark-id (bm-db/create bookmark)
           next-url (:next params "/bookmarks")]
+      (bm-db/user-bookmark (:id user) :bookmark-id)
       (when (not-empty tags)
         (tags-db/create tags)
         (bm-db/tag-bookmark bookmark-id tags))
@@ -40,15 +41,17 @@
           (assoc-in [:headers "Content-Type"] "text/html")
           (assoc-in [:flash :success-msg] "Bookmark added.")))
     (assoc (res/redirect "/bookmarks/add")
-           :flash {:error-msg (bm-spec/describe-errors params)})))
+      :flash {:error-msg (bm-spec/describe-errors params)})))
 
 (defn edit
   [{:keys [params] :as request}]
   (if (s/valid? ::bm-spec/bookmark params)
-    (let [user         (hutils/get-user request)
-          bookmark-id  (Integer/parseInt (:id params))
+    (let [user (hutils/get-user request)
+          bookmark-id (Integer/parseInt (:id params))
           updated-keys (select-keys params [:title :url])
-          tags         (parse-tags (:tags params))]
+          tags (parse-input ::bm-spec/tags (:tags params))
+          collaborators (parse-input ::bm-spec/collaborators (:collaborators params))
+          collaborators-id (utils/vals-from-list-of-maps (user-db/get-user-ids-by-username collaborators))]
       (bm-db/update-bookmark bookmark-id (:id user) updated-keys)
       (bm-db/remove-all-tags bookmark-id)
       (when (not-empty tags)
@@ -57,7 +60,7 @@
       (-> (res/redirect "/bookmarks")
           (assoc-in [:headers "Content-Type"] "text/html")))
     (assoc (res/redirect (str "/bookmarks/edit/" (:id params)))
-           :flash {:error-msg (bm-spec/describe-errors params)})))
+      :flash {:error-msg (bm-spec/describe-errors params)})))
 
 (def items-per-page 10)
 
@@ -65,11 +68,11 @@
   [username {:keys [tag search-terms] :as params}]
   (let [user (hutils/get-user {:session {:username username}})
         page (dec (:page params))
-        query {:user-id (:id user)
-               :tag tag
+        query {:user-id      (:id user)
+               :tag          tag
                :search-terms search-terms}
         bookmarks (bm-db/fetch-bookmarks (merge query
-                                                {:limit items-per-page
+                                                {:limit  items-per-page
                                                  :offset (* items-per-page page)}))
         num-bookmarks (bm-db/count-bookmarks query)]
     {:bookmarks bookmarks
@@ -78,36 +81,36 @@
 
 (defn list-by-id
   [{:keys [route-params] :as request}]
-  (let [id        (:id route-params)
-        user      (hutils/get-user request)
-        params    {:id id :user-id (:id user)}]
+  (let [id (:id route-params)
+        user (hutils/get-user request)
+        params {:id id :user-id (:id user)}]
     (if (s/valid? :leaflike.bookmarks.spec/id id)
       (bm-db/list-by-id params)
       (assoc (res/redirect "/bookmarks")
-             :flash {:error-msg "Invalid bookmark id"}))))
+        :flash {:error-msg "Invalid bookmark id"}))))
 
 (defn delete
   [{:keys [params] :as request}]
-  (let [user      (hutils/get-user request)
+  (let [user (hutils/get-user request)
         unparsed-id (:id params)]
     (if (s/valid? :leaflike.bookmarks.spec/id unparsed-id)
       (let [id (Integer/parseInt unparsed-id)]
         (do (bm-db/remove-all-tags id)
-            (bm-db/delete {:id id
+            (bm-db/delete {:id      id
                            :user-id (:id user)})
             (assoc (res/redirect "/bookmarks")
-                   :flash {:success-msg "Successfully deleted bookmark"})))
+              :flash {:success-msg "Successfully deleted bookmark"})))
       (assoc (res/redirect "/bookmarks")
-             :flash {:error-msg "Invalid bookmark id"}))))
+        :flash {:error-msg "Invalid bookmark id"}))))
 
 (defn- view-type-info
   [view-type {:keys [search-query tag] :as params}]
   (case view-type
-    :all-bookmarks {:page-title "Bookmarks"
+    :all-bookmarks {:page-title     "Bookmarks"
                     :path-format-fn (partial uri/page params)}
-    :tag-bookmarks {:page-title (str "Bookmarks with tag: " tag)
+    :tag-bookmarks {:page-title     (str "Bookmarks with tag: " tag)
                     :path-format-fn (partial uri/tag-page params)}
-    :search-bookmarks {:page-title (str "Search results for: " search-query)
+    :search-bookmarks {:page-title     (str "Search results for: " search-query)
                        :path-format-fn (partial uri/search params)}))
 
 (defn current-page [page]
@@ -151,12 +154,12 @@
         success-msg (get-in request [:flash :success-msg])
         current-page (:page params)
         invalid-page-response (assoc (res/redirect "/bookmarks")
-                                     :flash {:error-msg "Invalid page number"})]
+                                :flash {:error-msg "Invalid page number"})]
     (if (pos? current-page)
       (let [{:keys [bookmarks
                     num-pages] :as paginated-bookmarks} (fetch-bookmarks username params)]
         (if (valid-page-number? {:current-page (:page params)
-                                 :num-pages num-pages})
+                                 :num-pages    num-pages})
           (-> (res/response (list-view username
                                        params
                                        paginated-bookmarks
@@ -175,11 +178,11 @@
   [{:keys [params] :as request}]
   (let [username (get-in request [:session :username])
         error-msg (get-in request [:flash :error-msg])
-        user      (hutils/get-user request)
+        user (hutils/get-user request)
         next-url (:next params "/bookmarks")
         all-tags (map :name (tags-db/fetch-tags {:user-id (:id user)}))
         bookmark (assoc (select-keys params [:title :url])
-                        :all-tags all-tags)]
+                   :all-tags all-tags)]
     (-> (res/response (layout/user-view "Add Bookmark"
                                         username
                                         (views/bookmark-form anti-forgery/*anti-forgery-token*
@@ -191,7 +194,7 @@
 (defn edit-view
   [{:keys [params] :as request}]
   (let [username (get-in request [:session :username])
-        user      (hutils/get-user request)
+        user (hutils/get-user request)
         bookmark-id (Integer/parseInt (:bookmark-id params))
         bookmark (bm-db/fetch-bookmark bookmark-id (:id user))
         error-msg (if bookmark
@@ -203,7 +206,7 @@
                                         (views/bookmark-form anti-forgery/*anti-forgery-token*
                                                              "/bookmarks/edit"
                                                              (assoc bookmark
-                                                                    :all-tags all-tags))
+                                                               :all-tags all-tags))
                                         :error-msg error-msg))
         (assoc-in [:headers "Content-Type"] "text/html"))))
 
@@ -217,9 +220,9 @@
 (defn import-bookmarks-from-pocket
   [html-str username]
   (let [bookmark-nodes (->
-                        html-str
-                        html/html-snippet
-                        (html/select [:li :a]))
+                         html-str
+                         html/html-snippet
+                         (html/select [:li :a]))
         get-url (fn [node]
                   (-> node :attrs :href))
         get-title (fn [node]
@@ -230,10 +233,10 @@
                                 (string/split tags-str #","))))]
     (doseq [node bookmark-nodes]
       (create
-       {:params {:title (get-title node)
-                 :url (get-url node)
-                 :tags (get-tags node)}
-        :session {:username username}}))))
+        {:params  {:title (get-title node)
+                   :url   (get-url node)
+                   :tags  (get-tags node)}
+         :session {:username username}}))))
 
 (defn pocket-import
   [{:keys [multipart-params] :as request}]

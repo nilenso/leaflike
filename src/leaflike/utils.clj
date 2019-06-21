@@ -14,3 +14,11 @@
   [value]
   (and (string? value)
        (not-empty value)))
+
+(defn debug [m]
+  (println m)
+  m)
+
+(defn vals-from-list-of-maps
+  [ms]
+  (map :id (into [] ms)))
