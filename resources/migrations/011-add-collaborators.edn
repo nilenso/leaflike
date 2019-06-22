@@ -1,9 +1,16 @@
-{:up   ["ALTER TABLE bookmarks ADD COLUMN owner integer not null DEFAULT '-1';
-        UPDATE bookmarks SET owner = user_id;
-        CREATE TABLE bookmark_user (
+{:up   ["CREATE TABLE bookmark_user (
                                  user_id integer references users(id),
                                  bookmark_id integer references bookmarks(id),
-                                 PRIMARY KEY (user_id, bookmark_id));"]
+                                 PRIMARY KEY (user_id, bookmark_id));
+         INSERT INTO bookmark_user(user_id, bookmark_id) (SELECT user_id, id FROM bookmarks);
+         ALTER TABLE bookmarks DROP CONSTRAINT bookmarks_member_id_fkey;
+         ALTER TABLE bookmarks RENAME COLUMN user_id to created_by;"]
 
- :down ["ALTER TABLE bookmarks DROP COLUMN owner;
+ :down ["ALTER TABLE bookmarks RENAME COLUMN created_by to user_id;
+
+        ALTER TABLE bookmarks
+        ADD CONSTRAINT bookmarks_member_id_fkey
+        FOREIGN KEY (user_id)
+        REFERENCES users (id);
+
         DROP TABLE bookmark_user;"]}
