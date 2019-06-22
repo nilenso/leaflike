@@ -49,12 +49,18 @@
                      sql/format)))
 
 
-(defn user-bookmark
-  [user-id bookmark-id]
+(defn bookmark-user
+  [bookmark-id user-ids]
   (jdbc/execute! (db-spec)
                  (-> (helpers/insert-into :bookmark_user)
-                     (helpers/columns :user_id :bookmark_id)
-                     (helpers/values [user-id bookmark-id])
+                     (helpers/columns :bookmark_id :user_id)
+                     (helpers/query-values
+                       (-> (helpers/select :bookmark_id :user_id)
+                           (helpers/from
+                             [(helpers/select [bookmark-id :bookmark_id]) :_bookmark_id]
+                             [(-> (helpers/select [:id :user_id])
+                                  (helpers/from :users)
+                                  (helpers/where [:in :id user-ids])) :_id])))
                      sql/format)))
 
 (defn remove-all-tags

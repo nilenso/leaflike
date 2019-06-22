@@ -32,8 +32,11 @@
                               :created_at (utils/get-timestamp)))
           tags (parse-input ::bm-spec/tags (:tags params))
           bookmark-id (bm-db/create bookmark)
-          next-url (:next params "/bookmarks")]
-      (bm-db/user-bookmark (:id user) :bookmark-id)
+          next-url (:next params "/bookmarks")
+          collaborators (parse-input ::bm-spec/collaborators (:collaborators params))
+          collaborators-id (utils/vals-from-list-of-maps (user-db/get-user-ids-by-username collaborators))]
+      (when (not-empty collaborators-id)
+        (bm-db/bookmark-user bookmark-id collaborators-id))
       (when (not-empty tags)
         (tags-db/create tags)
         (bm-db/tag-bookmark bookmark-id tags))
@@ -54,6 +57,8 @@
           collaborators-id (utils/vals-from-list-of-maps (user-db/get-user-ids-by-username collaborators))]
       (bm-db/update-bookmark bookmark-id (:id user) updated-keys)
       (bm-db/remove-all-tags bookmark-id)
+      (when (not-empty collaborators-id)
+        (bm-db/bookmark-user bookmark-id collaborators-id))
       (when (not-empty tags)
         (tags-db/create tags)
         (bm-db/tag-bookmark bookmark-id tags))
