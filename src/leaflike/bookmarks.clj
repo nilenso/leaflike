@@ -23,20 +23,25 @@
       :string [input-value]
       :coll-of-strings input-value)))
 
+
+
 (defn create
   [{:keys [params] :as request}]
   (if (s/valid? ::bm-spec/bookmark params)
     (let [user (hutils/get-user request)
           bookmark (-> (select-keys params [:title :url])
-                       (assoc :user_id (:id user)
+                       (assoc :created_by (:id user)
                               :created_at (utils/get-timestamp)))
           tags (parse-input ::bm-spec/tags (:tags params))
           bookmark-id (bm-db/create bookmark)
+          bookmark-user (assoc {} :user_id (:id user) :bookmark_id bookmark-id)
           next-url (:next params "/bookmarks")
-          collaborators (parse-input ::bm-spec/collaborators (:collaborators params))
-          collaborators-id (utils/vals-from-list-of-maps (user-db/get-user-ids-by-username collaborators))]
-      (when (not-empty collaborators-id)
-        (bm-db/bookmark-user bookmark-id collaborators-id))
+          collaborators (parse-input ::bm-spec/collaborators (:collaborators params))]
+      (bm-db/insert-into-bookmark-user bookmark-user)
+      (when (not-empty collaborators)
+        (when-let [[collaborator-ids] (map :id (seq (user-db/get-user-ids-by-username collaborators)))]
+          (when (not-empty [collaborator-ids])
+            (bm-db/bookmark-user bookmark-id [collaborator-ids]))))
       (when (not-empty tags)
         (tags-db/create tags)
         (bm-db/tag-bookmark bookmark-id tags))
@@ -53,12 +58,14 @@
           bookmark-id (Integer/parseInt (:id params))
           updated-keys (select-keys params [:title :url])
           tags (parse-input ::bm-spec/tags (:tags params))
-          collaborators (parse-input ::bm-spec/collaborators (:collaborators params))
-          collaborators-id (utils/vals-from-list-of-maps (user-db/get-user-ids-by-username collaborators))]
-      (bm-db/update-bookmark bookmark-id (:id user) updated-keys)
+          collaborators (parse-input ::bm-spec/collaborators (:collaborators params))]
+      (bm-db/update-bookmark bookmark-id updated-keys)
       (bm-db/remove-all-tags bookmark-id)
-      (when (not-empty collaborators-id)
-        (bm-db/bookmark-user bookmark-id collaborators-id))
+      (bm-db/remove-all-collaborators bookmark-id)
+      (when (not-empty collaborators)
+        (when-let [[collaborator-ids] (map :id (seq (user-db/get-user-ids-by-username collaborators)))]
+          (when (not-empty [collaborator-ids])
+            (bm-db/bookmark-user bookmark-id [collaborator-ids]))))
       (when (not-empty tags)
         (tags-db/create tags)
         (bm-db/tag-bookmark bookmark-id tags))
@@ -100,11 +107,18 @@
         unparsed-id (:id params)]
     (if (s/valid? :leaflike.bookmarks.spec/id unparsed-id)
       (let [id (Integer/parseInt unparsed-id)]
-        (do (bm-db/remove-all-tags id)
-            (bm-db/delete {:id      id
+        (if (= (:created_by (reduce conj {} (bm-db/get-creator id))) (:id user))
+          (do
+            (bm-db/remove-all-tags id)
+            (bm-db/remove-all-users id)
+            (bm-db/delete id)
+            (assoc (res/redirect "/bookmarks")
+              :flash {:success-msg "Successfully deleted bookmark"}))
+          (do
+            (bm-db/remove {:id      id
                            :user-id (:id user)})
             (assoc (res/redirect "/bookmarks")
-              :flash {:success-msg "Successfully deleted bookmark"})))
+              :flash {:success-msg "Successfully removed bookmark"}))))
       (assoc (res/redirect "/bookmarks")
         :flash {:error-msg "Invalid bookmark id"}))))
 
@@ -205,13 +219,17 @@
         error-msg (if bookmark
                     (get-in request [:flash :error-msg])
                     "The bookmark you're trying to edit does not exist.")
-        all-tags (map :name (tags-db/fetch-tags {:user-id (:id user)}))]
+        all-tags (map :name (tags-db/fetch-tags {:user-id (:id user)}))
+        collaborators-id (map :user_id (bm-db/get-collaborator-ids bookmark-id))]
     (-> (res/response (layout/user-view "Edit Bookmark"
                                         username
                                         (views/bookmark-form anti-forgery/*anti-forgery-token*
                                                              "/bookmarks/edit"
                                                              (assoc bookmark
-                                                               :all-tags all-tags))
+                                                               :all-tags all-tags
+                                                               :collaborators
+                                                               (map :username (if (not-empty collaborators-id)
+                                                                                (bm-db/get-collaborators-from-ids collaborators-id)))))
                                         :error-msg error-msg))
         (assoc-in [:headers "Content-Type"] "text/html"))))
 

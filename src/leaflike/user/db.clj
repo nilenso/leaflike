@@ -16,6 +16,7 @@
                                  sql/format))
        first)))
 
+
 (defn get-user-ids-by-username
   [usernames]
   (jdbc/query (db-spec) (-> (helpers/select :id)

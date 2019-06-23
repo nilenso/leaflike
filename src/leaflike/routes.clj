@@ -35,22 +35,22 @@
 
 (defn bookmarks-routes
   []
-  {"bookmarks" {"" (with-auth-middlewares {:get  bookmarks/all-bookmarks-view})
-                ["/page/" :page] (with-auth-middlewares
-                                   {:get bookmarks/all-bookmarks-view})
-                ["/tag/" :tag] (with-auth-middlewares
-                                 {:get bookmarks/tag-bookmarks-view})
+  {"bookmarks" {""                            (with-auth-middlewares {:get bookmarks/all-bookmarks-view})
+                ["/page/" :page]              (with-auth-middlewares
+                                                {:get bookmarks/all-bookmarks-view})
+                ["/tag/" :tag]                (with-auth-middlewares
+                                                {:get bookmarks/tag-bookmarks-view})
                 ["/tag/" :tag "/page/" :page] (with-auth-middlewares
                                                 {:get bookmarks/tag-bookmarks-view})
-                ["/search/page/" :page] (with-auth-middlewares
-                                          {:get bookmarks/search-bookmarks-view})
-                "/add" (with-auth-middlewares {:get bookmarks/create-view
-                                               :post bookmarks/create})
-                "/edit" {"" (with-auth-middlewares {:post bookmarks/edit})
-                         ["/" :bookmark-id] (with-auth-middlewares {:get bookmarks/edit-view})}
-                ["/delete/" :id] (with-auth-middlewares {:post bookmarks/delete})
-                "/import" (with-auth-middlewares {:post bookmarks/pocket-import
-                                                  :get bookmarks/pocket-import-form})}})
+                ["/search/page/" :page]       (with-auth-middlewares
+                                                {:get bookmarks/search-bookmarks-view})
+                "/add"                        (with-auth-middlewares {:get  bookmarks/create-view
+                                                                      :post bookmarks/create})
+                "/edit"                       {""                 (with-auth-middlewares {:post bookmarks/edit})
+                                               ["/" :bookmark-id] (with-auth-middlewares {:get bookmarks/edit-view})}
+                ["/delete/" :id]              (with-auth-middlewares {:post bookmarks/delete})
+                "/import"                     (with-auth-middlewares {:post bookmarks/pocket-import
+                                                                      :get  bookmarks/pocket-import-form})}})
 
 (defn tags-routes
   []

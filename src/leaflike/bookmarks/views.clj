@@ -110,8 +110,7 @@
                                             title         ""
                                             tags          ""
                                             collaborators ""}}]
-  (let [existing-tag? (set tags)
-        existing-collaborators? (set collaborators)]
+  (let [existing-tag? (set tags)]
     [:div {:class "well"}
      [:script "$(document).ready(function() {
     $('#tags-multi-select').select2({
