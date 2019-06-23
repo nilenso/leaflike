@@ -115,7 +115,7 @@
             (assoc (res/redirect "/bookmarks")
               :flash {:success-msg "Successfully deleted bookmark"}))
           (do
-            (bm-db/remove {:id      id
+            (bm-db/remove {:bookmark-id      id
                            :user-id (:id user)})
             (assoc (res/redirect "/bookmarks")
               :flash {:success-msg "Successfully removed bookmark"}))))
