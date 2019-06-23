@@ -36,12 +36,10 @@
           bookmark-id (bm-db/create bookmark)
           bookmark-user (assoc {} :user_id (:id user) :bookmark_id bookmark-id)
           next-url (:next params "/bookmarks")
-          collaborators (parse-input ::bm-spec/collaborators (:collaborators params))]
-      (bm-db/insert-into-bookmark-user bookmark-user)
-      (when (not-empty collaborators)
-        (when-let [[collaborator-ids] (map :id (seq (user-db/get-user-ids-by-username collaborators)))]
-          (when (not-empty [collaborator-ids])
-            (bm-db/bookmark-user bookmark-id [collaborator-ids]))))
+          users (concat (parse-input ::bm-spec/collaborators (:collaborators params)) [(get-in request [:session :username])])]
+      (-> (user-db/get-user-ids-by-username users)
+          (utils/vals-from-list-of-id-maps)
+          (bm-db/bookmark-user bookmark-id))
       (when (not-empty tags)
         (tags-db/create tags)
         (bm-db/tag-bookmark bookmark-id tags))
@@ -62,10 +60,9 @@
       (bm-db/update-bookmark bookmark-id updated-keys)
       (bm-db/remove-all-tags bookmark-id)
       (bm-db/remove-all-collaborators bookmark-id)
-      (when (not-empty collaborators)
-        (when-let [[collaborator-ids] (map :id (seq (user-db/get-user-ids-by-username collaborators)))]
-          (when (not-empty [collaborator-ids])
-            (bm-db/bookmark-user bookmark-id [collaborator-ids]))))
+      (-> (user-db/get-user-ids-by-username collaborators)
+          (utils/vals-from-list-of-id-maps)
+          (bm-db/bookmark-user bookmark-id))
       (when (not-empty tags)
         (tags-db/create tags)
         (bm-db/tag-bookmark bookmark-id tags))
@@ -115,8 +112,8 @@
             (assoc (res/redirect "/bookmarks")
               :flash {:success-msg "Successfully deleted bookmark"}))
           (do
-            (bm-db/remove {:bookmark-id      id
-                           :user-id (:id user)})
+            (bm-db/remove {:bookmark-id id
+                           :user-id     (:id user)})
             (assoc (res/redirect "/bookmarks")
               :flash {:success-msg "Successfully removed bookmark"}))))
       (assoc (res/redirect "/bookmarks")

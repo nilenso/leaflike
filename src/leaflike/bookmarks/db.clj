@@ -35,10 +35,10 @@
   (when s (types/array s)))
 
 (defn join-bookmarks-with-bookmark_user [user-id]
-  (-> (helpers/select :*)
+  (-> (helpers/select (sql/raw "DISTINCT ON (b.id) *"))
       (helpers/from [:bookmarks :b])
-      (helpers/left-join [:bookmark_user :bu] [:= :bu.user_id user-id])
-      (helpers/group :bu.user_id :bu.bookmark_id :b.title :b.created_at :b.created_by :b.id :b.url)))
+      (helpers/left-join [:bookmark_user :bu] [:and [:= :bu.user_id user-id]
+                                               [:= :b.id :bu.bookmark_id]])))
 
 (defn tag-bookmark
   [bookmark-id tags]
@@ -57,7 +57,7 @@
 
 
 (defn bookmark-user
-  [bookmark-id user-ids]
+  [user-ids bookmark-id]
   (jdbc/execute! (db-spec)
                  (-> (helpers/insert-into :bookmark_user)
                      (helpers/columns :bookmark_id :user_id)
@@ -157,14 +157,15 @@
                                                              :tag
                                                              :search-terms]))]
     (jdbc/query (db-spec)
-                (-> (helpers/select :*)
-                    ;; sub-query gets all of user's bookmarks joined with tags
-                    (helpers/from [(all-bookmarks-map user-id) :user-bookmarks])
-                    (helpers/where where-clause)
-                    (helpers/limit limit)
-                    (helpers/offset offset)
-                    (helpers/order-by [:created_at :desc])
-                    sql/format))))
+                (->
+                  (helpers/select :*)
+                  ;; sub-query gets all of user's bookmarks joined with tags
+                  (helpers/from [(all-bookmarks-map user-id) :user-bookmarks])
+                  (helpers/where where-clause)
+                  (helpers/limit limit)
+                  (helpers/offset offset)
+                  (helpers/order-by [:created_at :desc])
+                  sql/format))))
 
 (defn fetch-bookmarks-for-user [user-id]
   (jdbc/query (db-spec)

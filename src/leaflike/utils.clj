@@ -19,6 +19,7 @@
   (println m)
   m)
 
-(defn vals-from-list-of-maps
+(defn vals-from-list-of-id-maps
   [ms]
   (map :id (into [] ms)))
+
