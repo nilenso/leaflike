@@ -195,7 +195,7 @@
 
 (defn insert-into-bookmark-user [bookmark-user]
   (jdbc/execute! (db-spec)
-                 (-> (pg-helpers/insert-into-as :bookmark-user :bu)
+                 (-> (helpers/insert-into :bookmark-user)
                      (helpers/values [bookmark-user])
                      sql/format)))
 
