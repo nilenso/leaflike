@@ -25,15 +25,30 @@
   (let [user {:username "creationtest"
               :password "c"
               :email    "creation-test@c.com"}
-        _ (user/signup {:params user})]
+        user2 {:username "removetestuser2"
+               :password "c"
+               :email    "remove-test-user-2@c.com"}]
+    (user/signup {:params user})
+    (user/signup {:params user2})
 
     (testing "create bookmark success"
-      (let [{:keys [status flash]} (bm/create {:params  bookmark
+      (let [{:keys [status flash]} (bm/create {:params  bookmark-with-collaborators
                                                :session {:username (:username user)}})]
         (is (= 302 status))
         (is (some
               #(= (:title %) (:title bookmark))
               (bm-db/fetch-bookmarks-for-user (user-id user))))
+
+        (is (empty? (:error-msg flash)))))
+
+    (testing "create bookmark with collaborators success"
+      (let [{:keys [status flash]} (bm/create {:params  bookmark-with-collaborators
+                                               :session {:username (:username user)}})
+            bookmark-id (:id (first (bm-db/fetch-bookmarks-for-user (:id user))))]
+        (is (= 302 status))
+        (let [collaborator-ids (map :user_id (bm-db/get-collaborator-ids bookmark-id))]
+          (is (= 1 (count collaborator-ids)))
+          (is (= (:username user2) (first (map :username (bm-db/get-collaborators-from-ids collaborator-ids))))))
         (is (empty? (:error-msg flash)))))
 
     (testing "create bookmark with double slash in url"
@@ -50,7 +65,7 @@
       (let [{:keys [status flash]} (bm/create {:params  (dissoc bookmark :tags)
                                                :session {:username (:username user)}})]
         (is (= 302 status))
-        (is (= 3 (count (bm-db/fetch-bookmarks-for-user (user-id user)))))
+        (is (= 4 (count (bm-db/fetch-bookmarks-for-user (user-id user)))))
         (is (empty? (:error-msg flash)))))
 
     (testing "create bookmark failed"

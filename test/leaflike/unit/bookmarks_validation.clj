@@ -38,6 +38,9 @@
       (is (s/valid? ::spec/bookmark (assoc good-bookmark
                                            :tags ["search" "google"])))
       (is (s/valid? ::spec/bookmark (assoc good-bookmark
+                                      :collaborators ["user1" "user2"])))
+
+      (is (s/valid? ::spec/bookmark (assoc good-bookmark
                                            :id "12"))))
 
 

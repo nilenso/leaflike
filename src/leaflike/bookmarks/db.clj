@@ -216,6 +216,7 @@
   (jdbc/execute! (db-spec) (-> (helpers/delete-from :bookmark_user)
                                (helpers/where [:in :bookmark_id [bookmark-id]])
                                sql/format)))
+
 (defn get-collaborators-from-ids
   [collaborators]
   (jdbc/query (db-spec)
