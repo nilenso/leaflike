@@ -15,15 +15,8 @@
   (and (string? value)
        (not-empty value)))
 
-(defn debug [m]
-  (println m)
-  m)
-
 (defn vals-from-list-of-id-maps
   [ms]
   (map :id (into [] ms)))
 
-(defn vals-from-list-of-user-id-maps
-  [ms]
-  (map :created_by (into [] ms)))
 
