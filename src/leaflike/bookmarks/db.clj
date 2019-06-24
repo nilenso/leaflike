@@ -169,10 +169,12 @@
 
 (defn fetch-bookmarks-for-user [user-id]
   (jdbc/query (db-spec)
-              (-> (helpers/select :*)
-                  (helpers/from :bookmarks)
-                  (helpers/where [:= :created_by user-id])
-                  sql/format)))
+              (->
+                (helpers/select :*)
+                ;; sub-query gets all of user's bookmarks joined with tags
+                (helpers/from [(all-bookmarks-map user-id) :user-bookmarks])
+                (helpers/left-join [:users :u] [:= :user-bookmarks.user_id :u.id])
+                sql/format)))
 
 (defn list-by-id
   [{:keys [id user-id]}]
