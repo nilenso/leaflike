@@ -138,7 +138,7 @@
         (is (empty? (:error-msg flash)))
         (is (= (:success-msg flash) "Successfully deleted bookmark"))))))
 
-(deftest bookmark-remove-test
+(deftest bookmark-collaborator-remove-test
   (let [user {:username "removetestuser1"
               :password "c"
               :email    "remove-test-user-1@c.com"}
