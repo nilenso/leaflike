@@ -4,6 +4,10 @@
             [clj-time.coerce :as time-coerce]
             [clj-time.format :as time-format]))
 
+(defn is-user-creator
+  [bookmark]
+  (= (:user_id bookmark) (:created_by bookmark)))
+
 (defn truncated-page-list
   [num-pages current-page]
   (let [window-size (min 4 num-pages)
@@ -84,23 +88,27 @@
       [:th {:scope "col"} "Date"]]]
     [:tbody
      (for [bookmark bookmarks]
-       [:tr
-        [:td [:a.col {:href        (:url bookmark)
-                      :target      "_blank"
-                      :bookmark_id (str (:id bookmark))} (:title bookmark)]]
-        [:td [:a {:href        (str "/bookmarks/edit/" (:id bookmark))
-                  :bookmark_id (str (:id bookmark))}
-              [:button.btn.btn-sm.btn-outline-secondary "Edit"]]]
-        [:td (f/form-to {:role "form"}
-                        [:post (str "/bookmarks/delete/" (:id bookmark))]
-                        (f/submit-button {:class "btn btn-sm btn-outline-secondary"} "Delete")
-                        (f/hidden-field {:value anti-forgery-token} "__anti-forgery-token"))]
-        [:td (for [tag (:tags bookmark)]
-               [:a {:href (format "/bookmarks/tag/%s/page/1" tag)}
-                [:button.btn.btn-outline-primary.btn-sm tag]])]
-        [:td (->> (:created_at bookmark)
-                  time-coerce/from-sql-time
-                  (time-format/unparse (time-format/formatter :date)))]])]]
+       (let [is-creator (is-user-creator bookmark)]
+         [:tr
+          [:td [:a.col {:href        (:url bookmark)
+                        :target      "_blank"
+                        :bookmark_id (str (:id bookmark))} (:title bookmark)]]
+          (if is-creator
+            [:td [:a {:href        (str "/bookmarks/edit/" (:id bookmark))
+                      :bookmark_id (str (:id bookmark))}
+                  [:button.btn.btn-sm.btn-outline-secondary "Edit"]]]
+            [:td (str "Created by " (:username bookmark))])
+          [:td (f/form-to {:role "form"}
+                          [:post (str "/bookmarks/delete/" (:id bookmark))]
+                          (f/submit-button {:class "btn btn-sm btn-outline-secondary"}
+                                           (if is-creator "Delete" "Remove"))
+                          (f/hidden-field {:value anti-forgery-token} "__anti-forgery-token"))]
+          [:td (for [tag (:tags bookmark)]
+                 [:a {:href (format "/bookmarks/tag/%s/page/1" tag)}
+                  [:button.btn.btn-outline-primary.btn-sm tag]])]
+          [:td (->> (:created_at bookmark)
+                    time-coerce/from-sql-time
+                    (time-format/unparse (time-format/formatter :date)))]]))]]
    (when (> num-pages 1)
      (pagination num-pages current-page path-format-fn))])
 

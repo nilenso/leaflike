@@ -116,7 +116,7 @@
 (defn all-bookmarks-map
   [user-id]
   (-> (helpers/select :b.id :b.title :b.url :b.created_at
-                      :b.user_id
+                      :b.user_id :b.created_by
                       [(sql/call :array_remove :%array_agg.t.name :null) :tags])
       (helpers/from [(join-bookmarks-with-bookmark_user user-id) :b])
       (helpers/left-join [:bookmark_tag :bt] [:= :b.id :bt.bookmark_id]
@@ -163,7 +163,8 @@
                   (helpers/where where-clause)
                   (helpers/limit limit)
                   (helpers/offset offset)
-                  (helpers/order-by [:created_at :desc])
+                  (helpers/order-by [:user-bookmarks.created_at :user-bookmarks.desc])
+                  (helpers/left-join [:users :u] [:= :user-bookmarks.user_id :u.id])
                   sql/format))))
 
 (defn fetch-bookmarks-for-user [user-id]

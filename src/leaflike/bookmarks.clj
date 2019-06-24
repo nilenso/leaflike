@@ -23,6 +23,12 @@
       :string [input-value]
       :coll-of-strings input-value)))
 
+(defn associate-bookmark-with-users
+  [users bookmark-id]
+  (-> (user-db/get-user-ids-by-username users)
+      (utils/vals-from-list-of-id-maps)
+      (bm-db/bookmark-user bookmark-id)))
+
 (defn create
   [{:keys [params] :as request}]
   (if (s/valid? ::bm-spec/bookmark params)
@@ -35,9 +41,7 @@
           next-url (:next params "/bookmarks")
           username (get-in request [:session :username])
           users (concat (parse-input ::bm-spec/collaborators (:collaborators params)) [username])]
-      (-> (user-db/get-user-ids-by-username users)
-          (utils/vals-from-list-of-id-maps)
-          (bm-db/bookmark-user bookmark-id))
+      (associate-bookmark-with-users users bookmark-id)
       (when (not-empty tags)
         (tags-db/create tags)
         (bm-db/tag-bookmark bookmark-id tags))
@@ -59,9 +63,7 @@
       (bm-db/remove-all-tags bookmark-id)
       (bm-db/remove-all-bookmark-collaborators bookmark-id)
       (when (not-empty collaborators)
-        (-> (user-db/get-user-ids-by-username collaborators)
-            (utils/vals-from-list-of-id-maps)
-            (bm-db/bookmark-user bookmark-id)))
+        (associate-bookmark-with-users collaborators bookmark-id))
       (when (not-empty tags)
         (tags-db/create tags)
         (bm-db/tag-bookmark bookmark-id tags))
@@ -231,13 +233,15 @@
         collaborators-id (map :user_id (bm-db/get-collaborator-ids bookmark-id))]
     (-> (res/response (layout/user-view "Edit Bookmark"
                                         username
-                                        (views/bookmark-form anti-forgery/*anti-forgery-token*
-                                                             "/bookmarks/edit"
-                                                             (assoc bookmark
-                                                               :all-tags all-tags
-                                                               :collaborators
-                                                               (map :username (if (not-empty collaborators-id)
-                                                                                (bm-db/get-collaborators-from-ids collaborators-id)))))
+                                        (views/bookmark-form
+                                          anti-forgery/*anti-forgery-token*
+                                          "/bookmarks/edit"
+                                          (assoc bookmark
+                                            :all-tags all-tags
+                                            :collaborators
+                                            (map :username
+                                                 (if (not-empty collaborators-id)
+                                                   (bm-db/get-collaborators-from-ids collaborators-id)))))
                                         :error-msg error-msg))
         (assoc-in [:headers "Content-Type"] "text/html"))))
 

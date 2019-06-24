@@ -23,3 +23,7 @@
   [ms]
   (map :id (into [] ms)))
 
+(defn vals-from-list-of-user-id-maps
+  [ms]
+  (map :created_by (into [] ms)))
+
