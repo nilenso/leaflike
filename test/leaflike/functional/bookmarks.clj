@@ -75,15 +75,15 @@
         (is (= 2 (count response)))))
 
     (testing "list bookmark by id, wrong input in id"
-      (let [{:keys [status flash]} (bm/list-by-id {:route-params {:id "2abc"}
-                                                   :session      {:username (:username user)}})]
+      (let [{:keys [status flash]} (bm/list-by-creator-id {:route-params {:id "2abc"}
+                                                   :session              {:username (:username user)}})]
         (is (= status 302))
         (is (= (:error-msg flash) "Invalid bookmark id"))))
 
     (testing "list bookmark by id"
       (let [bookmark-id (:id (first (bm-db/fetch-bookmarks-for-user (user-id user))))
-            response (bm/list-by-id {:route-params {:id (str bookmark-id)}
-                                     :session      {:username (:username user)}})]
+            response (bm/list-by-creator-id {:route-params {:id (str bookmark-id)}
+                                     :session              {:username (:username user)}})]
         (is (= 1 (count response)))))))
 
 (deftest bookmarks-delete-test

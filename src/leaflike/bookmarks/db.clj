@@ -171,7 +171,7 @@
   (jdbc/query (db-spec)
               (-> (helpers/select :*)
                   (helpers/from :bookmarks)
-                  (helpers/where [:= :user_id user-id])
+                  (helpers/where [:= :created_by user-id])
                   sql/format)))
 
 (defn list-by-id
@@ -179,7 +179,7 @@
   (jdbc/query (db-spec) (-> (helpers/select :*)
                             (helpers/from :bookmarks)
                             (helpers/where [:and [:= :id (Integer/parseInt id)]
-                                            [:= :user_id user-id]])
+                                            [:= :created_by user-id]])
                             sql/format)))
 (defn delete
   [bookmark-id]

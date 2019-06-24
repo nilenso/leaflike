@@ -101,7 +101,7 @@
      :num-pages (max 1
                      (int (Math/ceil (/ num-bookmarks items-per-page))))}))
 
-(defn list-by-id
+(defn list-by-creator-id
   [{:keys [route-params] :as request}]
   (let [id (:id route-params)
         user (hutils/get-user request)
