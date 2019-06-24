@@ -228,15 +228,16 @@
                     (get-in request [:flash :error-msg])
                     "The bookmark you're trying to edit does not exist.")
         all-tags (map :name (tags-db/fetch-tags {:user-id (:id user)}))
-        collaborators (map :username (bm-db/get-collaborators-for-bookmark bookmark-id))]
+        collaborators-id (map :user_id (bm-db/get-collaborator-ids bookmark-id))]
     (-> (res/response (layout/user-view "Edit Bookmark"
                                         username
-                                        (views/bookmark-form
-                                          anti-forgery/*anti-forgery-token*
-                                          "/bookmarks/edit"
-                                          (assoc bookmark
-                                            :all-tags all-tags
-                                            :collaborators collaborators))
+                                        (views/bookmark-form anti-forgery/*anti-forgery-token*
+                                                             "/bookmarks/edit"
+                                                             (assoc bookmark
+                                                               :all-tags all-tags
+                                                               :collaborators
+                                                               (map :username (if (not-empty collaborators-id)
+                                                                                (bm-db/get-collaborators-from-ids collaborators-id)))))
                                         :error-msg error-msg))
         (assoc-in [:headers "Content-Type"] "text/html"))))
 

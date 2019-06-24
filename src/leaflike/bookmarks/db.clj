@@ -213,6 +213,13 @@
   (jdbc/execute! (db-spec) (-> (helpers/delete-from :bookmark_user)
                                (helpers/where [:in :bookmark_id [bookmark-id]])
                                sql/format)))
+(defn get-collaborators-from-ids
+  [collaborators]
+  (jdbc/query (db-spec)
+              (-> (helpers/select :username)
+                  (helpers/from :users)
+                  (helpers/where [:in :id collaborators])
+                  sql/format)))
 
 (defn get-collaborator-ids [bookmark-id]
   (jdbc/query (db-spec)
@@ -221,12 +228,3 @@
                   (helpers/where [:and [:in :bookmark_id [bookmark-id]]
                                   [:not= :user_id (:created_by (reduce conj {} (get-created-by bookmark-id)))]])
                   sql/format)))
-
-(defn get-collaborators-for-bookmark
-  [bookmark-id]
-  (jdbc/query (db-spec)
-              (-> (helpers/select :username)
-                  (helpers/from :users)
-                  (helpers/where [:in :id (into [] (map :user_id (get-collaborator-ids bookmark-id)))])
-                  sql/format)))
-
