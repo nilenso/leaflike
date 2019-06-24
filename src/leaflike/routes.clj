@@ -46,7 +46,7 @@
                                                 {:get bookmarks/search-bookmarks-view})
                 "/add"                        (with-auth-middlewares {:get  bookmarks/create-view
                                                                       :post bookmarks/create})
-                "/edit"                       {""                 (with-auth-middlewares {:post bookmarks/edit})
+                "/edit"                       {""                 (with-auth-middlewares {:post bookmarks/authorize-edit})
                                                ["/" :bookmark-id] (with-auth-middlewares {:get bookmarks/edit-view})}
                 ["/delete/" :id]              (with-auth-middlewares {:post bookmarks/delete})
                 "/import"                     (with-auth-middlewares {:post bookmarks/pocket-import

@@ -137,15 +137,14 @@
          :count)))
 
 (defn fetch-bookmark
-  [bookmark-id user-id]
+  [bookmark-id]
   (-> (jdbc/query (db-spec)
                   (-> (helpers/select :b.url :b.title :b.created_at :b.id :b.created_by
                                       [(sql/call :array_remove :%array_agg.t.name :null) :tags])
                       (helpers/from [:bookmarks :b])
                       (helpers/left-join [:bookmark_tag :bt] [:= :b.id :bt.bookmark_id]
                                          [:tags :t] [:= :bt.tag_id :t.id])
-                      (helpers/where [:and [:= :b.id bookmark-id]
-                                      [:= :b.created_by user-id]])
+                      (helpers/where [:= :b.id bookmark-id])
                       (helpers/group :b.id)
                       sql/format))
       first))
@@ -194,46 +193,41 @@
                                                [:= :user_id user-id]])
                                sql/format)))
 
-(defn insert-into-bookmark-user [bookmark-user]
-  (jdbc/execute! (db-spec)
-                 (-> (helpers/insert-into :bookmark-user)
-                     (helpers/values [bookmark-user])
-                     sql/format)))
-
-(defn get-creator [bookmark-id]
+(defn get-created-by [bookmark-id]
   (jdbc/query (db-spec)
               (-> (helpers/select :created_by)
                   (helpers/from :bookmarks)
                   (helpers/where [:= :id bookmark-id])
                   sql/format)))
 
-(defn remove-all-collaborators
+(defn remove-all-bookmark-collaborators
   [bookmark-id]
   (jdbc/execute! (db-spec)
                  (-> (helpers/delete-from :bookmark_user)
                      (helpers/where [:and [:in :bookmark_id [bookmark-id]]
-                                     [:not= :user_id (:created_by (reduce conj {} (get-creator bookmark-id)))]])
+                                     [:not= :user_id (:created_by (reduce conj {} (get-created-by bookmark-id)))]])
                      sql/format)))
 
-(defn remove-all-users
+(defn remove-all-bookmark-users
   [bookmark-id]
   (jdbc/execute! (db-spec)
-                 (-> (helpers/delete-from :bookmark_user)
-                     (helpers/where [:in :bookmark_id [bookmark-id]])
-                     sql/format)))
-
-(defn get-collaborators-from-ids
-  [collaborators]
-  (jdbc/query (db-spec)
-              (-> (helpers/select :username)
-                  (helpers/from :users)
-                  (helpers/where [:in :id collaborators])
-                  sql/format)))
+                 (utils/debug (-> (helpers/select :bookmark_user)
+                                  (helpers/where [:in :bookmark_id [bookmark-id]])
+                                  sql/format))))
 
 (defn get-collaborator-ids [bookmark-id]
   (jdbc/query (db-spec)
               (-> (helpers/select :user_id)
                   (helpers/from :bookmark_user)
                   (helpers/where [:and [:in :bookmark_id [bookmark-id]]
-                                  [:not= :user_id (:created_by (reduce conj {} (get-creator bookmark-id)))]])
+                                  [:not= :user_id (:created_by (reduce conj {} (get-created-by bookmark-id)))]])
                   sql/format)))
+
+(defn get-collaborators-for-bookmark
+  [bookmark-id]
+  (utils/debug (jdbc/query (db-spec)
+                           (-> (helpers/select :username)
+                               (helpers/from :users)
+                               (helpers/where [:in :id (into [] (map :user_id (get-collaborator-ids bookmark-id)))])
+                               sql/format))))
+
