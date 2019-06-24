@@ -210,10 +210,9 @@
 
 (defn remove-all-bookmark-users
   [bookmark-id]
-  (jdbc/execute! (db-spec)
-                 (utils/debug (-> (helpers/select :bookmark_user)
-                                  (helpers/where [:in :bookmark_id [bookmark-id]])
-                                  sql/format))))
+  (jdbc/execute! (db-spec) (-> (helpers/delete-from :bookmark_user)
+                               (helpers/where [:in :bookmark_id [bookmark-id]])
+                               sql/format)))
 
 (defn get-collaborator-ids [bookmark-id]
   (jdbc/query (db-spec)
@@ -225,9 +224,9 @@
 
 (defn get-collaborators-for-bookmark
   [bookmark-id]
-  (utils/debug (jdbc/query (db-spec)
-                           (-> (helpers/select :username)
-                               (helpers/from :users)
-                               (helpers/where [:in :id (into [] (map :user_id (get-collaborator-ids bookmark-id)))])
-                               sql/format))))
+  (jdbc/query (db-spec)
+              (-> (helpers/select :username)
+                  (helpers/from :users)
+                  (helpers/where [:in :id (into [] (map :user_id (get-collaborator-ids bookmark-id)))])
+                  sql/format)))
 
