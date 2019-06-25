@@ -208,7 +208,7 @@
   (jdbc/execute! (db-spec)
                  (-> (helpers/delete-from :bookmark_user)
                      (helpers/where [:and [:in :bookmark_id [bookmark-id]]
-                                     [:not= :user_id ({:keys [:created_by]} (get-created-by bookmark-id))]])
+                                     [:not= :user_id (:created_by (reduce conj {} (get-created-by bookmark-id)))]])
                      sql/format)))
 
 (defn remove-all-bookmark-users
@@ -230,5 +230,5 @@
               (-> (helpers/select :user_id)
                   (helpers/from :bookmark_user)
                   (helpers/where [:and [:in :bookmark_id [bookmark-id]]
-                                  [:not= :user_id ({:keys [:created_by]} (get-created-by bookmark-id))]])
+                                  [:not= :user_id (:created_by (reduce conj {} (get-created-by bookmark-id)))]])
                   sql/format)))

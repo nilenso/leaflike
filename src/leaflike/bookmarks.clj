@@ -117,7 +117,7 @@
         unparsed-id (:id params)]
     (if (s/valid? :leaflike.bookmarks.spec/id unparsed-id)
       (let [id (Integer/parseInt unparsed-id)]
-        (if (= ({:keys [:created_by]} (bm-db/get-created-by id)) (:id user))
+        (if (= (:created_by (reduce conj {} (bm-db/get-created-by id))) (:id user))
           (do
             (bm-db/remove-all-tags id)
             (bm-db/remove-all-bookmark-users id)
