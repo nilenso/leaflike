@@ -231,9 +231,7 @@
                     "The bookmark you're trying to edit does not exist.")
         all-tags (map :name (tags-db/fetch-tags {:user-id (:id user)}))
         collaborator-ids (map :user_id (bm-db/get-collaborator-ids bookmark-id))]
-    (-> (res/response (layout/user-view "Edit Bookmark"
-                                        username
-                                        (views/bookmark-form
+    (-> (res/response (layout/user-view "Edit Bookmark" username (views/bookmark-form
                                           anti-forgery/*anti-forgery-token*
                                           "/bookmarks/edit"
                                           (assoc bookmark

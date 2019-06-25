@@ -167,7 +167,8 @@
                   (helpers/left-join [:users :u] [:= :user-bookmarks.user_id :u.id])
                   sql/format))))
 
-(defn fetch-bookmarks-for-user [user-id]
+(defn fetch-bookmarks-for-user
+  [user-id]
   (jdbc/query (db-spec)
               (->
                 (helpers/select :*)
@@ -212,6 +213,7 @@
                      sql/format)))
 
 (defn remove-all-bookmark-users
+  "Removes the collaborators and the owner."
   [bookmark-id]
   (jdbc/execute! (db-spec) (-> (helpers/delete-from :bookmark_user)
                                (helpers/where [:in :bookmark_id [bookmark-id]])
@@ -225,7 +227,8 @@
                   (helpers/where [:in :id collaborators])
                   sql/format)))
 
-(defn get-collaborator-ids [bookmark-id]
+(defn get-collaborator-ids
+  [bookmark-id]
   (jdbc/query (db-spec)
               (-> (helpers/select :user_id)
                   (helpers/from :bookmark_user)
