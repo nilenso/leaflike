@@ -159,7 +159,7 @@
         (is (= (:error-msg flash) "Invalid bookmark id"))))
 
     (testing "remove bookmark failed, invalid input"
-      (let [{:keys [status flash]} (bm/delete {:route-params {:id "1jgk"}
+      (let [{:keys [status flash]} (bm/delete {:route-params {:id "42-5/7"}
                                                :session      {:username (:username user2)}})]
         (is (= status 302))
         (is (= (:error-msg flash) "Invalid bookmark id"))))

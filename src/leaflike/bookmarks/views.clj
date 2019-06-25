@@ -97,7 +97,7 @@
             [:td [:a {:href        (str "/bookmarks/edit/" (:id bookmark))
                       :bookmark_id (str (:id bookmark))}
                   [:button.btn.btn-sm.btn-outline-secondary "Edit"]]]
-            [:td (str "Created by " (:username bookmark))])
+            [:td (str "Shared by " (:username bookmark))])
           [:td (f/form-to {:role "form"}
                           [:post (str "/bookmarks/delete/" (:id bookmark))]
                           (f/submit-button {:class "btn btn-sm btn-outline-secondary"}

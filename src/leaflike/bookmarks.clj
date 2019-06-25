@@ -117,7 +117,7 @@
         unparsed-id (:id params)]
     (if (s/valid? :leaflike.bookmarks.spec/id unparsed-id)
       (let [id (Integer/parseInt unparsed-id)]
-        (if (= (:created_by (reduce conj {} (bm-db/get-created-by id))) (:id user))
+        (if (= ({:keys [:created_by]} (bm-db/get-created-by id)) (:id user))
           (do
             (bm-db/remove-all-tags id)
             (bm-db/remove-all-bookmark-users id)
@@ -230,7 +230,7 @@
                     (get-in request [:flash :error-msg])
                     "The bookmark you're trying to edit does not exist.")
         all-tags (map :name (tags-db/fetch-tags {:user-id (:id user)}))
-        collaborators-id (map :user_id (bm-db/get-collaborator-ids bookmark-id))]
+        collaborator-ids (map :user_id (bm-db/get-collaborator-ids bookmark-id))]
     (-> (res/response (layout/user-view "Edit Bookmark"
                                         username
                                         (views/bookmark-form
@@ -240,8 +240,8 @@
                                             :all-tags all-tags
                                             :collaborators
                                             (map :username
-                                                 (if (not-empty collaborators-id)
-                                                   (bm-db/get-collaborators-from-ids collaborators-id)))))
+                                                 (if (not-empty collaborator-ids)
+                                                   (bm-db/get-collaborators-from-ids collaborator-ids)))))
                                         :error-msg error-msg))
         (assoc-in [:headers "Content-Type"] "text/html"))))
 
