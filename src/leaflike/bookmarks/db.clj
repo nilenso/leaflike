@@ -197,19 +197,20 @@
                                                [:= :user_id user-id]])
                                sql/format)))
 
-(defn get-created-by [bookmark-id]
-  (jdbc/query (db-spec)
+(defn get-creator [bookmark-id]
+  (-> (jdbc/query (db-spec)
               (-> (helpers/select :created_by)
                   (helpers/from :bookmarks)
                   (helpers/where [:= :id bookmark-id])
-                  sql/format)))
+                  sql/format))
+  first))
 
 (defn remove-all-bookmark-collaborators
   [bookmark-id]
   (jdbc/execute! (db-spec)
                  (-> (helpers/delete-from :bookmark_user)
                      (helpers/where [:and [:in :bookmark_id [bookmark-id]]
-                                     [:not= :user_id (:created_by (reduce conj {} (get-created-by bookmark-id)))]])
+                                     [:not= :user_id (:created_by (get-creator bookmark-id))]])
                      sql/format)))
 
 (defn remove-all-bookmark-users
@@ -233,5 +234,5 @@
               (-> (helpers/select :user_id)
                   (helpers/from :bookmark_user)
                   (helpers/where [:and [:in :bookmark_id [bookmark-id]]
-                                  [:not= :user_id (:created_by (reduce conj {} (get-created-by bookmark-id)))]])
+                                  [:not= :user_id (:created_by (get-creator bookmark-id))]])
                   sql/format)))

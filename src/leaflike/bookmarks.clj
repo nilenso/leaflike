@@ -77,7 +77,7 @@
   (let [username (get-in request [:session :username])
         user-id (:id (user-db/get-user-if-exists username))
         created_by (:created_by (into {} (-> (Integer/parseInt (:id params))
-                                             (bm-db/get-created-by))))]
+                                             (bm-db/get-creator))))]
     (if (= user-id created_by)
       (edit request)
       (assoc (res/redirect (str "/bookmarks/edit/" (:id params)))
@@ -117,7 +117,7 @@
         unparsed-id (:id params)]
     (if (s/valid? :leaflike.bookmarks.spec/id unparsed-id)
       (let [id (Integer/parseInt unparsed-id)]
-        (if (= (:created_by (reduce conj {} (bm-db/get-created-by id))) (:id user))
+        (if (= (:created_by (bm-db/get-creator id)) (:id user))
           (do
             (bm-db/remove-all-tags id)
             (bm-db/remove-all-bookmark-users id)
@@ -232,14 +232,14 @@
         all-tags (map :name (tags-db/fetch-tags {:user-id (:id user)}))
         collaborator-ids (map :user_id (bm-db/get-collaborator-ids bookmark-id))]
     (-> (res/response (layout/user-view "Edit Bookmark" username (views/bookmark-form
-                                          anti-forgery/*anti-forgery-token*
-                                          "/bookmarks/edit"
-                                          (assoc bookmark
-                                            :all-tags all-tags
-                                            :collaborators
-                                            (map :username
-                                                 (if (not-empty collaborator-ids)
-                                                   (bm-db/get-collaborators-from-ids collaborator-ids)))))
+                                                                   anti-forgery/*anti-forgery-token*
+                                                                   "/bookmarks/edit"
+                                                                   (assoc bookmark
+                                                                     :all-tags all-tags
+                                                                     :collaborators
+                                                                     (map :username
+                                                                          (if (not-empty collaborator-ids)
+                                                                            (bm-db/get-collaborators-from-ids collaborator-ids)))))
                                         :error-msg error-msg))
         (assoc-in [:headers "Content-Type"] "text/html"))))
 
