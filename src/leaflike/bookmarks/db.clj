@@ -199,11 +199,11 @@
 
 (defn get-creator [bookmark-id]
   (-> (jdbc/query (db-spec)
-              (-> (helpers/select :created_by)
-                  (helpers/from :bookmarks)
-                  (helpers/where [:= :id bookmark-id])
-                  sql/format))
-  first))
+                  (-> (helpers/select :created_by)
+                      (helpers/from :bookmarks)
+                      (helpers/where [:= :id bookmark-id])
+                      sql/format))
+      first))
 
 (defn remove-all-bookmark-collaborators
   [bookmark-id]

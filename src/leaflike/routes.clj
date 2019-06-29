@@ -49,6 +49,7 @@
                 "/edit"                       {""                 (with-auth-middlewares {:post bookmarks/authorize-edit})
                                                ["/" :bookmark-id] (with-auth-middlewares {:get bookmarks/edit-view})}
                 ["/delete/" :id]              (with-auth-middlewares {:post bookmarks/delete})
+                ["/remove/" :id]              (with-auth-middlewares {:post bookmarks/remove})
                 "/import"                     (with-auth-middlewares {:post bookmarks/pocket-import
                                                                       :get  bookmarks/pocket-import-form})}})
 

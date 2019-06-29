@@ -117,18 +117,24 @@
         unparsed-id (:id params)]
     (if (s/valid? :leaflike.bookmarks.spec/id unparsed-id)
       (let [id (Integer/parseInt unparsed-id)]
-        (if (= (:created_by (bm-db/get-creator id)) (:id user))
-          (do
-            (bm-db/remove-all-tags id)
-            (bm-db/remove-all-bookmark-users id)
-            (bm-db/delete id)
-            (assoc (res/redirect "/bookmarks")
-              :flash {:success-msg "Successfully deleted bookmark"}))
-          (do
-            (bm-db/remove {:bookmark-id id
-                           :user-id     (:id user)})
-            (assoc (res/redirect "/bookmarks")
-              :flash {:success-msg "Successfully removed bookmark"}))))
+        (bm-db/remove-all-tags id)
+        (bm-db/remove-all-bookmark-users id)
+        (bm-db/delete id)
+        (assoc (res/redirect "/bookmarks")
+          :flash {:success-msg "Successfully deleted bookmark"}))
+      (assoc (res/redirect "/bookmarks")
+        :flash {:error-msg "Invalid bookmark id"}))))
+
+(defn remove
+  [{:keys [params] :as request}]
+  (let [user (hutils/get-user request)
+        unparsed-id (:id params)]
+    (if (s/valid? :leaflike.bookmarks.spec/id unparsed-id)
+      (let [id (Integer/parseInt unparsed-id)]
+        (bm-db/remove {:bookmark-id id
+                       :user-id     (:id user)})
+        (assoc (res/redirect "/bookmarks")
+          :flash {:success-msg "Successfully removed bookmark"}))
       (assoc (res/redirect "/bookmarks")
         :flash {:error-msg "Invalid bookmark id"}))))
 

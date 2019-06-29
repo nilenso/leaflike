@@ -169,7 +169,7 @@
                             first
                             :id
                             str)
-            {:keys [status flash]} (bm/delete {:params  {:id bookmark-id}
+            {:keys [status flash]} (bm/remove {:params  {:id bookmark-id}
                                                :session {:username (:username user2)}})]
 
         (is (= 302 status))
