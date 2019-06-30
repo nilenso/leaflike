@@ -24,7 +24,7 @@
                   (helpers/where [:in :id
                                   (-> (helpers/select :tag_id)
                                       (helpers/from [:bookmark_tag :bt]
-                                                    [(bm-db/join-bookmarks-with-bookmark_user user-id) :b])
+                                                    [(bm-db/join-bookmark-bookmark-user user-id) :b])
                                       (helpers/where [:and [:= :b.user-id user-id]
                                                       [:= :bt.bookmark_id :b.id]])
                                       (helpers/group :bt.tag_id))])

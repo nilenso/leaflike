@@ -46,9 +46,9 @@
                                                :session {:username (:username user)}})
             bookmark-id (:id (first (bm-db/fetch-bookmarks-for-user (:id user))))]
         (is (= 302 status))
-        (let [collaborator-ids (map :user_id (bm-db/get-collaborator-ids bookmark-id))]
-          (is (= 1 (count collaborator-ids)))
-          (is (= (:username user2) (first (map :username (bm-db/get-collaborators-from-ids collaborator-ids))))))
+        (let [collaborators (map :username (bm-db/get-collaborators bookmark-id))]
+          (is (= 1 (count collaborators)))
+          (is (= (:username user2) (first collaborators))))
         (is (empty? (:error-msg flash)))))
 
     (testing "create bookmark with double slash in url"

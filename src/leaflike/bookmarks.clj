@@ -230,22 +230,20 @@
   [{:keys [params] :as request}]
   (let [username (get-in request [:session :username])
         user (hutils/get-user request)
+        user-id (:id user)
         bookmark-id (Integer/parseInt (:bookmark-id params))
         bookmark (bm-db/fetch-bookmark bookmark-id)
         error-msg (if bookmark
                     (get-in request [:flash :error-msg])
                     "The bookmark you're trying to edit does not exist.")
-        all-tags (map :name (tags-db/fetch-tags {:user-id (:id user)}))
-        collaborator-ids (map :user_id (bm-db/get-collaborator-ids bookmark-id))]
+        all-tags (map :name (tags-db/fetch-tags {:user-id user-id}))
+        collaborators (map :username (bm-db/get-collaborators bookmark-id))]
     (-> (res/response (layout/user-view "Edit Bookmark" username (views/bookmark-form
                                                                    anti-forgery/*anti-forgery-token*
                                                                    "/bookmarks/edit"
                                                                    (assoc bookmark
                                                                      :all-tags all-tags
-                                                                     :collaborators
-                                                                     (map :username
-                                                                          (if (not-empty collaborator-ids)
-                                                                            (bm-db/get-collaborators-from-ids collaborator-ids)))))
+                                                                     :collaborators collaborators))
                                         :error-msg error-msg))
         (assoc-in [:headers "Content-Type"] "text/html"))))
 

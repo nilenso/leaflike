@@ -34,11 +34,17 @@
   [s]
   (when s (types/array s)))
 
-(defn join-bookmarks-with-bookmark_user [user-id]
+(defn join-bookmark-bookmark-user [user-id]
   (-> (helpers/select (sql/raw "DISTINCT ON (b.id) *"))
       (helpers/from [:bookmarks :b])
       (helpers/left-join [:bookmark_user :bu] [:and [:= :bu.user_id user-id]
                                                [:= :b.id :bu.bookmark_id]])))
+
+(defn join-user-bookmark-user [bookmark-id]
+  (-> (helpers/select (sql/raw "DISTINCT ON (u.id) *"))
+      (helpers/from [:users :u])
+      (helpers/left-join [:bookmark_user :bu] [:and [:= :u.id :bu.user_id]
+                                               [:= :bu.bookmark_id bookmark-id]])))
 
 (defn tag-bookmark
   [bookmark-id tags]
@@ -118,7 +124,7 @@
   (-> (helpers/select :b.id :b.title :b.url :b.created_at
                       :b.user_id :b.created_by
                       [(sql/call :array_remove :%array_agg.t.name :null) :tags])
-      (helpers/from [(join-bookmarks-with-bookmark_user user-id) :b])
+      (helpers/from [(join-bookmark-bookmark-user user-id) :b])
       (helpers/left-join [:bookmark_tag :bt] [:= :b.id :bt.bookmark_id]
                          [:tags :t] [:= :bt.tag_id :t.id])
       (helpers/where [:= :b.user_id user-id])
@@ -129,10 +135,11 @@
   "Return number of bookmarks the user has."
   [{:keys [user-id tag] :as query}]
   (let [where-clause (build-where-clause (select-keys query [:user-id :tag :search-terms]))]
-    (->> (jdbc/query (db-spec) (-> (helpers/select :%count.*)
-                                   (helpers/from [(all-bookmarks-map user-id) :user-bookmarks])
-                                   (helpers/where where-clause)
-                                   sql/format))
+    (->> (jdbc/query
+           (db-spec) (-> (helpers/select :%count.*)
+                         (helpers/from [(all-bookmarks-map user-id) :user-bookmarks])
+                         (helpers/where where-clause)
+                         sql/format))
          first
          :count)))
 
@@ -179,23 +186,26 @@
 
 (defn list-by-id
   [{:keys [id user-id]}]
-  (jdbc/query (db-spec) (-> (helpers/select :*)
-                            (helpers/from :bookmarks)
-                            (helpers/where [:and [:= :id (Integer/parseInt id)]
-                                            [:= :created_by user-id]])
-                            sql/format)))
+  (jdbc/query (db-spec)
+              (-> (helpers/select :*)
+                  (helpers/from :bookmarks)
+                  (helpers/where [:and [:= :id (Integer/parseInt id)]
+                                  [:= :created_by user-id]])
+                  sql/format)))
 (defn delete
   [bookmark-id]
-  (jdbc/execute! (db-spec) (-> (helpers/delete-from :bookmarks)
-                               (helpers/where [:= :id bookmark-id])
-                               sql/format)))
+  (jdbc/execute! (db-spec)
+                 (-> (helpers/delete-from :bookmarks)
+                     (helpers/where [:= :id bookmark-id])
+                     sql/format)))
 
 (defn remove
   [{:keys [bookmark-id user-id]}]
-  (jdbc/execute! (db-spec) (-> (helpers/delete-from :bookmark-user)
-                               (helpers/where [:and [:= :bookmark_id bookmark-id]
-                                               [:= :user_id user-id]])
-                               sql/format)))
+  (jdbc/execute! (db-spec)
+                 (-> (helpers/delete-from :bookmark-user)
+                     (helpers/where [:and [:= :bookmark_id bookmark-id]
+                                     [:= :user_id user-id]])
+                     sql/format)))
 
 (defn get-creator [bookmark-id]
   (-> (jdbc/query (db-spec)
@@ -216,23 +226,16 @@
 (defn remove-all-bookmark-users
   "Removes the collaborators and the owner."
   [bookmark-id]
-  (jdbc/execute! (db-spec) (-> (helpers/delete-from :bookmark_user)
-                               (helpers/where [:in :bookmark_id [bookmark-id]])
-                               sql/format)))
+  (jdbc/execute! (db-spec)
+                 (-> (helpers/delete-from :bookmark_user)
+                     (helpers/where [:in :bookmark_id [bookmark-id]])
+                     sql/format)))
 
-(defn get-collaborators-from-ids
-  [collaborators]
-  (jdbc/query (db-spec)
-              (-> (helpers/select :username)
-                  (helpers/from :users)
-                  (helpers/where [:in :id collaborators])
-                  sql/format)))
-
-(defn get-collaborator-ids
+(defn get-collaborators
   [bookmark-id]
   (jdbc/query (db-spec)
-              (-> (helpers/select :user_id)
-                  (helpers/from :bookmark_user)
-                  (helpers/where [:and [:in :bookmark_id [bookmark-id]]
-                                  [:not= :user_id (:created_by (get-creator bookmark-id))]])
+              (-> (helpers/select :username)
+                  (helpers/from [(join-user-bookmark-user bookmark-id) :_bu])
+                  (helpers/where [:and [:in :_bu.bookmark_id [bookmark-id]]
+                                  [:not [:= :_bu.user_id (:created_by (get-creator bookmark-id))]]])
                   sql/format)))
