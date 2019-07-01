@@ -152,14 +152,14 @@
 
     (testing "remove bookmark"
       (let [bookmark-id (:id (first (bm-db/fetch-bookmarks-for-user (user-id user2))))
-            {:keys [status flash]} (bm/delete {:route-params {:id (str bookmark-id)}
+            {:keys [status flash]} (bm/remove {:route-params {:id (str bookmark-id)}
                                                :session      {:user (:username user2)}})]
 
         (is (= status 302))
         (is (= (:error-msg flash) "Invalid bookmark id"))))
 
     (testing "remove bookmark failed, invalid input"
-      (let [{:keys [status flash]} (bm/delete {:route-params {:id "42-5/7"}
+      (let [{:keys [status flash]} (bm/remove {:route-params {:id "42-5/7"}
                                                :session      {:username (:username user2)}})]
         (is (= status 302))
         (is (= (:error-msg flash) "Invalid bookmark id"))))
