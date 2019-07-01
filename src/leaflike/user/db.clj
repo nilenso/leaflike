@@ -7,13 +7,30 @@
             [honeysql.helpers :as helpers]))
 
 (defn get-user-if-exists
-  [email username]
-  (-> (jdbc/query (db-spec) (-> (helpers/select :*)
-                                (helpers/from :users)
-                                (helpers/where [:or [:= :username username]
-                                                [:= :email email]])
-                                sql/format))
-      first))
+  ([username] (get-user-if-exists nil username))
+  ([email username]
+   (-> (jdbc/query (db-spec) (-> (helpers/select :*)
+                                 (helpers/from :users)
+                                 (helpers/where [:or [:= :username username]
+                                                 [:= :email email]])
+                                 sql/format))
+       first)))
+
+
+
+(defn get-user-ids-by-username
+  [usernames]
+  (jdbc/query (db-spec) (-> (helpers/select :id)
+                            (helpers/from :users)
+                            (helpers/merge-where [:in :username usernames])
+                            sql/format)))
+
+(defn get-username-by-user-id
+  [id]
+  (jdbc/query (db-spec) (-> (helpers/select :username)
+                            (helpers/from :users)
+                            (helpers/where [:= :id id])
+                            sql/format)))
 
 (defn get-user-auth-data
   ([identifier]

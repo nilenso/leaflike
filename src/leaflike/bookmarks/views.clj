@@ -4,6 +4,10 @@
             [clj-time.coerce :as time-coerce]
             [clj-time.format :as time-format]))
 
+(defn is-user-creator
+  [bookmark]
+  (= (:user_id bookmark) (:created_by bookmark)))
+
 (defn truncated-page-list
   [num-pages current-page]
   (let [window-size (min 4 num-pages)
@@ -40,7 +44,7 @@
                           "")]
      [:li {:class (str "page-item" disabled-class)}
       [:a {:class "page-link"
-           :href (path-format-fn (dec current-page))}
+           :href  (path-format-fn (dec current-page))}
        "Previous"]])
 
    ;; List of pages
@@ -55,7 +59,7 @@
                           li-class)]
            [:li {:class li-class}
             [:a {:class "page-link"
-                 :href (path-format-fn page-num)} page-num]]))))
+                 :href  (path-format-fn page-num)} page-num]]))))
 
    ;; "Next" button
    (let [disabled-next? (= current-page num-pages)
@@ -64,7 +68,7 @@
                           "")]
      [:li {:class (str "page-item" disabled-class)}
       [:a {:class "page-link"
-           :href (path-format-fn (inc current-page))}
+           :href  (path-format-fn (inc current-page))}
        "Next"]])])
 
 (defn list-all
@@ -84,31 +88,41 @@
       [:th {:scope "col"} "Date"]]]
     [:tbody
      (for [bookmark bookmarks]
-       [:tr
-        [:td [:a.col {:href (:url bookmark)
-                      :target "_blank"
-                      :bookmark_id (str (:id bookmark))} (:title bookmark)]]
-        [:td [:a {:href (str "/bookmarks/edit/" (:id bookmark))
-                  :bookmark_id (str (:id bookmark))}
-              [:button.btn.btn-sm.btn-outline-secondary "Edit"]]]
-        [:td (f/form-to {:role "form"}
-                        [:post (str "/bookmarks/delete/" (:id bookmark))]
-                        (f/submit-button {:class "btn btn-sm btn-outline-secondary"} "Delete")
-                        (f/hidden-field {:value anti-forgery-token} "__anti-forgery-token"))]
-        [:td (for [tag (:tags bookmark)]
-               [:a {:href (format "/bookmarks/tag/%s/page/1" tag)}
-                [:button.btn.btn-outline-primary.btn-sm tag]])]
-        [:td (->> (:created_at bookmark)
-                  time-coerce/from-sql-time
-                  (time-format/unparse (time-format/formatter :date)))]])]]
+       (let [is-creator (is-user-creator bookmark)]
+         [:tr
+          [:td [:a.col {:href        (:url bookmark)
+                        :target      "_blank"
+                        :bookmark_id (str (:id bookmark))} (:title bookmark)]]
+          (if is-creator
+            [:td [:a {:href        (str "/bookmarks/edit/" (:id bookmark))
+                      :bookmark_id (str (:id bookmark))}
+                  [:button.btn.btn-sm.btn-outline-secondary "Edit"]]]
+            [:td (str "Shared by " (:username bookmark))])
+          (if is-creator
+            [:td (f/form-to {:role "form"}
+                            [:post (str "/bookmarks/delete/" (:id bookmark))]
+                            (f/submit-button {:class "btn btn-sm btn-outline-secondary"}
+                                             "Delete")
+                            (f/hidden-field {:value anti-forgery-token} "__anti-forgery-token"))]
+            [:td (f/form-to {:role "form"}
+                            [:post (str "/bookmarks/remove/" (:id bookmark))]
+                            (f/submit-button {:class "btn btn-sm btn-outline-secondary"} "Remove")
+                            (f/hidden-field {:value anti-forgery-token} "__anti-forgery-token"))])
+          [:td (for [tag (:tags bookmark)]
+                 [:a {:href (format "/bookmarks/tag/%s/page/1" tag)}
+                  [:button.btn.btn-outline-primary.btn-sm tag]])]
+          [:td (->> (:created_at bookmark)
+                    time-coerce/from-sql-time
+                    (time-format/unparse (time-format/formatter :date)))]]))]]
    (when (> num-pages 1)
      (pagination num-pages current-page path-format-fn))])
 
 (defn bookmark-form
-  [anti-forgery-token form-post-url {:keys [id url title tags all-tags]
-                                     :or {url ""
-                                          title ""
-                                          tags ""}}]
+  [anti-forgery-token form-post-url {:keys [id url title tags all-tags collaborators]
+                                     :or   {url           ""
+                                            title         ""
+                                            tags          ""
+                                            collaborators ""}}]
   (let [existing-tag? (set tags)]
     [:div {:class "well"}
      [:script "$(document).ready(function() {
@@ -117,17 +131,23 @@
        tokenSeparators: [',', ' ']
       });
 });"]
+     [:script "$(document).ready(function() {
+    $('#collaborators-multi-select').select2({
+       tags: true,
+       tokenSeparators: [',', ' ']
+      });
+});"]
      (f/form-to {:role "form"}
                 [:post form-post-url]
                 [:div {:class "form-group"}
                  (f/label {:class "control-label"} "url" "URL")
-                 (f/text-field {:class "form-control" :placeholder "URL"
-                                :value url
+                 (f/text-field {:class    "form-control" :placeholder "URL"
+                                :value    url
                                 :required ""} "url")]
                 [:div {:class "form-group"}
                  (f/label {:class "control-label"} "title" "Title")
-                 (f/text-field {:class "form-control" :placeholder "Title"
-                                :value title
+                 (f/text-field {:class    "form-control" :placeholder "Title"
+                                :value    title
                                 :required ""} "title")]
 
                 [:div {:class "form-group"}
@@ -136,10 +156,20 @@
                   {:name "tags" :multiple "multiple" :class "form-control"}
 
                   (for [tag all-tags]
-                    [:option {:value tag
+                    [:option {:value    tag
                               :selected (if (existing-tag? tag)
                                           "selected"
                                           nil)} tag])]]
+
+                [:div {:class "form-group"}
+                 (f/label {:class "control-label"} "collaborators" "Collaborators")
+                 [:select#collaborators-multi-select
+                  {:name "collaborators" :multiple "multiple" :class "form-control"}
+
+                  (for [collaborator collaborators]
+                    [:option {:value    collaborator
+                              :selected "selected"} collaborator])]]
+
                 [:div {:class "form-group"}
                  (f/submit-button {:class "btn btn-primary"} "Submit")]
 
@@ -150,8 +180,8 @@
 
 (defn pocket-import-form
   [anti-forgery-token]
-  [:form {:method "post"
-          :action "/bookmarks/import"
+  [:form {:method  "post"
+          :action  "/bookmarks/import"
           :enctype "multipart/form-data"}
    [:div
     [:label {:for "pocket_html"} "You can export your bookmarks from pocket from "

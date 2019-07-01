@@ -14,3 +14,7 @@
   [value]
   (and (string? value)
        (not-empty value)))
+
+(defn vals-from-list-of-id-maps
+  [ms]
+  (map :id (into [] ms)))

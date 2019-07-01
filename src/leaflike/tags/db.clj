@@ -1,10 +1,11 @@
 (ns leaflike.tags.db
   (:require [clojure.java.jdbc :as jdbc]
-            [honeysql.core     :as sql]
-            [honeysql.helpers  :as helpers]
+            [honeysql.core :as sql]
+            [honeysql.helpers :as helpers]
             [honeysql-postgres.format :as pg-fmt]
             [honeysql-postgres.helpers :as pg-helpers]
-            [leaflike.config   :refer [db-spec]]))
+            [leaflike.config :refer [db-spec]]
+            [leaflike.bookmarks.db :as bm-db]))
 
 (defn create
   [tags]
@@ -23,8 +24,8 @@
                   (helpers/where [:in :id
                                   (-> (helpers/select :tag_id)
                                       (helpers/from [:bookmark_tag :bt]
-                                                    [:bookmarks :b])
-                                      (helpers/where [:and [:= :user_id user-id]
+                                                    [(bm-db/join-bookmark-bookmark-user user-id) :b])
+                                      (helpers/where [:and [:= :b.user-id user-id]
                                                       [:= :bt.bookmark_id :b.id]])
                                       (helpers/group :bt.tag_id))])
                   (helpers/order-by :name)
