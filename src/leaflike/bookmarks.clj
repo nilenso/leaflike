@@ -76,12 +76,12 @@
   [{:keys [params] :as request}]
   (let [username (get-in request [:session :username])
         user-id (:id (user-db/get-user-if-exists username))
-        created_by (:created_by (into {} (-> (Integer/parseInt (:id params))
+        created-by (:created_by (into {} (-> (Integer/parseInt (:id params))
                                              (bm-db/get-creator))))]
-    (if (= user-id created_by)
+    (if (= user-id created-by)
       (edit request)
       (assoc (res/redirect (str "/bookmarks/edit/" (:id params)))
-        :flash {:error-msg (str "Only " (:username (into {} (user-db/get-username-by-user-id created_by)))
+        :flash {:error-msg (str "Only " (:username (into {} (user-db/get-username-by-user-id created-by)))
                                 " can edit this bookmark")}))))
 
 (def items-per-page 10)
